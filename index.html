@@ -2572,22 +2572,25 @@
                 <!-- Summary & Graph Panel -->
                 <div
                     class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
-                    <h2
-                        class="text-lg font-bold text-slate-800 dark:text-slate-100 border-b border-slate-200 dark:border-slate-700 pb-2 mb-4">
-                        COC Impact Summary</h2>
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-2 mb-4">
+                        <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">
+                            COC Impact Summary</h2>
+                        <span class="text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-full border border-indigo-200 dark:border-indigo-800/60">
+                            Hover curve or table to inspect • Click to set COC
+                        </span>
+                    </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                         <!-- Table -->
-                        <div class="overflow-x-auto">
+                        <div class="lg:col-span-5 overflow-x-auto flex flex-col justify-between">
                             <table
-                                class="w-full text-left border-collapse border border-slate-200 dark:border-slate-700">
+                                class="w-full text-left border-collapse border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
                                 <thead>
                                     <tr
-                                        class="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 text-xs uppercase border-b border-slate-200 dark:border-slate-700">
-                                        <th class="p-3 border-r border-slate-200 dark:border-slate-700 text-center">COC
-                                        </th>
-                                        <th class="p-3 text-right">Consumption (m³/day)</th>
-                                        <th class="p-3 text-right">Consumption (m³/year)</th>
+                                        class="bg-slate-50 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 text-xs uppercase border-b border-slate-200 dark:border-slate-700">
+                                        <th class="p-2.5 border-r border-slate-200 dark:border-slate-700 text-center">COC</th>
+                                        <th class="p-2.5 text-right">Daily (m³/day)</th>
+                                        <th class="p-2.5 text-right">Annual (m³/yr)</th>
                                     </tr>
                                 </thead>
                                 <tbody id="ct_summaryTable" class="text-sm">
@@ -2596,11 +2599,11 @@
                             </table>
                         </div>
 
-                        <!-- Chart -->
+                        <!-- Smooth Interactive Chart -->
                         <div
-                            class="h-[250px] w-full border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bg-white dark:bg-slate-800 relative">
-                            <canvas id="ctChart" width="500" height="250"
-                                class="w-full h-full block border-none !bg-transparent"></canvas>
+                            class="lg:col-span-7 h-[350px] w-full border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-slate-50/40 dark:bg-slate-900/40 relative">
+                            <canvas id="ctChart" width="680" height="350"
+                                class="w-full h-full block border-none !bg-transparent cursor-crosshair"></canvas>
                         </div>
                     </div>
                 </div>
@@ -6017,24 +6020,43 @@
                 const getX = (d) => margins.left + ((d - minD) / (maxD - minD)) * w;
                 const getY = (a) => margins.top + h - ((a - minA) / (maxA - minA)) * h;
 
-                // Attach interactive click handler once
+                window._nfpaChartState = { area, density, hoverPt: window._nfpaChartState?.hoverPt ?? null };
+                // Attach interactive click & hover handlers once
                 if (!canvas.dataset.interactiveBound) {
                     canvas.dataset.interactiveBound = 'true';
-                    const pickPoint = (evt) => {
+                    const getCoords = (evt) => {
                         const r = canvas.getBoundingClientRect();
                         const mx = evt.clientX - r.left;
                         const my = evt.clientY - r.top;
                         const m = { left: 68, right: 64, top: 48, bottom: 50 };
                         const pw = r.width - m.left - m.right;
                         const ph = r.height - m.top - m.bottom;
-                        if (mx < m.left || mx > r.width - m.right || my < m.top || my > r.height - m.bottom) return;
-                        const clickedD = Math.max(minD, Math.min(maxD, minD + ((mx - m.left) / pw) * (maxD - minD)));
-                        const clickedA = Math.max(minA, Math.min(maxA, minA + ((m.top + ph - my) / ph) * (maxA - minA)));
-                        setNfpaPoint(Math.round(clickedD * 100) / 100, Math.round(clickedA / 50) * 50);
+                        if (mx < m.left || mx > r.width - m.right || my < m.top || my > r.height - m.bottom) return null;
+                        const dVal = Math.max(minD, Math.min(maxD, minD + ((mx - m.left) / pw) * (maxD - minD)));
+                        const aVal = Math.max(minA, Math.min(maxA, minA + ((m.top + ph - my) / ph) * (maxA - minA)));
+                        return { d: Math.round(dVal * 100) / 100, a: Math.round(aVal / 50) * 50 };
                     };
                     let dragging = false;
-                    canvas.addEventListener('mousedown', (e) => { dragging = true; pickPoint(e); });
-                    window.addEventListener('mousemove', (e) => { if (dragging) pickPoint(e); });
+                    canvas.addEventListener('mousedown', (e) => {
+                        dragging = true;
+                        const pt = getCoords(e);
+                        if (pt) setNfpaPoint(pt.d, pt.a);
+                    });
+                    canvas.addEventListener('mousemove', (e) => {
+                        const pt = getCoords(e);
+                        if (dragging && pt) {
+                            setNfpaPoint(pt.d, pt.a);
+                        } else if (window._nfpaChartState) {
+                            window._nfpaChartState.hoverPt = pt;
+                            drawNfpaChart(window._nfpaChartState.area, window._nfpaChartState.density);
+                        }
+                    });
+                    canvas.addEventListener('mouseleave', () => {
+                        if (window._nfpaChartState && window._nfpaChartState.hoverPt !== null) {
+                            window._nfpaChartState.hoverPt = null;
+                            drawNfpaChart(window._nfpaChartState.area, window._nfpaChartState.density);
+                        }
+                    });
                     window.addEventListener('mouseup', () => { dragging = false; });
                 }
 
@@ -6238,6 +6260,59 @@
                     ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
                     ctx.textAlign = 'left';
                     ctx.fillText(label, tagX + 6, tagY);
+                }
+
+                // 6. Hover Crosshair & Tooltip
+                const hPt = window._nfpaChartState?.hoverPt;
+                if (hPt) {
+                    const hx = getX(hPt.d);
+                    const hy = getY(hPt.a);
+                    const hFlow = hPt.d * hPt.a * 1.15;
+
+                    ctx.save();
+                    ctx.setLineDash([3, 3]);
+                    ctx.strokeStyle = isDark ? '#38bdf8' : '#0284c7';
+                    ctx.lineWidth = 1.1;
+                    ctx.beginPath();
+                    ctx.moveTo(hx, margins.top);
+                    ctx.lineTo(hx, margins.top + h);
+                    ctx.moveTo(margins.left, hy);
+                    ctx.lineTo(margins.left + w, hy);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    ctx.beginPath();
+                    ctx.arc(hx, hy, 4.5, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#06b6d4';
+                    ctx.fill();
+
+                    const l1 = `Density: ${hPt.d.toFixed(2)} gpm/ft² (${(hPt.d * 40.746).toFixed(1)} mm/min)`;
+                    const l2 = `Area: ${hPt.a} ft² (${Math.round(hPt.a * 0.092903)} m²)`;
+                    const l3 = `Est. Demand (+15%): ${Math.round(hFlow)} GPM (${Math.round(hFlow * 3.785)} LPM)`;
+                    ctx.font = '600 10.5px Inter, sans-serif';
+                    const bw = Math.max(ctx.measureText(l1).width, ctx.measureText(l2).width, ctx.measureText(l3).width) + 18;
+                    const bh = 56;
+                    let tx = hx + 12;
+                    if (tx + bw > margins.left + w) tx = hx - bw - 12;
+                    let ty = hy - bh - 8;
+                    if (ty < margins.top + 4) ty = hy + 10;
+
+                    ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.96)';
+                    ctx.strokeStyle = '#06b6d4';
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.roundRect(tx, ty, bw, bh, 6);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    ctx.fillStyle = isDark ? '#38bdf8' : '#0284c7';
+                    ctx.fillText(l1, tx + 9, ty + 6);
+                    ctx.fillStyle = isDark ? '#f8fafc' : '#1e293b';
+                    ctx.fillText(l2, tx + 9, ty + 22);
+                    ctx.fillStyle = '#10b981';
+                    ctx.fillText(l3, tx + 9, ty + 38);
                 }
 
                 ctx.restore();
@@ -8324,96 +8399,396 @@
                 let chartData = [];
 
                 cocArray.forEach(c => {
-                    let simB = (E_m3h / (c - 1)) - D_m3h;
-                    if (simB < 0) simB = 0;
+                    let simB = Math.max(0, (E_m3h / (c - 1)) - D_m3h);
                     let simM = E_m3h + D_m3h + simB;
                     let simMd = simM * hrs;
                     let simMy = simMd * days;
 
-                    chartData.push({ x: c, y: simMy });
+                    chartData.push({ x: c, y: simMy, md: simMd, bd: simB * hrs });
 
-                    let rowClass = (Math.abs(c - coc) < 0.1) ? 'bg-indigo-50 dark:bg-indigo-900/30 font-bold text-indigo-700 dark:text-indigo-300' : 'hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors';
+                    let isSelected = Math.abs(c - safeCOC) < 0.08;
+                    let rowClass = isSelected
+                        ? 'bg-indigo-50 dark:bg-indigo-900/40 font-bold text-indigo-700 dark:text-indigo-300'
+                        : 'hover:bg-indigo-50/50 dark:hover:bg-slate-700/50 transition-colors';
 
                     tableHtml += `
-                    <tr class="border-b border-slate-100 dark:border-slate-700/50 ${rowClass}">
-                        <td class="p-2 border-r border-slate-100 dark:border-slate-700/50 text-center">${c.toFixed(1)}</td>
-                        <td class="p-2 text-right">${simMd.toFixed(1)}</td>
-                        <td class="p-2 text-right">${simMy.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                    <tr onclick="setCtCoc(${c})" onmouseenter="hoverCtCoc(${c})" onmouseleave="hoverCtCoc(null)"
+                        title="Click to set COC to ${c.toFixed(1)}"
+                        class="cursor-pointer border-b border-slate-100 dark:border-slate-700/50 ${rowClass}">
+                        <td class="p-2.5 border-r border-slate-100 dark:border-slate-700/50 text-center font-mono">${c.toFixed(1)}</td>
+                        <td class="p-2.5 text-right font-mono">${simMd.toFixed(1)}</td>
+                        <td class="p-2.5 text-right font-mono">${simMy.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
                     </tr>
                 `;
                 });
                 document.getElementById('ct_summaryTable').innerHTML = tableHtml;
 
-                // Draw COC Graph
+                // Persist state for smooth curve & interactive hover
+                window._ctChartState = {
+                    E_m3h, D_m3h, hrs, days,
+                    currentCoc: safeCOC,
+                    currentMd: M_m3d,
+                    currentMy: M_m3y,
+                    data: chartData,
+                    hoverCoc: window._ctChartState?.hoverCoc ?? null
+                };
+
+                // Draw Smooth COC Graph
                 drawCtChart('ctChart', chartData, safeCOC, M_m3y);
+            }
+
+            function setCtCoc(val) {
+                const el = document.getElementById('ct_coc');
+                if (el) {
+                    el.value = Number(val).toFixed(1);
+                    updateCoolingTower();
+                }
+            }
+
+            function hoverCtCoc(val) {
+                if (!window._ctChartState) return;
+                window._ctChartState.hoverCoc = val;
+                drawCtChart('ctChart', window._ctChartState.data, window._ctChartState.currentCoc, window._ctChartState.currentMy);
             }
 
             function drawCtChart(canvasId, data, currentCoc, currentM) {
                 const canvas = document.getElementById(canvasId);
+                if (!canvas) return;
+
+                // High-DPI responsive canvas sizing (prevents oval stretching & blurry text)
+                const rect = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                const width = rect.width > 120 ? rect.width : 640;
+                const height = rect.height > 120 ? rect.height : 350;
+                if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
+                    canvas.width = Math.round(width * dpr);
+                    canvas.height = Math.round(height * dpr);
+                }
+
                 const ctx = canvas.getContext('2d');
-                const width = canvas.width, height = canvas.height;
+                ctx.save();
+                ctx.scale(dpr, dpr);
                 ctx.clearRect(0, 0, width, height);
 
+                const state = window._ctChartState || {
+                    E_m3h: 1.5, D_m3h: 0.01, hrs: 24, days: 365,
+                    currentCoc: currentCoc || 4, currentMy: currentM || 18000,
+                    data: data || [], hoverCoc: null
+                };
+
+                const evalAtCoc = (c) => {
+                    const safeC = Math.max(1.2, c);
+                    const b_h = Math.max(0, (state.E_m3h / (safeC - 1)) - state.D_m3h);
+                    const m_h = state.E_m3h + state.D_m3h + b_h;
+                    const md = m_h * state.hrs;
+                    const my = md * state.days;
+                    const bd = b_h * state.hrs;
+                    return { coc: safeC, md, my, bd };
+                };
+
                 const isDark = document.documentElement.classList.contains('dark');
-                const margins = { top: 20, bottom: 30, left: 60, right: 20 };
+                const margins = { top: 28, bottom: 44, left: 68, right: 24 };
                 const chartW = width - margins.left - margins.right;
                 const chartH = height - margins.top - margins.bottom;
 
-                const maxY = Math.max(...data.map(d => d.y)) * 1.1;
-                const getX = (coc) => margins.left + ((coc - 1) / 9) * chartW;
-                const getY = (val) => height - margins.bottom - (val / maxY) * chartH;
+                const minCoc = 1.35, maxCoc = 10.2;
+                const maxDataY = Math.max(evalAtCoc(1.5).my, currentM || 0, ...data.map(d => d.y));
+                const maxY = Math.max(100, Math.ceil((maxDataY * 1.12) / 1000) * 1000);
 
+                const getX = (coc) => margins.left + ((coc - minCoc) / (maxCoc - minCoc)) * chartW;
+                const getY = (val) => margins.top + chartH - (val / maxY) * chartH;
+
+                // Bind interactive hover & click events once
+                if (!canvas.dataset.hoverBound) {
+                    canvas.dataset.hoverBound = 'true';
+                    const getCocFromEvent = (evt) => {
+                        const r = canvas.getBoundingClientRect();
+                        const mx = evt.clientX - r.left;
+                        const my = evt.clientY - r.top;
+                        const cw = r.width - margins.left - margins.right;
+                        const ch = r.height - margins.top - margins.bottom;
+                        if (mx < margins.left - 8 || mx > r.width - margins.right + 8 || my < margins.top - 8 || my > r.height - margins.bottom + 8) {
+                            return null;
+                        }
+                        let rawCoc = minCoc + ((mx - margins.left) / cw) * (maxCoc - minCoc);
+                        rawCoc = Math.max(1.5, Math.min(10.0, rawCoc));
+                        // Snap to standard COC tiers or active COC when cursor is within 0.14 COC
+                        const snapTargets = [1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, window._ctChartState?.currentCoc || 4.0];
+                        for (const t of snapTargets) {
+                            if (Math.abs(rawCoc - t) < 0.14) return t;
+                        }
+                        return Math.round(rawCoc * 10) / 10;
+                    };
+
+                    canvas.addEventListener('mousemove', (e) => {
+                        if (!window._ctChartState) return;
+                        const hCoc = getCocFromEvent(e);
+                        if (window._ctChartState.hoverCoc !== hCoc) {
+                            window._ctChartState.hoverCoc = hCoc;
+                            drawCtChart(canvasId, window._ctChartState.data, window._ctChartState.currentCoc, window._ctChartState.currentMy);
+                        }
+                    });
+
+                    canvas.addEventListener('mouseleave', () => {
+                        if (!window._ctChartState) return;
+                        window._ctChartState.hoverCoc = null;
+                        drawCtChart(canvasId, window._ctChartState.data, window._ctChartState.currentCoc, window._ctChartState.currentMy);
+                    });
+
+                    canvas.addEventListener('click', (e) => {
+                        const c = getCocFromEvent(e);
+                        if (c !== null) setCtCoc(c);
+                    });
+                }
+
+                // 1. Background Grid (Major & Minor)
                 ctx.beginPath();
-                ctx.strokeStyle = isDark ? '#334155' : '#e2e8f0';
+                ctx.strokeStyle = isDark ? 'rgba(51, 65, 85, 0.55)' : 'rgba(226, 232, 240, 0.9)';
                 ctx.lineWidth = 1;
 
-                // Grid
-                [1.5, 3, 5, 7, 9].forEach(c => {
-                    let x = getX(c);
-                    ctx.moveTo(x, margins.top); ctx.lineTo(x, height - margins.bottom);
+                const xTicks = [1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+                xTicks.forEach(c => {
+                    const x = getX(c);
+                    ctx.moveTo(x, margins.top);
+                    ctx.lineTo(x, margins.top + chartH);
                 });
-                let ySteps = 4;
+
+                const ySteps = 5;
                 for (let i = 0; i <= ySteps; i++) {
-                    let val = (maxY / ySteps) * i;
-                    let y = getY(val);
-                    ctx.moveTo(margins.left, y); ctx.lineTo(width - margins.right, y);
-                    ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
-                    ctx.font = '10px Inter';
+                    const val = (maxY / ySteps) * i;
+                    const y = getY(val);
+                    ctx.moveTo(margins.left, y);
+                    ctx.lineTo(margins.left + chartW, y);
+                }
+                ctx.stroke();
+
+                // 2. Theoretical Minimum Make-up Asymptote (Evaporation + Drift only, COC -> infinity)
+                const minAsymptoteY = (state.E_m3h + state.D_m3h) * state.hrs * state.days;
+                if (minAsymptoteY > 0 && minAsymptoteY < maxY) {
+                    const ay = getY(minAsymptoteY);
+                    ctx.save();
+                    ctx.setLineDash([5, 5]);
+                    ctx.strokeStyle = isDark ? 'rgba(16, 185, 129, 0.45)' : 'rgba(5, 150, 105, 0.45)';
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.moveTo(margins.left, ay);
+                    ctx.lineTo(margins.left + chartW, ay);
+                    ctx.stroke();
+                    ctx.fillStyle = isDark ? '#34d399' : '#059669';
+                    ctx.font = '600 10px Inter, sans-serif';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(`Min Evap+Drift Limit: ${Math.round(minAsymptoteY).toLocaleString()} m³/yr`, margins.left + chartW - 6, ay - 6);
+                    ctx.restore();
+                }
+
+                // 3. Generate High-Resolution Smooth Curve Points (200 steps from COC 1.45 to 10.0)
+                const smoothPts = [];
+                const minCurveCoc = Math.min(1.45, Math.max(1.25, currentCoc));
+                const totalSteps = 220;
+                for (let i = 0; i <= totalSteps; i++) {
+                    // Use non-linear spacing so high-curvature region (1.45 - 3.5) has ultra-dense points
+                    const t = i / totalSteps;
+                    const c = minCurveCoc + (10.0 - minCurveCoc) * Math.pow(t, 1.35);
+                    const pt = evalAtCoc(c);
+                    smoothPts.push({ x: getX(c), y: getY(pt.my), coc: c, ...pt });
+                }
+
+                // 4. Area Gradient Fill Under Smooth Curve
+                if (smoothPts.length > 1) {
+                    const grad = ctx.createLinearGradient(0, margins.top, 0, margins.top + chartH);
+                    grad.addColorStop(0, isDark ? 'rgba(129, 140, 248, 0.30)' : 'rgba(99, 102, 241, 0.24)');
+                    grad.addColorStop(1, isDark ? 'rgba(129, 140, 248, 0.01)' : 'rgba(99, 102, 241, 0.01)');
+
+                    ctx.beginPath();
+                    ctx.moveTo(smoothPts[0].x, margins.top + chartH);
+                    smoothPts.forEach(p => ctx.lineTo(p.x, p.y));
+                    ctx.lineTo(smoothPts[smoothPts.length - 1].x, margins.top + chartH);
+                    ctx.closePath();
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+
+                    // Smooth Continuous Curve Stroke
+                    ctx.beginPath();
+                    ctx.moveTo(smoothPts[0].x, smoothPts[0].y);
+                    for (let i = 1; i < smoothPts.length; i++) {
+                        ctx.lineTo(smoothPts[i].x, smoothPts[i].y);
+                    }
+                    ctx.strokeStyle = isDark ? '#818cf8' : '#4f46e5';
+                    ctx.lineWidth = 3;
+                    ctx.lineJoin = 'round';
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                }
+
+                // 5. Axes Frame & Labels
+                ctx.strokeStyle = isDark ? '#64748b' : '#94a3b8';
+                ctx.lineWidth = 1.25;
+                ctx.strokeRect(margins.left, margins.top, chartW, chartH);
+
+                ctx.fillStyle = isDark ? '#94a3b8' : '#475569';
+                ctx.font = '600 11px Inter, sans-serif';
+                for (let i = 0; i <= ySteps; i++) {
+                    const val = (maxY / ySteps) * i;
+                    const y = getY(val);
                     ctx.textAlign = 'right';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(Math.round(val).toLocaleString(), margins.left - 8, y);
                 }
-                ctx.stroke();
 
-                // X-axis labels
-                [1.5, 3, 5, 7, 9].forEach(c => {
-                    let x = getX(c);
+                xTicks.forEach(c => {
+                    const x = getX(c);
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'top';
-                    ctx.fillText(c, x, height - margins.bottom + 8);
+                    ctx.fillText(c === 1.5 ? '1.5' : c.toString(), x, margins.top + chartH + 8);
                 });
-                ctx.fillText("Cycles of Concentration", margins.left + chartW / 2, height - margins.bottom + 20);
 
-                // The Curve
+                ctx.font = 'bold 11.5px Inter, sans-serif';
+                ctx.fillStyle = isDark ? '#cbd5e1' : '#334155';
+                ctx.textAlign = 'center';
+                ctx.fillText('Cycles of Concentration (COC)', margins.left + chartW / 2, margins.top + chartH + 26);
+
+                ctx.save();
+                ctx.translate(15, margins.top + chartH / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.textAlign = 'center';
+                ctx.fillText('Annual Water (m³/year)', 0, 0);
+                ctx.restore();
+
+                // 6. Plot Standard Table Tier Markers (1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0)
+                data.forEach(d => {
+                    const dx = getX(d.x);
+                    const dy = getY(d.y);
+                    ctx.beginPath();
+                    ctx.arc(dx, dy, 3.8, 0, 2 * Math.PI);
+                    ctx.fillStyle = isDark ? '#1e293b' : '#ffffff';
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = isDark ? '#818cf8' : '#4f46e5';
+                    ctx.stroke();
+                });
+
+                // 7. Active Operating Point Marker
+                const clampedCurCoc = Math.max(minCurveCoc, Math.min(10.0, currentCoc));
+                const px = getX(clampedCurCoc);
+                const py = getY(currentM);
+
+                // Subtle dashed guide lines for active COC
+                ctx.save();
+                ctx.setLineDash([3, 3]);
+                ctx.strokeStyle = isDark ? 'rgba(129, 140, 248, 0.5)' : 'rgba(79, 70, 229, 0.45)';
+                ctx.lineWidth = 1.2;
                 ctx.beginPath();
-                ctx.moveTo(getX(data[0].x), getY(data[0].y));
-                for (let i = 1; i < data.length; i++) {
-                    ctx.lineTo(getX(data[i].x), getY(data[i].y));
-                }
-                ctx.strokeStyle = isDark ? '#818cf8' : '#6366f1';
-                ctx.lineWidth = 3;
+                ctx.moveTo(px, margins.top + chartH);
+                ctx.lineTo(px, py);
+                ctx.lineTo(margins.left, py);
                 ctx.stroke();
+                ctx.restore();
 
-                // Operating Point
-                let px = getX(currentCoc);
-                let py = getY(currentM);
+                // Outer glow + solid active dot
                 ctx.beginPath();
-                ctx.arc(px, py, 6, 0, 2 * Math.PI);
-                ctx.fillStyle = isDark ? '#c7d2fe' : '#4f46e5';
+                ctx.arc(px, py, 9, 0, 2 * Math.PI);
+                ctx.fillStyle = isDark ? 'rgba(129, 140, 248, 0.25)' : 'rgba(79, 70, 229, 0.20)';
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(px, py, 5.5, 0, 2 * Math.PI);
+                ctx.fillStyle = isDark ? '#a5b4fc' : '#4f46e5';
                 ctx.fill();
                 ctx.lineWidth = 2;
-                ctx.strokeStyle = isDark ? '#1e293b' : '#ffffff';
+                ctx.strokeStyle = isDark ? '#0f172a' : '#ffffff';
                 ctx.stroke();
+
+                // 8. Interactive Hover Crosshair & Floating Data Tooltip
+                const targetCoc = state.hoverCoc !== null ? state.hoverCoc : null;
+                if (targetCoc !== null) {
+                    const hInfo = evalAtCoc(targetCoc);
+                    const hx = getX(hInfo.coc);
+                    const hy = getY(hInfo.my);
+
+                    // Hover crosshair lines
+                    ctx.save();
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeStyle = isDark ? '#38bdf8' : '#0284c7';
+                    ctx.lineWidth = 1.3;
+                    ctx.beginPath();
+                    ctx.moveTo(hx, margins.top);
+                    ctx.lineTo(hx, margins.top + chartH);
+                    ctx.moveTo(margins.left, hy);
+                    ctx.lineTo(margins.left + chartW, hy);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    // Hover node marker
+                    ctx.beginPath();
+                    ctx.arc(hx, hy, 6.5, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#06b6d4';
+                    ctx.fill();
+                    ctx.lineWidth = 2.2;
+                    ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+                    ctx.stroke();
+
+                    // Floating Tooltip Card
+                    const isActiveTier = Math.abs(hInfo.coc - currentCoc) < 0.08;
+                    const line1 = `COC: ${hInfo.coc.toFixed(1)}${isActiveTier ? ' (Active)' : ''}`;
+                    const line2 = `Daily: ${hInfo.md.toFixed(1)} m³/day`;
+                    const line3 = `Annual: ${Math.round(hInfo.my).toLocaleString('en-US')} m³/yr`;
+                    const line4 = `Blowdown: ${hInfo.bd.toFixed(1)} m³/day`;
+
+                    ctx.font = 'bold 11.5px Inter, sans-serif';
+                    const w1 = ctx.measureText(line1).width;
+                    ctx.font = '600 11px Inter, sans-serif';
+                    const boxW = Math.max(w1, ctx.measureText(line2).width, ctx.measureText(line3).width, ctx.measureText(line4).width) + 24;
+                    const boxH = 78;
+
+                    let tx = hx + 14;
+                    if (tx + boxW > width - margins.right) tx = hx - boxW - 14;
+                    let ty = hy - boxH - 10;
+                    if (ty < margins.top + 4) ty = Math.min(margins.top + chartH - boxH - 4, hy + 12);
+
+                    ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.96)';
+                    ctx.strokeStyle = '#06b6d4';
+                    ctx.lineWidth = 1.4;
+                    ctx.beginPath();
+                    ctx.roundRect(tx, ty, boxW, boxH, 8);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    ctx.font = 'bold 11.5px Inter, sans-serif';
+                    ctx.fillStyle = isDark ? '#38bdf8' : '#0284c7';
+                    ctx.fillText(line1, tx + 11, ty + 8);
+
+                    ctx.font = '600 11px Inter, sans-serif';
+                    ctx.fillStyle = isDark ? '#f8fafc' : '#1e293b';
+                    ctx.fillText(line2, tx + 11, ty + 26);
+                    ctx.fillText(line3, tx + 11, ty + 43);
+                    ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+                    ctx.fillText(line4, tx + 11, ty + 60);
+                } else {
+                    // Default Callout Pill on Active Operating Point when not hovering
+                    const pillText = `COC ${currentCoc.toFixed(1)}: ${(state.currentMd || (currentM / (state.days || 365))).toFixed(1)} m³/d (${Math.round(currentM).toLocaleString()} m³/yr)`;
+                    ctx.font = 'bold 11px Inter, sans-serif';
+                    const pw = ctx.measureText(pillText).width + 16;
+                    let bx = px + 10;
+                    if (bx + pw > margins.left + chartW - 4) bx = px - pw - 10;
+                    const by = Math.max(margins.top + 6, py - 28);
+
+                    ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.90)' : 'rgba(255, 255, 255, 0.94)';
+                    ctx.strokeStyle = isDark ? '#818cf8' : '#4f46e5';
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.roundRect(bx, by, pw, 22, 6);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = isDark ? '#e0e7ff' : '#312e81';
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(pillText, bx + 8, by + 11);
+                }
+
+                ctx.restore();
             }
 
             // ============================================================================
@@ -8486,92 +8861,231 @@
 
             function drawRoiChart(canvasId, cA, cB, oA, oB, curr) {
                 const canvas = document.getElementById(canvasId);
+                if (!canvas) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                const width = rect.width > 120 ? rect.width : 800;
+                const height = rect.height > 120 ? rect.height : 300;
+                if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
+                    canvas.width = Math.round(width * dpr);
+                    canvas.height = Math.round(height * dpr);
+                }
+
+                window._roiChartState = { cA, cB, oA, oB, curr, hoverYr: window._roiChartState?.hoverYr ?? null };
+
                 const ctx = canvas.getContext('2d');
-                const width = canvas.width, height = canvas.height;
+                ctx.save();
+                ctx.scale(dpr, dpr);
                 ctx.clearRect(0, 0, width, height);
 
                 const isDark = document.documentElement.classList.contains('dark');
-                const margins = { top: 40, bottom: 30, left: 80, right: 30 };
+                const margins = { top: 42, bottom: 34, left: 76, right: 26 };
                 const chartW = width - margins.left - margins.right;
                 const chartH = height - margins.top - margins.bottom;
 
-                let years = 10;
-                let maxCost = Math.max(cA + oA * years, cB + oB * years) * 1.1;
+                const years = 10;
+                const maxCost = Math.max(1000, Math.max(cA + oA * years, cB + oB * years) * 1.1);
 
                 const getX = (yr) => margins.left + (yr / years) * chartW;
-                const getY = (val) => height - margins.bottom - (val / maxCost) * chartH;
+                const getY = (val) => margins.top + chartH - (val / maxCost) * chartH;
+
+                if (!canvas.dataset.hoverBound) {
+                    canvas.dataset.hoverBound = 'true';
+                    canvas.style.cursor = 'crosshair';
+                    canvas.addEventListener('mousemove', (e) => {
+                        const r = canvas.getBoundingClientRect();
+                        const mx = e.clientX - r.left;
+                        const my = e.clientY - r.top;
+                        const cw = r.width - margins.left - margins.right;
+                        if (mx < margins.left - 8 || mx > r.width - margins.right + 8 || my < margins.top - 8 || my > r.height - margins.bottom + 8) {
+                            if (window._roiChartState.hoverYr !== null) {
+                                window._roiChartState.hoverYr = null;
+                                const s = window._roiChartState;
+                                drawRoiChart(canvasId, s.cA, s.cB, s.oA, s.oB, s.curr);
+                            }
+                            return;
+                        }
+                        let yr = Math.max(0, Math.min(years, ((mx - margins.left) / cw) * years));
+                        if (Math.abs(yr - Math.round(yr)) < 0.18) yr = Math.round(yr);
+                        else yr = Math.round(yr * 10) / 10;
+                        if (window._roiChartState.hoverYr !== yr) {
+                            window._roiChartState.hoverYr = yr;
+                            const s = window._roiChartState;
+                            drawRoiChart(canvasId, s.cA, s.cB, s.oA, s.oB, s.curr);
+                        }
+                    });
+                    canvas.addEventListener('mouseleave', () => {
+                        if (window._roiChartState && window._roiChartState.hoverYr !== null) {
+                            window._roiChartState.hoverYr = null;
+                            const s = window._roiChartState;
+                            drawRoiChart(canvasId, s.cA, s.cB, s.oA, s.oB, s.curr);
+                        }
+                    });
+                }
 
                 // Grid
                 ctx.beginPath();
-                ctx.strokeStyle = isDark ? '#334155' : '#e2e8f0';
+                ctx.strokeStyle = isDark ? 'rgba(51, 65, 85, 0.6)' : 'rgba(226, 232, 240, 0.9)';
                 ctx.lineWidth = 1;
                 for (let i = 0; i <= years; i++) {
-                    let x = getX(i);
+                    const x = getX(i);
                     ctx.moveTo(x, margins.top); ctx.lineTo(x, height - margins.bottom);
                     ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
                     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-                    ctx.font = '10px Inter';
+                    ctx.font = '600 10.5px Inter, sans-serif';
                     ctx.fillText(`Yr ${i}`, x, height - margins.bottom + 8);
                 }
-                let ySteps = 5;
+                const ySteps = 5;
                 for (let i = 0; i <= ySteps; i++) {
-                    let val = (maxCost / ySteps) * i;
-                    let y = getY(val);
+                    const val = (maxCost / ySteps) * i;
+                    const y = getY(val);
                     ctx.moveTo(margins.left, y); ctx.lineTo(width - margins.right, y);
                     ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
                     ctx.fillText(`${curr}${(val / 1000).toFixed(0)}k`, margins.left - 8, y);
                 }
                 ctx.stroke();
 
-                // Chiller A Line
+                // Shaded Net Savings Zone after ROI Break-even
+                const premium = cB - cA;
+                const savings = oA - oB;
+                let intersectYr = null;
+                if (premium > 0 && savings > 0 && (premium / savings) <= years) {
+                    intersectYr = premium / savings;
+                    ctx.beginPath();
+                    ctx.moveTo(getX(intersectYr), getY(cA + oA * intersectYr));
+                    ctx.lineTo(getX(years), getY(cA + oA * years));
+                    ctx.lineTo(getX(years), getY(cB + oB * years));
+                    ctx.closePath();
+                    ctx.fillStyle = isDark ? 'rgba(16, 185, 129, 0.16)' : 'rgba(16, 185, 129, 0.12)';
+                    ctx.fill();
+                }
+
+                // Chiller A Line & Nodes
                 ctx.beginPath();
                 ctx.moveTo(getX(0), getY(cA));
                 ctx.lineTo(getX(years), getY(cA + oA * years));
-                ctx.strokeStyle = isDark ? '#64748b' : '#94a3b8';
+                ctx.strokeStyle = isDark ? '#94a3b8' : '#64748b';
                 ctx.lineWidth = 3;
                 ctx.stroke();
 
-                // Chiller B Line
+                // Chiller B Line & Nodes
                 ctx.beginPath();
                 ctx.moveTo(getX(0), getY(cB));
                 ctx.lineTo(getX(years), getY(cB + oB * years));
-                ctx.strokeStyle = isDark ? '#ef4444' : '#ef4444';
+                ctx.strokeStyle = '#ef4444';
                 ctx.lineWidth = 3;
                 ctx.stroke();
 
+                for (let i = 0; i <= years; i++) {
+                    ctx.beginPath();
+                    ctx.arc(getX(i), getY(cA + oA * i), 3, 0, 2 * Math.PI);
+                    ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(getX(i), getY(cB + oB * i), 3, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fill();
+                }
+
                 // Intersection point (ROI)
-                let premium = cB - cA;
-                let savings = oA - oB;
-                if (premium > 0 && savings > 0) {
-                    let intersectYr = premium / savings;
-                    if (intersectYr <= years) {
-                        let ix = getX(intersectYr);
-                        let iy = getY(cA + oA * intersectYr);
+                if (intersectYr !== null) {
+                    const ix = getX(intersectYr);
+                    const iy = getY(cA + oA * intersectYr);
 
-                        ctx.beginPath();
-                        ctx.arc(ix, iy, 6, 0, 2 * Math.PI);
-                        ctx.fillStyle = isDark ? '#1e293b' : '#ffffff';
-                        ctx.fill();
-                        ctx.lineWidth = 2;
-                        ctx.strokeStyle = isDark ? '#ef4444' : '#ef4444';
-                        ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(ix, iy + 8);
+                    ctx.lineTo(ix, height - margins.bottom);
+                    ctx.strokeStyle = '#10b981';
+                    ctx.setLineDash([4, 4]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
 
-                        ctx.beginPath();
-                        ctx.moveTo(ix, iy + 10);
-                        ctx.lineTo(ix, height - margins.bottom);
-                        ctx.strokeStyle = isDark ? '#ef4444' : '#ef4444';
-                        ctx.setLineDash([4, 4]);
-                        ctx.stroke();
-                        ctx.setLineDash([]);
-                    }
+                    ctx.beginPath();
+                    ctx.arc(ix, iy, 6.5, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#10b981';
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = isDark ? '#0f172a' : '#ffffff';
+                    ctx.stroke();
                 }
 
                 // Legend
-                ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+                ctx.font = 'bold 11px Inter, sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText("Chiller A (Baseline)", margins.left + 20, margins.top - 10);
-                ctx.fillStyle = isDark ? '#ef4444' : '#ef4444';
-                ctx.fillText("Chiller B (Proposed)", margins.left + 150, margins.top - 10);
+                ctx.fillStyle = isDark ? '#94a3b8' : '#475569';
+                ctx.fillText('● Chiller A (Baseline)', margins.left + 8, margins.top - 14);
+                ctx.fillStyle = '#ef4444';
+                ctx.fillText('● Chiller B (Proposed)', margins.left + 150, margins.top - 14);
+
+                // Hover Tooltip
+                const hYr = window._roiChartState?.hoverYr;
+                if (hYr !== null && hYr !== undefined) {
+                    const hx = getX(hYr);
+                    const costA = cA + oA * hYr;
+                    const costB = cB + oB * hYr;
+                    const netDiff = costA - costB;
+                    const hyA = getY(costA);
+                    const hyB = getY(costB);
+
+                    ctx.save();
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeStyle = isDark ? '#e2e8f0' : '#334155';
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.moveTo(hx, margins.top);
+                    ctx.lineTo(hx, height - margins.bottom);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    [[hx, hyA, isDark ? '#94a3b8' : '#475569'], [hx, hyB, '#ef4444']].forEach(([px, py, col]) => {
+                        ctx.beginPath();
+                        ctx.arc(px, py, 5.5, 0, 2 * Math.PI);
+                        ctx.fillStyle = col;
+                        ctx.fill();
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = isDark ? '#0f172a' : '#ffffff';
+                        ctx.stroke();
+                    });
+
+                    const l1 = `Year ${hYr.toFixed(1)}`;
+                    const l2 = `Chiller A: ${curr}${Math.round(costA).toLocaleString()}`;
+                    const l3 = `Chiller B: ${curr}${Math.round(costB).toLocaleString()}`;
+                    const l4 = netDiff >= 0
+                        ? `Net Savings: +${curr}${Math.round(netDiff).toLocaleString()}`
+                        : `Unrecovered Capex: -${curr}${Math.round(Math.abs(netDiff)).toLocaleString()}`;
+
+                    ctx.font = '600 11px Inter, sans-serif';
+                    const bw = Math.max(ctx.measureText(l2).width, ctx.measureText(l3).width, ctx.measureText(l4).width) + 22;
+                    const bh = 76;
+                    let tx = hx + 14;
+                    if (tx + bw > width - margins.right) tx = hx - bw - 14;
+                    const ty = Math.max(margins.top + 6, Math.min(hyA, hyB) - 20);
+
+                    ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.96)';
+                    ctx.strokeStyle = netDiff >= 0 ? '#10b981' : '#ef4444';
+                    ctx.lineWidth = 1.3;
+                    ctx.beginPath();
+                    ctx.roundRect(tx, ty, bw, bh, 7);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    ctx.font = 'bold 11.5px Inter, sans-serif';
+                    ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+                    ctx.fillText(l1, tx + 10, ty + 8);
+                    ctx.font = '600 11px Inter, sans-serif';
+                    ctx.fillStyle = isDark ? '#cbd5e1' : '#475569';
+                    ctx.fillText(l2, tx + 10, ty + 25);
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillText(l3, tx + 10, ty + 41);
+                    ctx.fillStyle = netDiff >= 0 ? '#10b981' : '#f59e0b';
+                    ctx.fillText(l4, tx + 10, ty + 57);
+                }
+
+                ctx.restore();
             }
 
             // ============================================================================
@@ -9339,6 +9853,40 @@
                 ctx.fillStyle = '#06b6d4';
                 ctx.fillText('● Curve B: Flush Tanks', margins.left + 160, margins.top + 18);
 
+                window._wsfuChartState = { totalWsfu, currentGpm, activeCurve, hoverU: window._wsfuChartState?.hoverU ?? null };
+                if (!canvas.dataset.hoverBound) {
+                    canvas.dataset.hoverBound = 'true';
+                    canvas.style.cursor = 'crosshair';
+                    canvas.addEventListener('mousemove', (e) => {
+                        const r = canvas.getBoundingClientRect();
+                        const mx = e.clientX - r.left;
+                        const my = e.clientY - r.top;
+                        const cw = r.width - margins.left - margins.right;
+                        if (mx < margins.left || mx > r.width - margins.right || my < margins.top || my > r.height - margins.bottom) {
+                            if (window._wsfuChartState?.hoverU !== null) {
+                                window._wsfuChartState.hoverU = null;
+                                const s = window._wsfuChartState;
+                                drawWsfuChart(s.totalWsfu, s.currentGpm, s.activeCurve);
+                            }
+                            return;
+                        }
+                        const s = window._wsfuChartState;
+                        const curMaxW = Math.max(250, Math.ceil((s.totalWsfu * 1.25) / 50) * 50);
+                        const u = Math.max(0, Math.min(curMaxW, Math.round(((mx - margins.left) / cw) * curMaxW)));
+                        if (s.hoverU !== u) {
+                            s.hoverU = u;
+                            drawWsfuChart(s.totalWsfu, s.currentGpm, s.activeCurve);
+                        }
+                    });
+                    canvas.addEventListener('mouseleave', () => {
+                        if (window._wsfuChartState && window._wsfuChartState.hoverU !== null) {
+                            window._wsfuChartState.hoverU = null;
+                            const s = window._wsfuChartState;
+                            drawWsfuChart(s.totalWsfu, s.currentGpm, s.activeCurve);
+                        }
+                    });
+                }
+
                 if (totalWsfu > 0 && currentGpm > 0) {
                     const px = getX(totalWsfu);
                     const py = getY(currentGpm);
@@ -9359,6 +9907,60 @@
                     ctx.lineWidth = 2;
                     ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
                     ctx.stroke();
+                }
+
+                const hU = window._wsfuChartState?.hoverU;
+                if (hU !== null && hU !== undefined) {
+                    const hx = getX(hU);
+                    const gA = calcA(hU);
+                    const gB = calcB(hU);
+                    const hyA = getY(gA);
+                    const hyB = getY(gB);
+
+                    ctx.save();
+                    ctx.setLineDash([3, 3]);
+                    ctx.strokeStyle = isDark ? '#94a3b8' : '#475569';
+                    ctx.beginPath();
+                    ctx.moveTo(hx, margins.top);
+                    ctx.lineTo(hx, margins.top + h);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    [[hx, hyA, '#ef4444'], [hx, hyB, '#06b6d4']].forEach(([px, py, col]) => {
+                        ctx.beginPath();
+                        ctx.arc(px, py, 4.5, 0, 2 * Math.PI);
+                        ctx.fillStyle = col;
+                        ctx.fill();
+                    });
+
+                    const t1 = `WSFU: ${hU} Units`;
+                    const t2 = `Curve A: ${gA.toFixed(1)} GPM (${(gA * 0.06309).toFixed(2)} L/s)`;
+                    const t3 = `Curve B: ${gB.toFixed(1)} GPM (${(gB * 0.06309).toFixed(2)} L/s)`;
+                    ctx.font = '600 11px Inter, sans-serif';
+                    const bw = Math.max(ctx.measureText(t2).width, ctx.measureText(t3).width) + 20;
+                    const bh = 58;
+                    let tx = hx + 12;
+                    if (tx + bw > margins.left + w) tx = hx - bw - 12;
+                    const ty = Math.max(margins.top + 8, Math.min(hyA, hyB) - 18);
+
+                    ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.96)';
+                    ctx.strokeStyle = activeCurve === 'A' ? '#ef4444' : '#06b6d4';
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.roundRect(tx, ty, bw, bh, 6);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    ctx.font = 'bold 11px Inter, sans-serif';
+                    ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+                    ctx.fillText(t1, tx + 10, ty + 7);
+                    ctx.font = '600 10.5px Inter, sans-serif';
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillText(t2, tx + 10, ty + 23);
+                    ctx.fillStyle = '#06b6d4';
+                    ctx.fillText(t3, tx + 10, ty + 39);
                 }
 
                 ctx.restore();
@@ -9655,6 +10257,91 @@
                 ctx.textAlign = 'left';
                 ctx.fillText(badgeText, bx + 8, by + 15);
 
+                window._fwChartState = { duration, volSprM3, volHoseM3, volSpM3, volMarginM3, volTotalM3, volTotalGal, hoverT: window._fwChartState?.hoverT ?? null };
+                if (!canvas.dataset.hoverBound) {
+                    canvas.dataset.hoverBound = 'true';
+                    canvas.style.cursor = 'crosshair';
+                    canvas.addEventListener('mousemove', (e) => {
+                        const r = canvas.getBoundingClientRect();
+                        const mx = e.clientX - r.left;
+                        const my = e.clientY - r.top;
+                        const cw = r.width - margins.left - margins.right;
+                        if (mx < margins.left || mx > r.width - margins.right || my < margins.top || my > r.height - margins.bottom) {
+                            if (window._fwChartState?.hoverT !== null) {
+                                window._fwChartState.hoverT = null;
+                                const s = window._fwChartState;
+                                drawFireWaterChart(s.duration, s.volSprM3, s.volHoseM3, s.volSpM3, s.volMarginM3, s.volTotalM3, s.volTotalGal);
+                            }
+                            return;
+                        }
+                        const s = window._fwChartState;
+                        const curMaxT = Math.max(30, s.duration);
+                        const t = Math.max(0, Math.min(curMaxT, Math.round(((mx - margins.left) / cw) * curMaxT)));
+                        if (s.hoverT !== t) {
+                            s.hoverT = t;
+                            drawFireWaterChart(s.duration, s.volSprM3, s.volHoseM3, s.volSpM3, s.volMarginM3, s.volTotalM3, s.volTotalGal);
+                        }
+                    });
+                    canvas.addEventListener('mouseleave', () => {
+                        if (window._fwChartState && window._fwChartState.hoverT !== null) {
+                            window._fwChartState.hoverT = null;
+                            const s = window._fwChartState;
+                            drawFireWaterChart(s.duration, s.volSprM3, s.volHoseM3, s.volSpM3, s.volMarginM3, s.volTotalM3, s.volTotalGal);
+                        }
+                    });
+                }
+
+                const hT = window._fwChartState?.hoverT;
+                if (hT !== null && hT !== undefined) {
+                    const frac = hT / maxT;
+                    const hx = getX(hT);
+                    const vTotAtT = volTotalM3 * frac;
+                    const vSprAtT = volSprM3 * frac;
+                    const vHoseAtT = volHoseM3 * frac;
+                    const hy = getY(vTotAtT);
+
+                    ctx.save();
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeStyle = isDark ? '#f8fafc' : '#0f172a';
+                    ctx.beginPath();
+                    ctx.moveTo(hx, margins.top);
+                    ctx.lineTo(hx, margins.top + h);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    ctx.beginPath();
+                    ctx.arc(hx, hy, 5, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#10b981';
+                    ctx.fill();
+
+                    const l1 = `Elapsed: ${hT} min`;
+                    const l2 = `Total: ${vTotAtT.toFixed(1)} m³ (${Math.round(volTotalGal * frac).toLocaleString()} gal)`;
+                    const l3 = `Sprinkler: ${vSprAtT.toFixed(1)} m³ | Hose: ${vHoseAtT.toFixed(1)} m³`;
+                    ctx.font = '600 10.5px Inter, sans-serif';
+                    const bw = Math.max(ctx.measureText(l2).width, ctx.measureText(l3).width) + 18;
+                    const bh = 54;
+                    let tx = hx + 12;
+                    if (tx + bw > margins.left + w) tx = hx - bw - 12;
+                    const ty = Math.max(margins.top + 28, hy - 30);
+
+                    ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.96)';
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.roundRect(tx, ty, bw, bh, 6);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+                    ctx.fillText(l1, tx + 9, ty + 6);
+                    ctx.fillStyle = '#10b981';
+                    ctx.fillText(l2, tx + 9, ty + 22);
+                    ctx.fillStyle = isDark ? '#94a3b8' : '#475569';
+                    ctx.fillText(l3, tx + 9, ty + 37);
+                }
+
                 ctx.restore();
             }
 
@@ -9765,6 +10452,7 @@
                 updateFuel();
                 calcStarter();
                 initHoverSounds();
+                window.addEventListener('resize', () => refreshActiveCharts());
             };
         </script>
 </body>
