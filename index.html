@@ -4009,7 +4009,7 @@
             <header
                 class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
                 <h1 class="text-3xl font-bold">Storm Drainage Sizer</h1>
-                <p class="text-slate-500 dark:text-slate-400 mt-1">Rational Method ($Q = C \cdot i \cdot A / 3.6$) for
+                <p class="text-slate-500 dark:text-slate-400 mt-1">Rational Method (Q = C · i · A / 3.6) for
                     rainwater runoff calculation.</p>
             </header>
 
@@ -4168,7 +4168,7 @@
                 class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
                 <h1 class="text-3xl font-bold">Sprinkler Hydraulic Calculator</h1>
                 <p class="text-slate-500 dark:text-slate-400 mt-1">NFPA 13 compatible flow and friction loss analysis
-                    ($Q = K \sqrt{P}$).</p>
+                    (Q = K · √P).</p>
             </header>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -4249,10 +4249,22 @@
 
                     <div
                         class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 overflow-hidden">
-                        <h3 class="font-bold mb-4">NFPA 13 Area/Density Selection Graph</h3>
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                            <div>
+                                <h3 class="font-bold">NFPA 13 Area/Density Selection Graph (Fig. 19.3.3.1.1)</h3>
+                                <p class="text-xs text-slate-400">Click anywhere on the graph or select a hazard preset below to set design point</p>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 text-xs">
+                                <button type="button" onclick="setNfpaPoint(0.10, 1500)" class="px-2.5 py-1 rounded font-semibold bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/30 transition">Light</button>
+                                <button type="button" onclick="setNfpaPoint(0.15, 1500)" class="px-2.5 py-1 rounded font-semibold bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/30 transition">Ord 1</button>
+                                <button type="button" onclick="setNfpaPoint(0.20, 1500)" class="px-2.5 py-1 rounded font-semibold bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/30 transition">Ord 2</button>
+                                <button type="button" onclick="setNfpaPoint(0.30, 2500)" class="px-2.5 py-1 rounded font-semibold bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/30 transition">Extra 1</button>
+                                <button type="button" onclick="setNfpaPoint(0.40, 2500)" class="px-2.5 py-1 rounded font-semibold bg-rose-700/10 text-rose-500 hover:bg-rose-700/20 border border-rose-500/30 transition">Extra 2</button>
+                            </div>
+                        </div>
                         <div
-                            class="relative h-80 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-center">
-                            <canvas id="nfpaChart" width="500" height="300" class="w-full h-full"></canvas>
+                            class="relative h-[430px] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-center">
+                            <canvas id="nfpaChart" width="780" height="430" class="w-full h-full cursor-crosshair"></canvas>
                         </div>
                     </div>
 
@@ -4788,52 +4800,270 @@
                 else if (activeView === 'sprinklerPage') calcFire();
             }
 
+            function setNfpaPoint(density, area) {
+                const areaEl = document.getElementById('fire_area');
+                const densEl = document.getElementById('fire_density');
+                if (areaEl) areaEl.value = Math.round(area);
+                if (densEl) densEl.value = Number(density).toFixed(2);
+                calcFire();
+            }
+
             function drawNfpaChart(area, density) {
                 const canvas = document.getElementById('nfpaChart');
                 if (!canvas) return;
+
+                // High-DPI responsive canvas setup
+                const rect = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                const logicalW = rect.width > 100 ? rect.width : 780;
+                const logicalH = rect.height > 100 ? rect.height : 430;
+                if (canvas.width !== Math.round(logicalW * dpr) || canvas.height !== Math.round(logicalH * dpr)) {
+                    canvas.width = Math.round(logicalW * dpr);
+                    canvas.height = Math.round(logicalH * dpr);
+                }
+
                 const ctx = canvas.getContext('2d');
+                ctx.save();
+                ctx.scale(dpr, dpr);
+
                 const isDark = document.documentElement.classList.contains('dark');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.clearRect(0, 0, logicalW, logicalH);
 
-                const margins = { left: 50, right: 30, top: 30, bottom: 40 };
-                const w = canvas.width - margins.left - margins.right;
-                const h = canvas.height - margins.top - margins.bottom;
+                // Margins for dual axes (ft² left, m² right, gpm/ft² bottom, mm/min top)
+                const margins = { left: 68, right: 64, top: 48, bottom: 50 };
+                const w = logicalW - margins.left - margins.right;
+                const h = logicalH - margins.top - margins.bottom;
 
-                const minD = 0, maxD = 0.5, minA = 0, maxA = 5000;
-                const getX = (d) => margins.left + (d / maxD) * w;
-                const getY = (a) => canvas.height - margins.bottom - (a / maxA) * h;
+                // Official NFPA 13 Figure 19.3.3.1.1 bounds
+                const minD = 0.05, maxD = 0.40;
+                const minA = 1500, maxA = 5000;
+                const getX = (d) => margins.left + ((d - minD) / (maxD - minD)) * w;
+                const getY = (a) => margins.top + h - ((a - minA) / (maxA - minA)) * h;
 
-                ctx.strokeStyle = isDark ? '#334155' : '#e2e8f0';
+                // Attach interactive click handler once
+                if (!canvas.dataset.interactiveBound) {
+                    canvas.dataset.interactiveBound = 'true';
+                    const pickPoint = (evt) => {
+                        const r = canvas.getBoundingClientRect();
+                        const mx = evt.clientX - r.left;
+                        const my = evt.clientY - r.top;
+                        const m = { left: 68, right: 64, top: 48, bottom: 50 };
+                        const pw = r.width - m.left - m.right;
+                        const ph = r.height - m.top - m.bottom;
+                        if (mx < m.left || mx > r.width - m.right || my < m.top || my > r.height - m.bottom) return;
+                        const clickedD = Math.max(minD, Math.min(maxD, minD + ((mx - m.left) / pw) * (maxD - minD)));
+                        const clickedA = Math.max(minA, Math.min(maxA, minA + ((m.top + ph - my) / ph) * (maxA - minA)));
+                        setNfpaPoint(Math.round(clickedD * 100) / 100, Math.round(clickedA / 50) * 50);
+                    };
+                    let dragging = false;
+                    canvas.addEventListener('mousedown', (e) => { dragging = true; pickPoint(e); });
+                    window.addEventListener('mousemove', (e) => { if (dragging) pickPoint(e); });
+                    window.addEventListener('mouseup', () => { dragging = false; });
+                }
+
+                // 1. Minor Gridlines (every 0.01 gpm/ft² and every 200 ft² above 2000 + 100 ft² steps)
+                ctx.strokeStyle = isDark ? 'rgba(51, 65, 85, 0.45)' : 'rgba(226, 232, 240, 0.85)';
+                ctx.lineWidth = 0.75;
                 ctx.beginPath();
-                for (let d = 0; d <= maxD; d += 0.1) { let x = getX(d); ctx.moveTo(x, margins.top); ctx.lineTo(x, canvas.height - margins.bottom); }
-                for (let a = 0; a <= maxA; a += 1000) { let y = getY(a); ctx.moveTo(margins.left, y); ctx.lineTo(canvas.width - margins.right, y); }
+                for (let dStep = 5; dStep <= 40; dStep += 1) {
+                    const d = dStep / 100;
+                    const x = getX(d);
+                    ctx.moveTo(x, margins.top);
+                    ctx.lineTo(x, margins.top + h);
+                }
+                const minorAreas = [
+                    1500, 1600, 1700, 1800, 1900, 2000,
+                    2200, 2400, 2500, 2600, 2800, 3000,
+                    3200, 3400, 3600, 3800, 4000,
+                    4200, 4400, 4600, 4800, 5000
+                ];
+                minorAreas.forEach(a => {
+                    const y = getY(a);
+                    ctx.moveTo(margins.left, y);
+                    ctx.lineTo(margins.left + w, y);
+                });
                 ctx.stroke();
 
-                ctx.fillStyle = isDark ? '#94a3b8' : '#64748b'; ctx.font = '10px Inter'; ctx.textAlign = 'center';
-                for (let d = 0; d <= maxD; d += 0.1) ctx.fillText(d.toFixed(1), getX(d), canvas.height - margins.bottom + 15);
-                ctx.textAlign = 'right';
-                for (let a = 0; a <= maxA; a += 1000) ctx.fillText(a, margins.left - 8, getY(a) + 4);
+                // 2. Major Gridlines (every 0.05 gpm/ft² and major NFPA area tiers)
+                ctx.strokeStyle = isDark ? '#475569' : '#94a3b8';
+                ctx.lineWidth = 1.25;
+                ctx.beginPath();
+                const majorDensities = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40];
+                majorDensities.forEach(d => {
+                    const x = getX(d);
+                    ctx.moveTo(x, margins.top);
+                    ctx.lineTo(x, margins.top + h);
+                });
+                const majorAreas = [
+                    { ft2: 1500, m2: '140' },
+                    { ft2: 2000, m2: '185' },
+                    { ft2: 2500, m2: '230' },
+                    { ft2: 3000, m2: '280' },
+                    { ft2: 4000, m2: '370' },
+                    { ft2: 5000, m2: '465' }
+                ];
+                majorAreas.forEach(item => {
+                    const y = getY(item.ft2);
+                    ctx.moveTo(margins.left, y);
+                    ctx.lineTo(margins.left + w, y);
+                });
+                ctx.stroke();
 
+                // Outer frame
+                ctx.strokeStyle = isDark ? '#94a3b8' : '#334155';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(margins.left, margins.top, w, h);
+
+                // 3. Axis Tick Labels & Titles
+                ctx.fillStyle = isDark ? '#cbd5e1' : '#334155';
+                ctx.font = '600 11px Inter, sans-serif';
+                ctx.textAlign = 'center';
+
+                // Bottom X-Axis: Density (gpm/ft²) & Top X-Axis: Density (mm/min)
+                const mmMinLabels = ['2.0', '4.1', '6.1', '8.2', '10.2', '12.2', '14.3', '16.3'];
+                majorDensities.forEach((d, idx) => {
+                    const x = getX(d);
+                    ctx.fillText(d.toFixed(2), x, margins.top + h + 18);
+                    ctx.fillText(mmMinLabels[idx], x, margins.top - 10);
+                });
+
+                // Axis Titles (Top & Bottom)
+                ctx.font = 'bold 12px Inter, sans-serif';
+                ctx.fillText('Density (gpm/ft²)', margins.left + w / 2, margins.top + h + 38);
+                ctx.fillText('Density (mm/min)', margins.left + w / 2, margins.top - 28);
+
+                // Left Y-Axis: Area (ft²) & Right Y-Axis: Area (m²)
+                ctx.font = '600 11px Inter, sans-serif';
+                majorAreas.forEach(item => {
+                    const y = getY(item.ft2);
+                    ctx.textAlign = 'right';
+                    ctx.fillText(item.ft2.toString(), margins.left - 8, y + 4);
+                    ctx.textAlign = 'left';
+                    ctx.fillText(item.m2, margins.left + w + 8, y + 4);
+                });
+
+                // Vertical Axis Titles (Left & Right)
+                ctx.save();
+                ctx.font = 'bold 12px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.translate(18, margins.top + h / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.fillText('Area of sprinkler operation (ft²)', 0, 0);
+                ctx.restore();
+
+                ctx.save();
+                ctx.font = 'bold 12px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.translate(logicalW - 14, margins.top + h / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.fillText('Area of sprinkler operation (m²)', 0, 0);
+                ctx.restore();
+
+                // 4. Official NFPA 13 Sloped Hazard Curves (Figure 19.3.3.1.1)
                 const curves = [
-                    { l: 'Light', pts: [{ d: 0.1, a: 1500 }, { d: 0.1, a: 3000 }], c: '#3b82f6' },
-                    { l: 'Ord 1', pts: [{ d: 0.15, a: 1500 }, { d: 0.15, a: 4000 }], c: '#10b981' },
-                    { l: 'Ord 2', pts: [{ d: 0.2, a: 1500 }, { d: 0.2, a: 4000 }], c: '#f59e0b' },
-                    { l: 'Extra 1', pts: [{ d: 0.3, a: 2500 }, { d: 0.3, a: 5000 }], c: '#ef4444' },
-                    { l: 'Extra 2', pts: [{ d: 0.4, a: 2500 }, { d: 0.4, a: 5000 }], c: '#b91c1c' }
+                    { l: 'Light', pts: [{ d: 0.10, a: 1500 }, { d: 0.07, a: 3000 }], c: '#3b82f6' },
+                    { l: 'Ordinary 1', pts: [{ d: 0.15, a: 1500 }, { d: 0.10, a: 4000 }], c: '#10b981' },
+                    { l: 'Ordinary 2', pts: [{ d: 0.20, a: 1500 }, { d: 0.15, a: 4000 }], c: '#f59e0b' },
+                    { l: 'Extra hazard Group 1', pts: [{ d: 0.30, a: 2500 }, { d: 0.20, a: 5000 }], c: '#ef4444' },
+                    { l: 'Extra hazard Group 2', pts: [{ d: 0.40, a: 2500 }, { d: 0.30, a: 5000 }], c: '#e11d48' }
                 ];
 
                 curves.forEach(curve => {
-                    ctx.beginPath(); ctx.strokeStyle = curve.c; ctx.lineWidth = 3;
-                    ctx.moveTo(getX(curve.pts[0].d), getY(curve.pts[0].a));
-                    ctx.lineTo(getX(curve.pts[1].d), getY(curve.pts[1].a));
+                    const x1 = getX(curve.pts[0].d);
+                    const y1 = getY(curve.pts[0].a);
+                    const x2 = getX(curve.pts[1].d);
+                    const y2 = getY(curve.pts[1].a);
+
+                    // Draw sloped line
+                    ctx.beginPath();
+                    ctx.strokeStyle = curve.c;
+                    ctx.lineWidth = 3.2;
+                    ctx.lineCap = 'round';
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
                     ctx.stroke();
-                    ctx.fillStyle = curve.c; ctx.fillText(curve.l, getX(curve.pts[1].d), getY(curve.pts[1].a) - 10);
+
+                    // Endpoint nodes
+                    [ [x1, y1], [x2, y2] ].forEach(([px, py]) => {
+                        ctx.beginPath();
+                        ctx.arc(px, py, 3.5, 0, 2 * Math.PI);
+                        ctx.fillStyle = curve.c;
+                        ctx.fill();
+                    });
+
+                    // Draw label rotated parallel to the sloped curve
+                    const midX = (x1 + x2) / 2;
+                    const midY = (y1 + y2) / 2;
+                    let angle = Math.atan2(y2 - y1, x2 - x1);
+                    if (angle < -Math.PI / 2 || angle > Math.PI / 2) {
+                        angle += Math.PI;
+                    }
+                    ctx.save();
+                    ctx.translate(midX, midY);
+                    ctx.rotate(angle);
+                    ctx.font = 'bold 11px Inter, sans-serif';
+                    ctx.textAlign = 'center';
+                    // Background pill for readability over grid
+                    const textW = ctx.measureText(curve.l).width + 8;
+                    ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(248, 250, 252, 0.9)';
+                    ctx.fillRect(-textW / 2, -16, textW, 13);
+                    ctx.fillStyle = curve.c;
+                    ctx.fillText(curve.l, 0, -6);
+                    ctx.restore();
                 });
 
+                // 5. Operating Point Crosshair & Marker
                 if (area > 0 && density > 0) {
-                    ctx.beginPath(); ctx.arc(getX(density), getY(area), 8, 0, 2 * Math.PI);
-                    ctx.fillStyle = isDark ? '#ffffff' : '#000000'; ctx.fill();
+                    const clampedD = Math.max(minD, Math.min(maxD, density));
+                    const clampedA = Math.max(minA, Math.min(maxA, area));
+                    const px = getX(clampedD);
+                    const py = getY(clampedA);
+
+                    // Dashed crosshair lines
+                    ctx.save();
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeStyle = isDark ? '#f8fafc' : '#0f172a';
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.moveTo(px, margins.top + h);
+                    ctx.lineTo(px, py);
+                    ctx.lineTo(margins.left, py);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    // Outer glow & main marker
+                    ctx.beginPath();
+                    ctx.arc(px, py, 9, 0, 2 * Math.PI);
+                    ctx.fillStyle = 'rgba(239, 68, 68, 0.25)';
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(px, py, 5.5, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+                    ctx.stroke();
+
+                    // Coordinate callout tag
+                    const label = `${density.toFixed(2)} gpm/ft² @ ${Math.round(area)} ft²`;
+                    ctx.font = 'bold 11px Inter, sans-serif';
+                    const tagW = ctx.measureText(label).width + 12;
+                    const tagX = Math.min(margins.left + w - tagW - 4, Math.max(margins.left + 4, px + 10));
+                    const tagY = Math.max(margins.top + 18, py - 10);
+                    ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.95)';
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.roundRect(tagX, tagY - 14, tagW, 20, 4);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(label, tagX + 6, tagY);
                 }
+
+                ctx.restore();
             }
 
             function calcStarter() {
