@@ -664,25 +664,62 @@
 
     <!-- ================= PAGE 1: SYSTEM ANALYZER ================= -->
     <div id="analyzerPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4 page-container">
-        <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="m15 18-6-6 6-6" />
-                </svg> Back
-            </button>
-            <span class="text-slate-300 dark:text-slate-600">|</span>
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <rect width="7" height="9" x="3" y="3" rx="1" />
-                    <rect width="7" height="5" x="14" y="3" rx="1" />
-                    <rect width="7" height="9" x="14" y="12" rx="1" />
-                    <rect width="7" height="5" x="3" y="16" rx="1" />
-                </svg> Main Menu
-            </button>
+        <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="switchView('mainMenuPage')"
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 hidden sm:inline-block">Mechanical & HVAC</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Psychrometric System Analyzer</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" selected>System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
         </nav>
 
         <header
@@ -987,25 +1024,62 @@
 
     <!-- ================= PAGE 2: ROOM LOAD ANALYZER ================= -->
     <div id="loadAnalyzerPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4 page-container">
-        <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-rose-600 dark:hover:text-rose-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="m15 18-6-6 6-6" />
-                </svg> Back
-            </button>
-            <span class="text-slate-300 dark:text-slate-600">|</span>
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-rose-600 dark:hover:text-rose-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <rect width="7" height="9" x="3" y="3" rx="1" />
-                    <rect width="7" height="5" x="14" y="3" rx="1" />
-                    <rect width="7" height="9" x="14" y="12" rx="1" />
-                    <rect width="7" height="5" x="3" y="16" rx="1" />
-                </svg> Main Menu
-            </button>
+        <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="switchView('mainMenuPage')"
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20 hidden sm:inline-block">Mechanical & HVAC</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Room Load Analyzer</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" selected>Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
         </nav>
 
         <header
@@ -1375,25 +1449,62 @@
 
     <!-- ================= PAGE 3: MULTI-STAGE ANALYZER ================= -->
     <div id="multiStagePage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4 page-container">
-        <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="m15 18-6-6 6-6" />
-                </svg> Back
-            </button>
-            <span class="text-slate-300 dark:text-slate-600">|</span>
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <rect width="7" height="9" x="3" y="3" rx="1" />
-                    <rect width="7" height="5" x="14" y="3" rx="1" />
-                    <rect width="7" height="9" x="14" y="12" rx="1" />
-                    <rect width="7" height="5" x="3" y="16" rx="1" />
-                </svg> Main Menu
-            </button>
+        <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="switchView('mainMenuPage')"
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 hidden sm:inline-block">Mechanical & HVAC</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Multi-Stage Analyzer</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" selected>Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
         </nav>
 
         <header
@@ -1524,25 +1635,62 @@
 
     <!-- ================= PAGE 4: DUCT SIZER ================= -->
     <div id="ductSizerPage" class="max-w-5xl mx-auto space-y-4 hidden py-4 page-container">
-        <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="m15 18-6-6 6-6" />
-                </svg> Back
-            </button>
-            <span class="text-slate-300 dark:text-slate-600">|</span>
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <rect width="7" height="9" x="3" y="3" rx="1" />
-                    <rect width="7" height="5" x="14" y="3" rx="1" />
-                    <rect width="7" height="9" x="14" y="12" rx="1" />
-                    <rect width="7" height="5" x="3" y="16" rx="1" />
-                </svg> Main Menu
-            </button>
+        <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="switchView('mainMenuPage')"
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hidden sm:inline-block">Mechanical & HVAC</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Duct Sizer</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" selected>Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
         </nav>
 
         <header
@@ -1794,25 +1942,62 @@
 
     <!-- ================= PAGE 5: PIPE SIZER ================= -->
     <div id="pipeSizerPage" class="max-w-5xl mx-auto space-y-4 hidden py-4 page-container">
-        <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="m15 18-6-6 6-6" />
-                </svg> Back
-            </button>
-            <span class="text-slate-300 dark:text-slate-600">|</span>
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <rect width="7" height="9" x="3" y="3" rx="1" />
-                    <rect width="7" height="5" x="14" y="3" rx="1" />
-                    <rect width="7" height="9" x="14" y="12" rx="1" />
-                    <rect width="7" height="5" x="3" y="16" rx="1" />
-                </svg> Main Menu
-            </button>
+        <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="switchView('mainMenuPage')"
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20 hidden sm:inline-block">Mechanical & HVAC</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Hydraulic Pipe Sizer</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" selected>Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
         </nav>
 
         <header
@@ -2046,25 +2231,62 @@
 
     <!-- ================= PAGE 6: COOLING TOWER MAKE-UP WATER ================= -->
     <div id="ctPage" class="max-w-6xl mx-auto space-y-4 hidden py-4">
-        <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="m15 18-6-6 6-6" />
-                </svg> Back
-            </button>
-            <span class="text-slate-300 dark:text-slate-600">|</span>
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <rect width="7" height="9" x="3" y="3" rx="1" />
-                    <rect width="7" height="5" x="14" y="3" rx="1" />
-                    <rect width="7" height="9" x="14" y="12" rx="1" />
-                    <rect width="7" height="5" x="3" y="16" rx="1" />
-                </svg> Main Menu
-            </button>
+        <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="switchView('mainMenuPage')"
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 hidden sm:inline-block">Mechanical & HVAC</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Cooling Tower Make-up Water</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" selected>Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
         </nav>
 
         <header
@@ -2388,25 +2610,62 @@
 
     <!-- ================= PAGE 7: CHILLER ROI CALCULATOR ================= -->
     <div id="roiPage" class="max-w-6xl mx-auto space-y-4 hidden py-4">
-        <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-red-600 dark:hover:text-red-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="m15 18-6-6 6-6" />
-                </svg> Back
-            </button>
-            <span class="text-slate-300 dark:text-slate-600">|</span>
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-red-600 dark:hover:text-red-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <rect width="7" height="9" x="3" y="3" rx="1" />
-                    <rect width="7" height="5" x="14" y="3" rx="1" />
-                    <rect width="7" height="9" x="14" y="12" rx="1" />
-                    <rect width="7" height="5" x="3" y="16" rx="1" />
-                </svg> Main Menu
-            </button>
+        <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="switchView('mainMenuPage')"
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20 hidden sm:inline-block">Mechanical & HVAC</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Chiller ROI Calculator</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" selected>Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
         </nav>
 
         <header
@@ -2671,25 +2930,62 @@
 
     <!-- ================= PAGE 8: ELECTRICAL LOAD ESTIMATOR (MODULE 7) ================= -->
     <div id="eqListPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4">
-        <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-yellow-600 dark:hover:text-yellow-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="m15 18-6-6 6-6" />
-                </svg> Back
-            </button>
-            <span class="text-slate-300 dark:text-slate-600">|</span>
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-yellow-600 dark:hover:text-yellow-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <rect width="7" height="9" x="3" y="3" rx="1" />
-                    <rect width="7" height="5" x="14" y="3" rx="1" />
-                    <rect width="7" height="9" x="14" y="12" rx="1" />
-                    <rect width="7" height="5" x="3" y="16" rx="1" />
-                </svg> Main Menu
-            </button>
+        <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="switchView('mainMenuPage')"
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 hidden sm:inline-block">Electrical Engineering</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Electrical Load Estimator</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" selected>Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
         </nav>
 
         <header
@@ -2920,25 +3216,62 @@
 
     <!-- ================= PAGE 9: WIRING & BREAKER CALCULATOR ================= -->
     <div id="wiringPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4">
-        <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path d="m15 18-6-6 6-6" />
-                </svg> Back
-            </button>
-            <span class="text-slate-300 dark:text-slate-600">|</span>
-            <button onclick="switchView('mainMenuPage')"
-                class="flex items-center gap-1 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <rect width="7" height="9" x="3" y="3" rx="1" />
-                    <rect width="7" height="5" x="14" y="3" rx="1" />
-                    <rect width="7" height="9" x="14" y="12" rx="1" />
-                    <rect width="7" height="5" x="3" y="16" rx="1" />
-                </svg> Main Menu
-            </button>
+        <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="switchView('mainMenuPage')"
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 hidden sm:inline-block">Electrical Engineering</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Wiring & Breaker Sizer</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" selected>Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
         </nav>
 
         <header
@@ -3199,26 +3532,63 @@
 
         <!-- ================= PAGE 10: TRANSFORMER CALCULATOR ================= -->
         <div id="transformerPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4">
-            <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <button onclick="switchView('mainMenuPage')"
-                    class="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2">
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m15 18-6-6 6-6" />
-                    </svg> Back
-                </button>
-                <span class="text-slate-300 dark:text-slate-600">|</span>
-                <button onclick="switchView('mainMenuPage')"
-                    class="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2">
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect width="7" height="9" x="3" y="3" rx="1" />
                         <rect width="7" height="5" x="14" y="3" rx="1" />
                         <rect width="7" height="9" x="14" y="12" rx="1" />
                         <rect width="7" height="5" x="3" y="16" rx="1" />
-                    </svg> Main Menu
+                    </svg>
+                    <span>Main Menu</span>
                 </button>
-            </nav>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20 hidden sm:inline-block">Electrical Engineering</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Transformer Sizer</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" selected>Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
+        </nav>
 
             <header
                 class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 gap-4 transition-colors">
@@ -3419,18 +3789,63 @@
 
         <!-- ================= PAGE 11: MOTOR SIZER ================= -->
         <div id="motorSizerPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4 page-container">
-            <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <button onclick="switchView('mainMenuPage')"
-                    class="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m15 18-6-6 6-6" />
                     </svg>
-                    Back to Menu
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
                 </button>
-                <span class="text-slate-300 dark:text-slate-600">/</span>
-                <span class="text-slate-900 dark:text-white">Motor & Starter Selector</span>
-            </nav>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 hidden sm:inline-block">Electrical Engineering</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Motor & Starter Selector</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" selected>Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
+        </nav>
 
             <header
                 class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
@@ -3670,18 +4085,63 @@
 
         <!-- ================= PAGE 12: SHORT CIRCUIT ================= -->
         <div id="shortCircuitPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4 page-container">
-            <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <button onclick="switchView('mainMenuPage')"
-                    class="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m15 18-6-6 6-6" />
                     </svg>
-                    Back to Menu
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
                 </button>
-                <span class="text-slate-300 dark:text-slate-600">/</span>
-                <span class="text-slate-900 dark:text-white">Short Circuit Calculator</span>
-            </nav>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 hidden sm:inline-block">Electrical Engineering</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Short Circuit Calculator</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" selected>Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
+        </nav>
 
             <header
                 class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
@@ -3896,15 +4356,63 @@
 
         <!-- ================= PAGE 13: WATER DEMAND ================= -->
         <div id="waterDemandPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4 page-container">
-            <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <button onclick="switchView('mainMenuPage')"
-                    class="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m15 18-6-6 6-6" />
-                    </svg> Back
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
                 </button>
-            </nav>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20 hidden sm:inline-block">Plumbing & Sanitary</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Water Demand & Tank Sizer</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" selected>Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
+        </nav>
 
             <header
                 class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
@@ -3989,7 +4497,7 @@
                 </div>
 
                 <div class="lg:col-span-7 space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="stat-card group/card border-l-4 border-l-blue-500">
                             <div
                                 class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-widest mb-1 flex justify-between">
@@ -3997,17 +4505,40 @@
                                 <span class="opacity-0 group-hover/card:opacity-100 transition-opacity cursor-help"
                                     title="Calculated from Hunter's Curve coefficients">ⓘ</span>
                             </div>
-                            <div id="wsfu_res_gpm" class="text-4xl font-black text-blue-600 dark:text-blue-400">-- GPM
-                            </div>
+                            <div id="wsfu_res_gpm" class="text-3xl font-black text-blue-600 dark:text-blue-400">-- GPM</div>
                             <div id="wsfu_res_lps" class="text-sm font-bold text-slate-400 mt-2">-- L/s</div>
                         </div>
                         <div class="stat-card group/card border-l-4 border-l-cyan-600">
                             <div
                                 class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-widest mb-1">
                                 Req. Tank Volume</div>
-                            <div id="wsfu_res_tank_m3" class="text-4xl font-black text-cyan-600 dark:text-cyan-400">--
-                                m³</div>
+                            <div id="wsfu_res_tank_m3" class="text-3xl font-black text-cyan-600 dark:text-cyan-400">-- m³</div>
                             <div id="wsfu_res_tank_gal" class="text-sm font-bold text-slate-400 mt-2">-- US Gal</div>
+                        </div>
+                        <div class="stat-card group/card border-l-4 border-l-emerald-500">
+                            <div class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-widest mb-1">
+                                Rec. Main Supply Pipe</div>
+                            <div id="wsfu_res_pipe" class="text-3xl font-black text-emerald-500">-- mm</div>
+                            <div id="wsfu_res_vel" class="text-sm font-bold text-slate-400 mt-2">Target ≤ 2.0 m/s</div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Occupancy Presets & Hunter's Curve Chart -->
+                    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                            <div>
+                                <h3 class="font-bold">ASPE / IPC Hunter's Curve (WSFU vs. Peak Flow)</h3>
+                                <p class="text-xs text-slate-400">Curve A (Flush Valves) vs. Curve B (Flush Tanks) with active operating point</p>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 text-xs">
+                                <button type="button" onclick="applyWsfuPreset('office')" class="px-2.5 py-1 rounded font-semibold bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/20 border border-cyan-500/30 transition">Office Floor</button>
+                                <button type="button" onclick="applyWsfuPreset('condo')" class="px-2.5 py-1 rounded font-semibold bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/30 transition">Condo / Hotel</button>
+                                <button type="button" onclick="applyWsfuPreset('mall')" class="px-2.5 py-1 rounded font-semibold bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/30 transition">Commercial</button>
+                                <button type="button" onclick="applyWsfuPreset('clear')" class="px-2.5 py-1 rounded font-semibold bg-slate-500/10 text-slate-400 hover:bg-slate-500/20 border border-slate-500/30 transition">Clear</button>
+                            </div>
+                        </div>
+                        <div class="relative h-[300px] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-center">
+                            <canvas id="wsfuChart" width="700" height="300" class="w-full h-full"></canvas>
                         </div>
                     </div>
                 </div>
@@ -4016,11 +4547,63 @@
 
         <!-- ================= PAGE 14: STORM DRAINAGE ================= -->
         <div id="stormPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4 page-container">
-            <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <button onclick="switchView('mainMenuPage')"
-                    class="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">←
-                    Back</button>
-            </nav>
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 hidden sm:inline-block">Plumbing & Sanitary</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Storm Drainage Sizer</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" selected>Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
+        </nav>
             <header
                 class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
                 <h1 class="text-3xl font-bold">Storm Drainage Sizer</h1>
@@ -4091,24 +4674,45 @@
                 <div class="lg:col-span-2 space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="stat-card border-l-4 border-l-blue-600">
-                            <div class="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">Total Runoff
-                            </div>
+                            <div class="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">Total Runoff</div>
                             <div id="storm_res_flow_lps" class="text-3xl font-black text-blue-600">-- L/s</div>
                             <div id="storm_res_flow_m3h" class="text-xs font-bold text-slate-400 mt-2">-- m³/h</div>
                         </div>
                         <div class="stat-card border-l-4 border-l-teal-500">
-                            <div class="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">Main Downspout
-                                Size</div>
-                            <div id="storm_res_pipe" class="text-3xl font-black text-teal-600">-- mm</div>
-                            <div id="storm_res_qty4" class="text-xs font-bold text-slate-400 mt-2">-- No. of 100mm Pipes
-                            </div>
+                            <div class="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">Main Collector Size</div>
+                            <div id="storm_res_pipe" class="text-3xl font-black text-teal-500">-- mm</div>
+                            <div id="storm_res_qty4" class="text-xs font-bold text-slate-400 mt-2">-- No. of 100mm Downspouts</div>
                         </div>
                         <div class="stat-card border-l-4 border-l-indigo-500">
-                            <div class="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">Design
-                                Intensity</div>
-                            <div id="storm_res_intensity" class="text-3xl font-black text-indigo-600">-- mm/hr</div>
-                            <div id="storm_res_interval" class="text-xs font-bold text-slate-400 mt-2">5-Yr Baseline
+                            <div class="text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">Design Intensity</div>
+                            <div id="storm_res_intensity" class="text-3xl font-black text-indigo-500">-- mm/hr</div>
+                            <div id="storm_res_interval" class="text-xs font-bold text-slate-400 mt-2">5-Yr Baseline</div>
+                        </div>
+                    </div>
+
+                    <!-- Downspout & Horizontal Drain Sizing Table (EIT / IPC) -->
+                    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                        <div class="bg-slate-50 dark:bg-slate-900/50 p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-sm">Vertical Leader (Downspout) & Horizontal Storm Drain Schedule</h3>
+                                <p class="text-xs text-slate-400">Required number of pipes to carry the calculated roof runoff per EIT Thailand / IPC Chapter 11</p>
                             </div>
+                            <span class="text-xs font-semibold px-2.5 py-1 rounded bg-blue-500/10 text-blue-500 border border-blue-500/20">EIT / IPC Standard</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                        <th class="p-3 border-b border-slate-200 dark:border-slate-700">Nominal Pipe Size</th>
+                                        <th class="p-3 border-b border-slate-200 dark:border-slate-700 text-center">Vertical Leader Cap.</th>
+                                        <th class="p-3 border-b border-slate-200 dark:border-slate-700 text-center">Req. Downspouts</th>
+                                        <th class="p-3 border-b border-slate-200 dark:border-slate-700 text-center">Horiz. Drain (1:100 Slope)</th>
+                                        <th class="p-3 border-b border-slate-200 dark:border-slate-700 text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="storm_schedule_body" class="divide-y divide-slate-200 dark:divide-slate-700">
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -4117,16 +4721,67 @@
 
         <!-- ================= PAGE 15: RETENTION POND ================= -->
         <div id="pondPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4 page-container">
-            <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <button onclick="switchView('mainMenuPage')"
-                    class="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">←
-                    Back</button>
-            </nav>
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20 hidden sm:inline-block">Plumbing & Sanitary</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Retention Pond Volume</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" selected>Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
+        </nav>
             <header
                 class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
                 <h1 class="text-3xl font-bold">Retention Pond Volume</h1>
-                <p class="text-slate-500 dark:text-slate-400 mt-1">Calculates differential runoff volume: $V = Area
-                    \cdot \Delta C \cdot i \cdot t$.</p>
+                <p class="text-slate-500 dark:text-slate-400 mt-1">Calculates differential runoff volume: V = A · ΔC · i · t.</p>
             </header>
             <div class="stat-card">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -4136,37 +4791,50 @@
                             <div class="col-span-2">
                                 <label class="block text-sm font-medium mb-1">Rainfall Intensity (mm/hr)</label>
                                 <input type="number" id="pond_intensity" value="100"
-                                    class="w-full p-2 border rounded dark:bg-slate-700" oninput="calcPond()">
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" oninput="calcPond()">
                             </div>
                             <div class="col-span-2">
                                 <label class="block text-sm font-medium mb-1">Total Site Area (m²)</label>
                                 <input type="number" id="pond_area" value="5000"
-                                    class="w-full p-2 border rounded dark:bg-slate-700" oninput="calcPond()">
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" oninput="calcPond()">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1">Pre-Dev C</label>
                                 <input type="number" id="pond_c_pre" value="0.3" step="0.05"
-                                    class="w-full p-2 border rounded dark:bg-slate-700" oninput="calcPond()">
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" oninput="calcPond()">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1">Post-Dev C</label>
                                 <input type="number" id="pond_c_post" value="0.9" step="0.05"
-                                    class="w-full p-2 border rounded dark:bg-slate-700" oninput="calcPond()">
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" oninput="calcPond()">
                             </div>
                             <div class="col-span-2">
                                 <label class="block text-sm font-medium mb-1">Storm Event Duration (Min)</label>
                                 <input type="number" id="pond_duration" value="60"
-                                    class="w-full p-2 border rounded dark:bg-slate-700" oninput="calcPond()">
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" oninput="calcPond()">
                             </div>
                         </div>
                     </div>
-                    <div
-                        class="flex flex-col justify-center items-center bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-8 border-2 border-dashed border-slate-200 dark:border-slate-700">
-                        <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Required Retention
-                            Volume</div>
-                        <div id="pond_res_vol" class="text-6xl font-black text-cyan-600">-- m³</div>
-                        <div class="text-slate-500 mt-4 text-center text-sm">Volume required to mitigate runoff
-                            increase.</div>
+                    <div class="space-y-4">
+                        <div class="flex flex-col justify-center items-center bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 border-2 border-dashed border-slate-200 dark:border-slate-700">
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Required Retention Volume</div>
+                            <div id="pond_res_vol" class="text-5xl font-black text-cyan-500">-- m³</div>
+                            <div id="pond_res_flows" class="text-xs font-semibold text-slate-400 mt-2">Pre-Dev: -- L/s → Post-Dev: -- L/s</div>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+                            <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Pond Footprint Sizing by Effective Water Depth</div>
+                            <table class="w-full text-xs text-left">
+                                <thead>
+                                    <tr class="border-b border-slate-200 dark:border-slate-700 text-slate-500">
+                                        <th class="py-1.5">Effective Depth</th>
+                                        <th class="py-1.5 text-right">Surface Area (m²)</th>
+                                        <th class="py-1.5 text-right">Est. Dimension (L×W)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pond_depth_body" class="divide-y divide-slate-200/60 dark:divide-slate-700/60 font-mono">
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -4174,11 +4842,63 @@
 
         <!-- ================= PAGE 16: SPRINKLER CALCULATOR ================= -->
         <div id="sprinklerPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4 page-container">
-            <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <button onclick="switchView('mainMenuPage')"
-                    class="flex items-center gap-1 hover:text-red-600 dark:hover:text-red-400 transition-colors">←
-                    Back</button>
-            </nav>
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 hidden sm:inline-block">Fire Protection</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Sprinkler Hydraulic Calculator</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" selected>Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
+        </nav>
             <header
                 class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
                 <h1 class="text-3xl font-bold">Sprinkler Hydraulic Calculator</h1>
@@ -4223,16 +4943,16 @@
                             <div>
                                 <label class="block text-sm font-medium mb-1">Pipe Diameter (mm)</label>
                                 <input type="number" id="fire_pipe_d" value="25"
-                                    class="w-full p-2 border rounded dark:bg-slate-700" oninput="calcFire()">
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" oninput="calcFire()">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1">Length (m)</label>
                                 <input type="number" id="fire_pipe_l" value="10"
-                                    class="w-full p-2 border rounded dark:bg-slate-700" oninput="calcFire()">
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" oninput="calcFire()">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1">C-Factor</label>
-                                <select id="fire_c" class="w-full p-2 border rounded dark:bg-slate-700"
+                                <select id="fire_c" class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                     onchange="calcFire()">
                                     <option value="120">Black Steel (120)</option>
                                     <option value="100">Dry Steel / Old (100)</option>
@@ -4310,11 +5030,63 @@
         </div>
 
         <div id="warehouseSprinklerPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4 page-container">
-            <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <button onclick="switchView('mainMenuPage')"
-                    class="flex items-center gap-1 hover:text-red-600 dark:hover:text-red-400 transition-colors">←
-                    Back</button>
-            </nav>
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 hidden sm:inline-block">Fire Protection</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Warehouse Sprinkler Selection</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" selected>Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
+        </nav>
             <header
                 class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
                 <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Warehouse Sprinkler Selection</h1>
@@ -4331,19 +5103,19 @@
                             <div>
                                 <label class="block text-sm font-medium mb-1">Max Ceiling Height (m)</label>
                                 <input type="number" id="esfr_ceiling" value="12"
-                                    class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white"
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                     oninput="calcESFR()">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1">Max Storage Height (m)</label>
                                 <input type="number" id="esfr_storage" value="10.5"
-                                    class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white"
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                     oninput="calcESFR()">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1">Commodity Class</label>
                                 <select id="esfr_class"
-                                    class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white"
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                     onchange="calcESFR()">
                                     <option value="1">Class I-IV (Non-Plastics)</option>
                                     <option value="2">Cartoned Unexpanded Plastics</option>
@@ -4412,11 +5184,63 @@
 
         <!-- ================= PAGE 17B: NFPA FIRE WATER CONSUMPTION ================= -->
         <div id="fireWaterPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4 page-container">
-            <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <button onclick="switchView('mainMenuPage')"
-                    class="flex items-center gap-1 hover:text-red-600 dark:hover:text-red-400 transition-colors">←
-                    Back</button>
-            </nav>
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 hidden sm:inline-block">Fire Protection</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Fire Water Consumption & Storage</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" selected>Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
+        </nav>
             <header
                 class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-4">
                 <div>
@@ -4641,11 +5465,63 @@
 
         <!-- ================= PAGE 18: STARTER SIMULATOR ================= -->
         <div id="starterSimulatorPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4 page-container">
-            <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <button onclick="switchView('mainMenuPage')"
-                    class="flex items-center gap-1 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">←
-                    Back</button>
-            </nav>
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hidden sm:inline-block">Electrical Engineering</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Starter Type Simulator</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" >Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" selected>Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
+        </nav>
             <header
                 class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
                 <h1 class="text-3xl font-bold">Starter Type Simulator</h1>
@@ -4663,18 +5539,18 @@
                                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Motor
                                     Rating (kW)</label>
                                 <input type="number" id="sim_motor_kw" value="15" step="0.1"
-                                    class="w-full p-2 border rounded dark:bg-slate-700" oninput="calcStarter()">
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" oninput="calcStarter()">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">System
                                     Voltage (Line-to-Line V)</label>
                                 <input type="number" id="sim_motor_v" value="400" step="10"
-                                    class="w-full p-2 border rounded dark:bg-slate-700" oninput="calcStarter()">
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" oninput="calcStarter()">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Starter
                                     Type</label>
-                                <select id="sim_starter_type" class="w-full p-2 border rounded dark:bg-slate-700"
+                                <select id="sim_starter_type" class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                     onchange="calcStarter()">
                                     <option value="DOL">Direct On-Line (DOL)</option>
                                     <option value="SD">Star-Delta (Y-Δ)</option>
@@ -4685,7 +5561,7 @@
                                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Soft
                                     Start Initial Voltage (%)</label>
                                 <input type="number" id="sim_ss_v" value="40" step="5" min="10" max="100"
-                                    class="w-full p-2 border rounded dark:bg-slate-700" oninput="calcStarter()">
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" oninput="calcStarter()">
                             </div>
                         </div>
                     </div>
@@ -4721,11 +5597,29 @@
 
                     <div
                         class="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-xl border border-emerald-100 dark:border-emerald-800/50 flex flex-col items-center text-center">
-                        <div class="text-sm font-bold text-emerald-800 dark:text-emerald-300 uppercase mb-3">Starting
+                        <div class="text-sm font-bold text-emerald-800 dark:text-emerald-300 uppercase mb-2">Starting
                             Torque (Relative to DOL)</div>
-                        <div class="text-6xl font-black text-emerald-600" id="sim_res_torque">-- %</div>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mt-4 max-w-lg">Torque is proportional to
-                            the square of the voltage applied to the motor windings during starting.</p>
+                        <div class="text-5xl font-black text-emerald-500" id="sim_res_torque">-- %</div>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mt-2 max-w-lg">Torque is proportional to
+                            the square of the voltage applied to the motor windings (T ∝ V²).</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                        <div class="bg-slate-50 dark:bg-slate-900/50 p-3 border-b border-slate-200 dark:border-slate-700 font-bold text-xs uppercase tracking-wider">
+                            Starter Method Side-by-Side Comparison (Selected Motor)
+                        </div>
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                    <th class="p-2.5 border-b border-slate-200 dark:border-slate-700">Starter Method</th>
+                                    <th class="p-2.5 border-b border-slate-200 dark:border-slate-700 text-center">Winding Voltage</th>
+                                    <th class="p-2.5 border-b border-slate-200 dark:border-slate-700 text-center">Line Starting Current</th>
+                                    <th class="p-2.5 border-b border-slate-200 dark:border-slate-700 text-center">Starting Torque</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sim_compare_body" class="divide-y divide-slate-200 dark:divide-slate-700">
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -4733,26 +5627,63 @@
 
         <!-- ================= PAGE 19: FUEL TANK CALCULATOR ================= -->
         <div id="fuelTankPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4 page-container">
-            <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <button onclick="switchView('mainMenuPage')"
-                    class="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m15 18-6-6 6-6" />
-                    </svg> Back
-                </button>
-                <span class="text-slate-300 dark:text-slate-600">|</span>
-                <button onclick="switchView('mainMenuPage')"
-                    class="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect width="7" height="9" x="3" y="3" rx="1" />
                         <rect width="7" height="5" x="14" y="3" rx="1" />
                         <rect width="7" height="9" x="14" y="12" rx="1" />
                         <rect width="7" height="5" x="3" y="16" rx="1" />
-                    </svg> Main Menu
+                    </svg>
+                    <span>Main Menu</span>
                 </button>
-            </nav>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-slate-500/10 text-slate-600 dark:text-slate-300 border-slate-500/20 hidden sm:inline-block">Mechanical & HVAC</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Generator Fuel Tank Sizer</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical & HVAC">
+                        <option value="analyzerPage" >System Analyzer</option>
+                        <option value="loadAnalyzerPage" >Room Load Analyzer</option>
+                        <option value="multiStagePage" >Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage" >Duct Sizer</option>
+                        <option value="pipeSizerPage" >Hydraulic Pipe Sizer</option>
+                        <option value="ctPage" >Cooling Tower Make-up</option>
+                        <option value="roiPage" >Chiller ROI Calculator</option>
+                        <option value="fuelTankPage" selected>Generator Fuel Tank Sizer</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage" >Electrical Load Estimator</option>
+                        <option value="wiringPage" >Wiring & Breaker Sizer</option>
+                        <option value="transformerPage" >Transformer Sizer</option>
+                        <option value="motorSizerPage" >Motor & Starter Selector</option>
+                        <option value="shortCircuitPage" >Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage" >Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing & Sanitary">
+                        <option value="waterDemandPage" >Water Demand & Tank Sizer</option>
+                        <option value="stormPage" >Storm Drainage Sizer</option>
+                        <option value="pondPage" >Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage" >Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage" >Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage" >Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
+        </nav>
             <header
                 class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 gap-4 transition-colors">
                 <div>
@@ -5019,7 +5950,7 @@
                 const activeView = [
                     'mainMenuPage', 'analyzerPage', 'loadAnalyzerPage', 'multiStagePage',
                     'ductSizerPage', 'pipeSizerPage', 'ctPage', 'roiPage', 'eqListPage',
-                    'wiringPage', 'transformerPage', 'unbalancedLoadPage', 'sprinklerPage', 'fireWaterPage'
+                    'wiringPage', 'transformerPage', 'unbalancedLoadPage', 'waterDemandPage', 'sprinklerPage', 'fireWaterPage'
                 ].find(id => {
                     const el = document.getElementById(id);
                     return el && !el.classList.contains('hidden');
@@ -5041,6 +5972,7 @@
                 else if (activeView === 'wiringPage') calcWiring();
                 else if (activeView === 'transformerPage') calcTransformer();
                 else if (activeView === 'unbalancedLoadPage') calcUnbalanced();
+                else if (activeView === 'waterDemandPage') calcWater();
                 else if (activeView === 'sprinklerPage') calcFire();
                 else if (activeView === 'fireWaterPage') calcFireWater();
             }
@@ -5359,6 +6291,24 @@
                 document.getElementById('sim_res_iph').innerText = `${i_ph.toFixed(0)} A`;
                 document.getElementById('sim_res_iline').innerText = `${i_line.toFixed(0)} A`;
                 document.getElementById('sim_res_torque').innerText = `${torque.toFixed(0)} %`;
+
+                const cmpBody = document.getElementById('sim_compare_body');
+                if (cmpBody) {
+                    const ssRatio = ss_v_pct / 100;
+                    const rows = [
+                        { m: 'Direct On-Line (DOL)', v: `${v.toFixed(0)} V (100%)`, i: `${i_dol.toFixed(0)} A (6.0× FLC)`, t: '100% (Full)', active: type === 'DOL' },
+                        { m: 'Star-Delta (Y-Δ)', v: `${(v / Math.sqrt(3)).toFixed(0)} V (58%)`, i: `${(i_dol / 3).toFixed(0)} A (2.0× FLC)`, t: '33% (1/3 DOL)', active: type === 'SD' },
+                        { m: `Soft Starter (${ss_v_pct}% V)`, v: `${(v * ssRatio).toFixed(0)} V (${ss_v_pct}%)`, i: `${(i_dol * ssRatio).toFixed(0)} A (${(6 * ssRatio).toFixed(1)}× FLC)`, t: `${(ssRatio * ssRatio * 100).toFixed(0)}%`, active: type === 'SS' }
+                    ];
+                    cmpBody.innerHTML = rows.map(r => `
+                        <tr class="${r.active ? 'bg-emerald-500/10 font-bold text-emerald-500' : ''}">
+                            <td class="p-2.5">${r.m}</td>
+                            <td class="p-2.5 text-center font-mono">${r.v}</td>
+                            <td class="p-2.5 text-center font-mono">${r.i}</td>
+                            <td class="p-2.5 text-center font-mono">${r.t}</td>
+                        </tr>
+                    `).join('');
+                }
             }
 
             let wasDarkBeforePrint = false;
@@ -8215,29 +9165,51 @@
             function populateWSFUTable() {
                 const body = document.getElementById('wsfu_table_body');
                 if (!body) return;
-                body.innerHTML = wsfuData.map(f => `
-                <tr class="border-b border-slate-50 dark:border-slate-800/50">
-                    <td class="py-2">${f.name}</td>
-                    <td class="py-2 text-center text-slate-500">${f.unit}</td>
+                const defaultQtys = { wc_fv: 4, wc_ft: 0, lav: 6, uri: 2, shw: 1, snk: 2 };
+                body.innerHTML = wsfuData.map((f, idx) => `
+                <tr class="border-b border-slate-100 dark:border-slate-700/60">
+                    <td class="py-2 font-medium">${f.name}</td>
+                    <td class="py-2 text-center text-slate-400">${f.unit}</td>
                     <td class="py-2 text-center">
-                        <input type="number" id="qty_${f.id}" value="0" min="0" class="w-12 p-1 text-center border rounded dark:bg-slate-700" oninput="calcWater()">
+                        <input type="number" id="qty_${f.id}" value="${defaultQtys[f.id] ?? (idx === 0 ? 4 : (idx === 2 ? 6 : 2))}" min="0" class="w-16 p-1 text-center border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-cyan-500 outline-none" oninput="calcWater()">
                     </td>
-                    <td class="py-2 text-right font-mono" id="sub_${f.id}">0.0</td>
+                    <td class="py-2 text-right font-mono font-bold text-cyan-600 dark:text-cyan-400" id="sub_${f.id}">0.0</td>
                 </tr>
             `).join('');
+            }
+
+            function applyWsfuPreset(preset) {
+                const presets = {
+                    office: [6, 0, 8, 4, 0, 2],
+                    condo:  [0, 24, 24, 0, 24, 24],
+                    mall:   [16, 4, 20, 10, 2, 8],
+                    clear:  [0, 0, 0, 0, 0, 0]
+                };
+                const vals = presets[preset] || presets.office;
+                wsfuData.forEach((f, idx) => {
+                    const el = document.getElementById(`qty_${f.id}`);
+                    if (el) el.value = vals[idx] ?? 0;
+                });
+                const curveEl = document.getElementById('wsfu_curve');
+                if (curveEl && preset === 'condo') curveEl.value = 'B';
+                else if (curveEl && (preset === 'office' || preset === 'mall')) curveEl.value = 'A';
+                calcWater();
             }
 
             function calcWater() {
                 let total = 0;
                 wsfuData.forEach(f => {
-                    const qty = parseInt(document.getElementById(`qty_${f.id}`).value) || 0;
+                    const el = document.getElementById(`qty_${f.id}`);
+                    const qty = el ? (parseInt(el.value) || 0) : 0;
                     const sub = qty * f.unit;
-                    document.getElementById(`sub_${f.id}`).innerText = sub.toFixed(1);
+                    const subEl = document.getElementById(`sub_${f.id}`);
+                    if (subEl) subEl.innerText = sub.toFixed(1);
                     total += sub;
                 });
-                document.getElementById('wsfu_total').innerText = total.toFixed(1);
+                const totEl = document.getElementById('wsfu_total');
+                if (totEl) totEl.innerText = total.toFixed(1);
 
-                const curve = document.getElementById('wsfu_curve').value;
+                const curve = document.getElementById('wsfu_curve')?.value || 'A';
                 let gpm = 0;
                 if (curve === 'A') {
                     gpm = 10 + 0.25 * total + 0.00008 * Math.pow(total, 1.9);
@@ -8246,13 +9218,150 @@
                 }
                 if (total === 0) gpm = 0;
 
+                const lps = gpm * 0.06309;
                 document.getElementById('wsfu_res_gpm').innerText = `${gpm.toFixed(1)} GPM`;
-                document.getElementById('wsfu_res_lps').innerText = `${(gpm * 0.06309).toFixed(2)} L/s`;
+                document.getElementById('wsfu_res_lps').innerText = `${lps.toFixed(2)} L/s`;
 
-                const hrs = parseFloat(document.getElementById('wsfu_tank_hrs').value) || 24;
+                const hrs = parseFloat(document.getElementById('wsfu_tank_hrs')?.value) || 24;
                 const vol_m3 = (gpm * 0.003785 * 60 * 0.4) * hrs;
                 document.getElementById('wsfu_res_tank_m3').innerText = `${vol_m3.toFixed(1)} m³`;
-                document.getElementById('wsfu_res_tank_gal').innerText = `${(vol_m3 * 264.17).toFixed(0)} Gal`;
+                document.getElementById('wsfu_res_tank_gal').innerText = `${Math.round(vol_m3 * 264.17).toLocaleString()} US Gal`;
+
+                // Main supply pipe size recommendation (target v <= 2.0 m/s)
+                const stdPipes = [20, 25, 32, 40, 50, 65, 80, 100, 125, 150, 200];
+                const flowM3s = lps / 1000;
+                let recPipe = stdPipes[0];
+                let vel = 0;
+                if (flowM3s > 0) {
+                    recPipe = stdPipes.find(d => (flowM3s / (Math.PI * Math.pow(d / 2000, 2))) <= 2.0) || 200;
+                    vel = flowM3s / (Math.PI * Math.pow(recPipe / 2000, 2));
+                }
+                const pipeEl = document.getElementById('wsfu_res_pipe');
+                const velEl = document.getElementById('wsfu_res_vel');
+                if (pipeEl) pipeEl.innerText = total > 0 ? `Ø${recPipe} mm` : '-- mm';
+                if (velEl) velEl.innerText = total > 0 ? `Velocity: ${vel.toFixed(2)} m/s` : 'Target ≤ 2.0 m/s';
+
+                drawWsfuChart(total, gpm, curve);
+            }
+
+            function drawWsfuChart(totalWsfu, currentGpm, activeCurve) {
+                const canvas = document.getElementById('wsfuChart');
+                if (!canvas) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                const logicalW = rect.width > 100 ? rect.width : 700;
+                const logicalH = rect.height > 100 ? rect.height : 300;
+                if (canvas.width !== Math.round(logicalW * dpr) || canvas.height !== Math.round(logicalH * dpr)) {
+                    canvas.width = Math.round(logicalW * dpr);
+                    canvas.height = Math.round(logicalH * dpr);
+                }
+
+                const ctx = canvas.getContext('2d');
+                ctx.save();
+                ctx.scale(dpr, dpr);
+
+                const isDark = document.documentElement.classList.contains('dark');
+                ctx.clearRect(0, 0, logicalW, logicalH);
+
+                const margins = { left: 56, right: 28, top: 26, bottom: 42 };
+                const w = logicalW - margins.left - margins.right;
+                const h = logicalH - margins.top - margins.bottom;
+
+                const maxW = Math.max(250, Math.ceil((totalWsfu * 1.25) / 50) * 50);
+                const calcA = (u) => u <= 0 ? 0 : (10 + 0.25 * u + 0.00008 * Math.pow(u, 1.9));
+                const calcB = (u) => u <= 0 ? 0 : (5 + 0.18 * u + 0.00004 * Math.pow(u, 1.9));
+                const maxG = Math.max(80, Math.ceil(calcA(maxW) * 1.1 / 20) * 20);
+
+                const getX = (u) => margins.left + (u / maxW) * w;
+                const getY = (g) => margins.top + h - (g / maxG) * h;
+
+                ctx.strokeStyle = isDark ? 'rgba(51, 65, 85, 0.55)' : 'rgba(226, 232, 240, 0.9)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for (let i = 0; i <= 5; i++) {
+                    const u = (maxW / 5) * i;
+                    const x = getX(u);
+                    ctx.moveTo(x, margins.top);
+                    ctx.lineTo(x, margins.top + h);
+                }
+                for (let j = 0; j <= 4; j++) {
+                    const g = (maxG / 4) * j;
+                    const y = getY(g);
+                    ctx.moveTo(margins.left, y);
+                    ctx.lineTo(margins.left + w, y);
+                }
+                ctx.stroke();
+
+                ctx.strokeStyle = isDark ? '#94a3b8' : '#334155';
+                ctx.lineWidth = 1.4;
+                ctx.strokeRect(margins.left, margins.top, w, h);
+
+                ctx.beginPath();
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = activeCurve === 'A' ? 3 : 1.8;
+                for (let u = 0; u <= maxW; u += maxW / 80) {
+                    const x = getX(u), y = getY(calcA(u));
+                    if (u === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.strokeStyle = '#06b6d4';
+                ctx.lineWidth = activeCurve === 'B' ? 3 : 1.8;
+                for (let u = 0; u <= maxW; u += maxW / 80) {
+                    const x = getX(u), y = getY(calcB(u));
+                    if (u === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+
+                ctx.fillStyle = isDark ? '#cbd5e1' : '#334155';
+                ctx.font = '600 11px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                for (let i = 0; i <= 5; i++) {
+                    const u = (maxW / 5) * i;
+                    ctx.fillText(Math.round(u).toString(), getX(u), margins.top + h + 16);
+                }
+                ctx.fillText('Water Supply Fixture Units (WSFU)', margins.left + w / 2, margins.top + h + 34);
+
+                ctx.textAlign = 'right';
+                for (let j = 0; j <= 4; j++) {
+                    const g = (maxG / 4) * j;
+                    ctx.fillText(`${Math.round(g)} GPM`, margins.left - 6, getY(g) + 4);
+                }
+
+                ctx.font = 'bold 11px Inter, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#ef4444';
+                ctx.fillText('● Curve A: Flush Valves', margins.left + 12, margins.top + 18);
+                ctx.fillStyle = '#06b6d4';
+                ctx.fillText('● Curve B: Flush Tanks', margins.left + 160, margins.top + 18);
+
+                if (totalWsfu > 0 && currentGpm > 0) {
+                    const px = getX(totalWsfu);
+                    const py = getY(currentGpm);
+                    ctx.save();
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeStyle = isDark ? '#f8fafc' : '#0f172a';
+                    ctx.beginPath();
+                    ctx.moveTo(px, margins.top + h);
+                    ctx.lineTo(px, py);
+                    ctx.lineTo(margins.left, py);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    ctx.beginPath();
+                    ctx.arc(px, py, 6, 0, 2 * Math.PI);
+                    ctx.fillStyle = activeCurve === 'A' ? '#ef4444' : '#06b6d4';
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+                    ctx.stroke();
+                }
+
+                ctx.restore();
             }
 
             // ============================================================================
@@ -8654,6 +9763,7 @@
                 calcFireWater();
                 calcESFR();
                 updateFuel();
+                calcStarter();
                 initHoverSounds();
             };
         </script>
