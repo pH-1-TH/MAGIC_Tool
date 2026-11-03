@@ -644,6 +644,21 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400 transition-colors">ESFR and CMSA selection based on
                     commodity and storage height.</p>
             </button>
+
+            <button onclick="switchView('fireWaterPage')"
+                class="group text-left bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-red-300 dark:hover:border-red-500 transition-all duration-200">
+                <div
+                    class="w-12 h-12 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+                        <path d="M8 14a4 4 0 0 0 8 0" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 transition-colors">Fire Water Consumption
+                </h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 transition-colors">Total fire water storage reserve, hose stream allowance, and NFPA 20 pump sizing per NFPA 13/14/22.</p>
+            </button>
         </div>
     </div>
 
@@ -4395,6 +4410,235 @@
             </div>
         </div>
 
+        <!-- ================= PAGE 17B: NFPA FIRE WATER CONSUMPTION ================= -->
+        <div id="fireWaterPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4 page-container">
+            <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+                <button onclick="switchView('mainMenuPage')"
+                    class="flex items-center gap-1 hover:text-red-600 dark:hover:text-red-400 transition-colors">←
+                    Back</button>
+            </nav>
+            <header
+                class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900 dark:text-white">NFPA Fire Water Consumption & Storage Sizer</h1>
+                    <p class="text-slate-500 dark:text-slate-400 mt-1">Total fire protection water demand, hose stream allowance, NFPA 20 pump rating, and NFPA 22 storage reserve (V = Q<sub>total</sub> × Duration).</p>
+                </div>
+                <div class="flex flex-wrap gap-1.5 text-xs">
+                    <button type="button" onclick="applyFireWaterPreset('light')" class="px-3 py-1.5 rounded-lg font-semibold bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/30 transition">Light Hazard</button>
+                    <button type="button" onclick="applyFireWaterPreset('ord1')" class="px-3 py-1.5 rounded-lg font-semibold bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/30 transition">Ordinary 1</button>
+                    <button type="button" onclick="applyFireWaterPreset('ord2')" class="px-3 py-1.5 rounded-lg font-semibold bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/30 transition">Ordinary 2</button>
+                    <button type="button" onclick="applyFireWaterPreset('extra1')" class="px-3 py-1.5 rounded-lg font-semibold bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/30 transition">Extra 1</button>
+                    <button type="button" onclick="applyFireWaterPreset('extra2')" class="px-3 py-1.5 rounded-lg font-semibold bg-rose-700/10 text-rose-500 hover:bg-rose-700/20 border border-rose-500/30 transition">Extra 2</button>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left Column: Input Parameters -->
+                <div class="lg:col-span-4 space-y-6">
+                    <!-- Card 1: Occupancy & Sprinkler Demand -->
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-t-4 border-t-red-500">
+                        <h2 class="text-lg font-bold mb-4">1. Occupancy & Sprinkler Demand (NFPA 13)</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Hazard Classification</label>
+                                <select id="fw_hazard" class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 outline-none focus:ring-2 focus:ring-red-500" onchange="applyFireWaterPreset(this.value)">
+                                    <option value="light">Light Hazard (Offices, Schools, Residential)</option>
+                                    <option value="ord1" selected>Ordinary Hazard Group 1 (Parking, Food Proc.)</option>
+                                    <option value="ord2">Ordinary Hazard Group 2 (Mercantile, Mfg.)</option>
+                                    <option value="extra1">Extra Hazard Group 1 (Metalworking, Printing)</option>
+                                    <option value="extra2">Extra Hazard Group 2 (Flammable Liquids, Plastics)</option>
+                                    <option value="custom">Custom / High-Piled Storage</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Design Density (gpm/ft²)</label>
+                                    <input type="number" id="fw_density" value="0.15" step="0.01" min="0.05" max="1.00"
+                                        class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700"
+                                        oninput="calcFireWater()">
+                                    <p id="fw_density_si" class="text-[11px] text-slate-400 mt-1">6.1 mm/min</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Design Area (ft²)</label>
+                                    <input type="number" id="fw_area" value="1500" step="100" min="500" max="10000"
+                                        class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700"
+                                        oninput="calcFireWater()">
+                                    <p id="fw_area_si" class="text-[11px] text-slate-400 mt-1">139.4 m²</p>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Hydraulic Over-Discharge Allowance (%)</label>
+                                <input type="number" id="fw_hyd_margin" value="15" step="1" min="0" max="40"
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700"
+                                    oninput="calcFireWater()">
+                                <p class="text-[10px] text-slate-400 mt-1">Accounts for pipe friction & pressure variation across remote area (typically 10%–15%).</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Hose Stream, Standpipe & Duration -->
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-t-4 border-t-orange-500">
+                        <h2 class="text-lg font-bold mb-4">2. Hose Stream, Standpipe & Duration</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Combined Hose Stream Allowance (GPM)</label>
+                                <input type="number" id="fw_hose" value="250" step="50" min="0"
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700"
+                                    oninput="calcFireWater()">
+                                <p class="text-[10px] text-slate-400 mt-1">NFPA 13 Table 19.3.3.1.2: Light = 100 GPM, Ord = 250 GPM, Extra = 500 GPM.</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Additional Standpipe Demand (NFPA 14)</label>
+                                <select id="fw_standpipe" class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700" onchange="calcFireWater()">
+                                    <option value="0" selected>0 GPM (Sprinkler + Hose Stream Only)</option>
+                                    <option value="250">250 GPM (Class II Standpipe System)</option>
+                                    <option value="500">500 GPM (Class I / III - 1st Standpipe)</option>
+                                    <option value="750">750 GPM (Class I / III - 2 Standpipes)</option>
+                                    <option value="1000">1000 GPM (Class I / III - 3+ Standpipes Max)</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Supply Duration (min)</label>
+                                    <input type="number" id="fw_duration" value="60" step="15" min="15" max="240"
+                                        class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700"
+                                        oninput="calcFireWater()">
+                                    <p class="text-[10px] text-slate-400 mt-1">30 / 60 / 90 / 120 min</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Tank Dead-Vol Margin (%)</label>
+                                    <input type="number" id="fw_tank_margin" value="10" step="1" min="0" max="30"
+                                        class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700"
+                                        oninput="calcFireWater()">
+                                    <p class="text-[10px] text-slate-400 mt-1">NFPA 22 vortex submergence</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Results, Graph & Reference Table -->
+                <div class="lg:col-span-8 space-y-6">
+                    <!-- Top 4 KPI Stat Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="stat-card border-l-4 border-l-blue-500">
+                            <div class="text-[11px] text-slate-500 uppercase font-bold tracking-wider mb-1">Sprinkler Flow (Q<sub>spr</sub>)</div>
+                            <div id="fw_res_q_spr" class="text-2xl font-black text-blue-500">-- GPM</div>
+                            <div id="fw_res_q_spr_si" class="text-xs font-semibold text-slate-400 mt-1">-- LPM</div>
+                        </div>
+                        <div class="stat-card border-l-4 border-l-red-600">
+                            <div class="text-[11px] text-slate-500 uppercase font-bold tracking-wider mb-1">Total Fire Flow (Q<sub>total</sub>)</div>
+                            <div id="fw_res_q_tot" class="text-2xl font-black text-red-500">-- GPM</div>
+                            <div id="fw_res_q_tot_si" class="text-xs font-semibold text-slate-400 mt-1">-- LPM (-- m³/hr)</div>
+                        </div>
+                        <div class="stat-card border-l-4 border-l-amber-500">
+                            <div class="text-[11px] text-slate-500 uppercase font-bold tracking-wider mb-1">NFPA 20 Fire Pump</div>
+                            <div id="fw_res_pump" class="text-2xl font-black text-amber-500">-- GPM</div>
+                            <div id="fw_res_pump_load" class="text-xs font-semibold text-slate-400 mt-1">Rated Nominal</div>
+                        </div>
+                        <div class="stat-card border-l-4 border-l-emerald-500">
+                            <div class="text-[11px] text-slate-500 uppercase font-bold tracking-wider mb-1">Required Tank Volume</div>
+                            <div id="fw_res_vol_m3" class="text-2xl font-black text-emerald-500">-- m³</div>
+                            <div id="fw_res_vol_gal" class="text-xs font-semibold text-slate-400 mt-1">-- US Gal</div>
+                        </div>
+                    </div>
+
+                    <!-- Cumulative Water Consumption Graph -->
+                    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                            <div>
+                                <h3 class="font-bold">Cumulative Fire Water Consumption & Storage Reserve Profile</h3>
+                                <p class="text-xs text-slate-400">Volume accumulation over duration split by Sprinkler, Hose Stream, Standpipe, and NFPA 22 Tank Reserve</p>
+                            </div>
+                            <div id="fw_duration_badge" class="px-3 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-500 border border-red-500/20">
+                                60 Min Supply
+                            </div>
+                        </div>
+                        <div class="relative h-[320px] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-center">
+                            <canvas id="fireWaterChart" width="760" height="320" class="w-full h-full"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Volume Breakdown & Standard Table -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Volume Breakdown List -->
+                        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 space-y-3">
+                            <h3 class="font-bold text-sm uppercase tracking-wider text-slate-400">Water Volume Breakdown</h3>
+                            <div class="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-700/60 text-sm">
+                                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>Sprinkler Protection Volume:</span>
+                                <span id="fw_brk_spr" class="font-bold">-- m³ (-- gal)</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-700/60 text-sm">
+                                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-orange-500 inline-block"></span>Hose Stream Volume:</span>
+                                <span id="fw_brk_hose" class="font-bold">-- m³ (-- gal)</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-700/60 text-sm">
+                                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-purple-500 inline-block"></span>Standpipe System Volume:</span>
+                                <span id="fw_brk_sp" class="font-bold">-- m³ (-- gal)</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-700/60 text-sm">
+                                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>NFPA 22 Dead-Volume Margin:</span>
+                                <span id="fw_brk_margin" class="font-bold">-- m³ (-- gal)</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2 text-base font-black text-red-500">
+                                <span>Total Effective Tank Sizing:</span>
+                                <span id="fw_brk_total">-- m³ (-- L)</span>
+                            </div>
+                        </div>
+
+                        <!-- NFPA 13 Table 19.3.3.1.2 Reference -->
+                        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                            <div class="bg-slate-50 dark:bg-slate-900/50 p-3 border-b border-slate-200 dark:border-slate-700 font-bold text-xs uppercase tracking-wider">
+                                NFPA 13 Table 19.3.3.1.2 Requirements
+                            </div>
+                            <table class="w-full text-xs text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                        <th class="p-2.5 border border-slate-200 dark:border-slate-700">Occupancy</th>
+                                        <th class="p-2.5 border border-slate-200 dark:border-slate-700">Inside Hose</th>
+                                        <th class="p-2.5 border border-slate-200 dark:border-slate-700">Total Combined</th>
+                                        <th class="p-2.5 border border-slate-200 dark:border-slate-700">Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                                    <tr>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700 font-semibold text-blue-500">Light Hazard</td>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700">0, 50, or 100 GPM</td>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700">100 GPM</td>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700">30 min</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700 font-semibold text-emerald-500">Ordinary Group 1</td>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700">0, 50, or 100 GPM</td>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700">250 GPM</td>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700">60–90 min</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700 font-semibold text-amber-500">Ordinary Group 2</td>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700">0, 50, or 100 GPM</td>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700">250 GPM</td>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700">60–90 min</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700 font-semibold text-red-500">Extra Group 1</td>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700">0, 50, or 100 GPM</td>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700">500 GPM</td>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700">90–120 min</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700 font-semibold text-rose-500">Extra Group 2</td>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700">0, 50, or 100 GPM</td>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700">500 GPM</td>
+                                        <td class="p-2.5 border border-slate-200 dark:border-slate-700">120 min</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ================= PAGE 18: STARTER SIMULATOR ================= -->
         <div id="starterSimulatorPage" class="max-w-[1400px] mx-auto space-y-4 hidden py-4 page-container">
             <nav class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
@@ -4729,7 +4973,7 @@
                     'ductSizerPage', 'pipeSizerPage', 'ctPage', 'roiPage', 'eqListPage',
                     'wiringPage', 'transformerPage', 'motorSizerPage', 'shortCircuitPage',
                     'waterDemandPage', 'stormPage', 'pondPage', 'sprinklerPage',
-                    'warehouseSprinklerPage', 'fuelTankPage', 'starterSimulatorPage'
+                    'warehouseSprinklerPage', 'fireWaterPage', 'fuelTankPage', 'starterSimulatorPage'
                 ];
                 views.forEach(v => {
                     const el = document.getElementById(v);
@@ -4775,7 +5019,7 @@
                 const activeView = [
                     'mainMenuPage', 'analyzerPage', 'loadAnalyzerPage', 'multiStagePage',
                     'ductSizerPage', 'pipeSizerPage', 'ctPage', 'roiPage', 'eqListPage',
-                    'wiringPage', 'transformerPage', 'unbalancedLoadPage', 'sprinklerPage'
+                    'wiringPage', 'transformerPage', 'unbalancedLoadPage', 'sprinklerPage', 'fireWaterPage'
                 ].find(id => {
                     const el = document.getElementById(id);
                     return el && !el.classList.contains('hidden');
@@ -4798,6 +5042,7 @@
                 else if (activeView === 'transformerPage') calcTransformer();
                 else if (activeView === 'unbalancedLoadPage') calcUnbalanced();
                 else if (activeView === 'sprinklerPage') calcFire();
+                else if (activeView === 'fireWaterPage') calcFireWater();
             }
 
             function setNfpaPoint(density, area) {
@@ -8082,6 +8327,228 @@
                 drawNfpaChart(area, density);
             }
 
+            function applyFireWaterPreset(preset) {
+                const presets = {
+                    light:  { density: 0.10, area: 1500, hose: 100, duration: 30 },
+                    ord1:   { density: 0.15, area: 1500, hose: 250, duration: 60 },
+                    ord2:   { density: 0.20, area: 1500, hose: 250, duration: 90 },
+                    extra1: { density: 0.30, area: 2500, hose: 500, duration: 90 },
+                    extra2: { density: 0.40, area: 2500, hose: 500, duration: 120 }
+                };
+                const sel = document.getElementById('fw_hazard');
+                if (sel && sel.value !== preset && presets[preset]) {
+                    sel.value = preset;
+                }
+                if (presets[preset]) {
+                    document.getElementById('fw_density').value = presets[preset].density.toFixed(2);
+                    document.getElementById('fw_area').value = presets[preset].area;
+                    document.getElementById('fw_hose').value = presets[preset].hose;
+                    document.getElementById('fw_duration').value = presets[preset].duration;
+                }
+                calcFireWater();
+            }
+
+            function calcFireWater() {
+                const density = parseFloat(document.getElementById('fw_density')?.value) || 0.15;
+                const area = parseFloat(document.getElementById('fw_area')?.value) || 1500;
+                const hydMargin = parseFloat(document.getElementById('fw_hyd_margin')?.value) || 0;
+                const hoseGpm = parseFloat(document.getElementById('fw_hose')?.value) || 0;
+                const standpipeGpm = parseFloat(document.getElementById('fw_standpipe')?.value) || 0;
+                const duration = parseFloat(document.getElementById('fw_duration')?.value) || 60;
+                const tankMargin = parseFloat(document.getElementById('fw_tank_margin')?.value) || 0;
+
+                // Update SI helper labels
+                const densSiEl = document.getElementById('fw_density_si');
+                const areaSiEl = document.getElementById('fw_area_si');
+                if (densSiEl) densSiEl.innerText = `${(density * 40.746).toFixed(1)} mm/min`;
+                if (areaSiEl) areaSiEl.innerText = `${(area * 0.092903).toFixed(1)} m²`;
+
+                // Flow calculations (GPM)
+                const qSprinklerBase = density * area;
+                const qSprinkler = qSprinklerBase * (1 + hydMargin / 100);
+                const qTotal = qSprinkler + hoseGpm + standpipeGpm;
+
+                // Standard NFPA 20 Centrifugal Fire Pump nominal ratings (GPM)
+                const nfpa20Pumps = [25, 50, 100, 150, 200, 250, 300, 400, 450, 500, 750, 1000, 1250, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000];
+                let selectedPump = nfpa20Pumps.find(r => r >= qTotal / 1.40 && r >= qSprinkler) || nfpa20Pumps[nfpa20Pumps.length - 1];
+                // Prefer nominal rating >= qTotal when within standard range, or show overload %
+                const nominalPump = nfpa20Pumps.find(r => r >= qTotal) || selectedPump;
+                const pumpLoadPct = (qTotal / nominalPump) * 100;
+
+                // Water Volume calculations (US Gallons & m³)
+                const volSprGal = qSprinkler * duration;
+                const volHoseGal = hoseGpm * duration;
+                const volSpGal = standpipeGpm * duration;
+                const volNetGal = volSprGal + volHoseGal + volSpGal;
+                const volMarginGal = volNetGal * (tankMargin / 100);
+                const volTotalGal = volNetGal + volMarginGal;
+
+                const galToM3 = 0.00378541178;
+                const volSprM3 = volSprGal * galToM3;
+                const volHoseM3 = volHoseGal * galToM3;
+                const volSpM3 = volSpGal * galToM3;
+                const volMarginM3 = volMarginGal * galToM3;
+                const volTotalM3 = volTotalGal * galToM3;
+
+                // Update top KPI cards
+                const elQSpr = document.getElementById('fw_res_q_spr');
+                if (elQSpr) {
+                    elQSpr.innerText = `${qSprinkler.toFixed(1)} GPM`;
+                    document.getElementById('fw_res_q_spr_si').innerText = `${(qSprinkler * 3.78541).toFixed(0)} LPM (Base: ${qSprinklerBase.toFixed(0)} GPM)`;
+                    document.getElementById('fw_res_q_tot').innerText = `${qTotal.toFixed(1)} GPM`;
+                    document.getElementById('fw_res_q_tot_si').innerText = `${(qTotal * 3.78541).toFixed(0)} LPM (${(qTotal * 0.227125).toFixed(1)} m³/hr)`;
+                    document.getElementById('fw_res_pump').innerText = `${nominalPump} GPM`;
+                    document.getElementById('fw_res_pump_load').innerText = `${pumpLoadPct.toFixed(0)}% of Rated (${(nominalPump * 3.78541).toFixed(0)} LPM)`;
+                    document.getElementById('fw_res_vol_m3').innerText = `${volTotalM3.toFixed(1)} m³`;
+                    document.getElementById('fw_res_vol_gal').innerText = `${Math.round(volTotalGal).toLocaleString()} US Gal`;
+
+                    document.getElementById('fw_duration_badge').innerText = `${duration} Min Supply`;
+                    document.getElementById('fw_brk_spr').innerText = `${volSprM3.toFixed(1)} m³ (${Math.round(volSprGal).toLocaleString()} gal)`;
+                    document.getElementById('fw_brk_hose').innerText = `${volHoseM3.toFixed(1)} m³ (${Math.round(volHoseGal).toLocaleString()} gal)`;
+                    document.getElementById('fw_brk_sp').innerText = `${volSpM3.toFixed(1)} m³ (${Math.round(volSpGal).toLocaleString()} gal)`;
+                    document.getElementById('fw_brk_margin').innerText = `${volMarginM3.toFixed(1)} m³ (${Math.round(volMarginGal).toLocaleString()} gal)`;
+                    document.getElementById('fw_brk_total').innerText = `${volTotalM3.toFixed(1)} m³ (${Math.round(volTotalM3 * 1000).toLocaleString()} L)`;
+                }
+
+                drawFireWaterChart(duration, volSprM3, volHoseM3, volSpM3, volMarginM3, volTotalM3, volTotalGal);
+            }
+
+            function drawFireWaterChart(duration, volSprM3, volHoseM3, volSpM3, volMarginM3, volTotalM3, volTotalGal) {
+                const canvas = document.getElementById('fireWaterChart');
+                if (!canvas) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                const logicalW = rect.width > 100 ? rect.width : 760;
+                const logicalH = rect.height > 100 ? rect.height : 320;
+                if (canvas.width !== Math.round(logicalW * dpr) || canvas.height !== Math.round(logicalH * dpr)) {
+                    canvas.width = Math.round(logicalW * dpr);
+                    canvas.height = Math.round(logicalH * dpr);
+                }
+
+                const ctx = canvas.getContext('2d');
+                ctx.save();
+                ctx.scale(dpr, dpr);
+
+                const isDark = document.documentElement.classList.contains('dark');
+                ctx.clearRect(0, 0, logicalW, logicalH);
+
+                const margins = { left: 64, right: 70, top: 32, bottom: 44 };
+                const w = logicalW - margins.left - margins.right;
+                const h = logicalH - margins.top - margins.bottom;
+
+                const maxT = Math.max(30, duration);
+                const maxV = Math.max(10, Math.ceil(volTotalM3 * 1.12 / 10) * 10);
+
+                const getX = (t) => margins.left + (t / maxT) * w;
+                const getY = (v) => margins.top + h - (v / maxV) * h;
+
+                // Gridlines
+                ctx.strokeStyle = isDark ? 'rgba(51, 65, 85, 0.6)' : 'rgba(226, 232, 240, 0.9)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                const yTicks = 5;
+                for (let i = 0; i <= yTicks; i++) {
+                    const v = (maxV / yTicks) * i;
+                    const y = getY(v);
+                    ctx.moveTo(margins.left, y);
+                    ctx.lineTo(margins.left + w, y);
+                }
+                const tStep = maxT <= 60 ? 10 : (maxT <= 120 ? 15 : 30);
+                for (let t = 0; t <= maxT; t += tStep) {
+                    const x = getX(t);
+                    ctx.moveTo(x, margins.top);
+                    ctx.lineTo(x, margins.top + h);
+                }
+                ctx.stroke();
+
+                // Stacked area fills from t = 0 to t = maxT
+                const layers = [
+                    { label: 'Sprinkler', vEnd: volSprM3, fill: 'rgba(59, 130, 246, 0.28)', stroke: '#3b82f6' },
+                    { label: '+ Hose Stream', vEnd: volSprM3 + volHoseM3, fill: 'rgba(249, 115, 22, 0.25)', stroke: '#f97316' },
+                    { label: '+ Standpipe', vEnd: volSprM3 + volHoseM3 + volSpM3, fill: 'rgba(168, 85, 247, 0.25)', stroke: '#a855f7' },
+                    { label: 'Total w/ Tank Margin', vEnd: volTotalM3, fill: 'rgba(16, 185, 129, 0.22)', stroke: '#10b981' }
+                ];
+
+                let prevEnd = 0;
+                layers.forEach(layer => {
+                    if (layer.vEnd <= prevEnd + 0.01) return;
+                    ctx.beginPath();
+                    ctx.moveTo(getX(0), getY(0));
+                    ctx.lineTo(getX(maxT), getY(layer.vEnd));
+                    ctx.lineTo(getX(maxT), getY(prevEnd));
+                    ctx.closePath();
+                    ctx.fillStyle = layer.fill;
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = layer.stroke;
+                    ctx.lineWidth = 2.5;
+                    ctx.moveTo(getX(0), getY(0));
+                    ctx.lineTo(getX(maxT), getY(layer.vEnd));
+                    ctx.stroke();
+
+                    prevEnd = layer.vEnd;
+                });
+
+                // Axes Frame
+                ctx.strokeStyle = isDark ? '#94a3b8' : '#334155';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(margins.left, margins.top, w, h);
+
+                // Labels
+                ctx.fillStyle = isDark ? '#cbd5e1' : '#334155';
+                ctx.font = '600 11px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                for (let t = 0; t <= maxT; t += tStep) {
+                    ctx.fillText(`${t}m`, getX(t), margins.top + h + 18);
+                }
+                ctx.font = 'bold 12px Inter, sans-serif';
+                ctx.fillText('Fire Duration Time (minutes)', margins.left + w / 2, margins.top + h + 36);
+
+                // Left Y-Axis (m³) & Right Y-Axis (US Gallons)
+                ctx.font = '600 11px Inter, sans-serif';
+                for (let i = 0; i <= yTicks; i++) {
+                    const vM3 = (maxV / yTicks) * i;
+                    const vGal = vM3 / 0.00378541178;
+                    const y = getY(vM3);
+                    ctx.textAlign = 'right';
+                    ctx.fillText(`${vM3.toFixed(0)} m³`, margins.left - 8, y + 4);
+                    ctx.textAlign = 'left';
+                    ctx.fillText(`${Math.round(vGal / 100) * 100} gal`, margins.left + w + 8, y + 4);
+                }
+
+                // Final Total Endpoint Marker
+                const endX = getX(maxT);
+                const endY = getY(volTotalM3);
+                ctx.beginPath();
+                ctx.arc(endX, endY, 6, 0, 2 * Math.PI);
+                ctx.fillStyle = '#10b981';
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+                ctx.stroke();
+
+                // Callout badge
+                const badgeText = `Required Tank: ${volTotalM3.toFixed(1)} m³ (${Math.round(volTotalGal).toLocaleString()} gal)`;
+                ctx.font = 'bold 11px Inter, sans-serif';
+                const bw = ctx.measureText(badgeText).width + 16;
+                const bx = endX - bw - 12;
+                const by = Math.max(margins.top + 8, endY - 12);
+                ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.95)';
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.roundRect(bx, by, bw, 22, 5);
+                ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+                ctx.textAlign = 'left';
+                ctx.fillText(badgeText, bx + 8, by + 15);
+
+                ctx.restore();
+            }
+
             function calcESFR() {
                 const h = parseFloat(document.getElementById('esfr_ceiling').value) || 0;
                 const s = parseFloat(document.getElementById('esfr_storage').value) || 0;
@@ -8184,6 +8651,7 @@
                 calcStorm();
                 calcPond();
                 calcFire();
+                calcFireWater();
                 calcESFR();
                 updateFuel();
                 initHoverSounds();
