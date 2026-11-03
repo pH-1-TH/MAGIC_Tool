@@ -1933,10 +1933,18 @@
 
         <!-- Duct Performance Graph -->
         <div
-            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mt-6 p-2 overflow-hidden transition-colors">
-            <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100 pt-4 px-6">System Nomogram & Operating Point
-            </h2>
-            <canvas id="ductChart" width="1000" height="400" class="w-full h-auto block mt-2 border-none"></canvas>
+            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mt-6 p-4 overflow-hidden transition-colors">
+            <div class="flex flex-wrap items-center justify-between gap-2 px-2 pb-2 border-b border-slate-100 dark:border-slate-700/60">
+                <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">System Nomogram & Operating Point</h2>
+                <div class="flex flex-wrap items-center gap-3 text-xs">
+                    <span class="flex items-center gap-1.5 text-blue-500 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>Exact Dia.</span>
+                    <span class="flex items-center gap-1.5 text-emerald-500 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>Commercial Std.</span>
+                    <span class="text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 px-2.5 py-0.5 rounded-full border border-teal-200 dark:border-teal-800/60 font-medium">
+                        Drag OP to adjust Flow/Friction • Hover to inspect
+                    </span>
+                </div>
+            </div>
+            <canvas id="ductChart" width="1000" height="420" class="w-full h-auto block mt-2 border-none"></canvas>
         </div>
     </div>
 
@@ -2222,10 +2230,18 @@
 
         <!-- Pipe Performance Graph -->
         <div
-            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mt-6 p-2 overflow-hidden transition-colors">
-            <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100 pt-4 px-6">Hydraulic Nomogram & Operating
-                Point</h2>
-            <canvas id="pipeChart" width="1000" height="400" class="w-full h-auto block mt-2 border-none"></canvas>
+            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mt-6 p-4 overflow-hidden transition-colors">
+            <div class="flex flex-wrap items-center justify-between gap-2 px-2 pb-2 border-b border-slate-100 dark:border-slate-700/60">
+                <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Hydraulic Nomogram & Operating Point</h2>
+                <div class="flex flex-wrap items-center gap-3 text-xs">
+                    <span class="flex items-center gap-1.5 text-blue-500 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>Exact Dia.</span>
+                    <span class="flex items-center gap-1.5 text-emerald-500 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>Standard DN</span>
+                    <span class="text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/30 px-2.5 py-0.5 rounded-full border border-cyan-200 dark:border-cyan-800/60 font-medium">
+                        Drag OP to adjust Flow/Friction • Hover to inspect
+                    </span>
+                </div>
+            </div>
+            <canvas id="pipeChart" width="1000" height="420" class="w-full h-auto block mt-2 border-none"></canvas>
         </div>
     </div>
 
@@ -7856,12 +7872,8 @@
                     let V = (4 * Q_m3s) / (Math.PI * Math.pow(D_mid, 2));
                     let Re = (rho * V * D_mid) / mu;
 
-                    let f;
-                    if (Re < 2300) {
-                        f = 64 / Re;
-                    } else {
-                        f = Math.pow(-1.8 * Math.log10(Math.pow((epsilon_m / (3.7 * D_mid)), 1.11) + (6.9 / Re)), -2);
-                    }
+                    const safeRe = Math.max(Re, 500);
+                    let f = Math.pow(-1.8 * Math.log10(Math.pow((epsilon_m / (3.7 * D_mid)), 1.11) + (6.9 / safeRe)), -2);
 
                     let friction = f * (rho / 2) * (Math.pow(V, 2) / D_mid);
 
@@ -7885,221 +7897,409 @@
             }
 
             function calcFlowProps(Q_m3s, D_m, rho, mu, epsilon_m) {
-                if (Q_m3s <= 0 || D_m <= 0) return { V: 0, F: 0 };
-                let V = (4 * Q_m3s) / (Math.PI * Math.pow(D_m, 2));
-                let Re = (rho * V * D_m) / mu;
-                let f;
-                if (Re < 2300) {
-                    f = 64 / Re;
-                } else {
-                    f = Math.pow(-1.8 * Math.log10(Math.pow((epsilon_m / (3.7 * D_m)), 1.11) + (6.9 / Re)), -2);
-                }
-                let F = f * (rho / 2) * (Math.pow(V, 2) / D_m);
-                return { V, F };
+                if (Q_m3s <= 0 || D_m <= 0) return { V: 0, F: 0, Re: 0 };
+                const V = (4 * Q_m3s) / (Math.PI * Math.pow(D_m, 2));
+                const Re = (rho * V * D_m) / mu;
+                // Use continuous turbulent Haaland formula across nomogram range to prevent artificial Re=2300 step kinks
+                const safeRe = Math.max(Re, 500);
+                const f = Math.pow(-1.8 * Math.log10(Math.pow((epsilon_m / (3.7 * D_m)), 1.11) + (6.9 / safeRe)), -2);
+                const F = f * (rho / 2) * (Math.pow(V, 2) / D_m);
+                return { V, F, Re };
             }
+
+            window._nomogramStates = window._nomogramStates || {};
 
             function drawLogLogNomogram(canvasId, inputFlow, flowUnit, Q_m3s, D_m, rho, mu, epsilon, maxFric, maxVel, isPipe) {
                 const canvas = document.getElementById(canvasId);
                 if (!canvas) return;
+
+                // High-DPI responsive canvas setup
+                const rect = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                const width = rect.width > 120 ? rect.width : 1000;
+                const height = rect.width > 120 ? Math.round(width * 0.42) : 420;
+                if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
+                    canvas.width = Math.round(width * dpr);
+                    canvas.height = Math.round(height * dpr);
+                }
+
                 const ctx = canvas.getContext('2d');
-                const width = canvas.width, height = canvas.height;
+                ctx.save();
+                ctx.scale(dpr, dpr);
                 ctx.clearRect(0, 0, width, height);
 
                 const isDark = document.documentElement.classList.contains('dark');
                 const sys = isPipe ? currentPipeSys : currentDuctSys;
 
-                const margins = { left: 60, right: 30, top: 20, bottom: 40 };
+                const margins = { left: 68, right: 32, top: 24, bottom: 44 };
                 const chartW = width - margins.left - margins.right;
                 const chartH = height - margins.top - margins.bottom;
 
-                let isValidOP = (inputFlow > 0 && D_m > 0 && Q_m3s > 0 && !isNaN(inputFlow));
-
-                // Use smart fallbacks so the background grid ALWAYS renders beautifully
-                let plotFlow = isValidOP ? inputFlow : (isPipe ? (sys === 'IP' ? 150 : 10) : (sys === 'IP' ? 2000 : 1000));
-                let plotQ = isValidOP ? Q_m3s : (isPipe ? (sys === 'IP' ? 0.0094 : 0.01) : (sys === 'IP' ? 0.943 : 1.0));
-                let plotD = isValidOP ? D_m : (isPipe ? 0.1 : 0.4);
+                const isValidOP = (inputFlow > 0 && D_m > 0 && Q_m3s > 0 && !isNaN(inputFlow));
+                const plotFlow = isValidOP ? inputFlow : (isPipe ? (sys === 'IP' ? 150 : 50) : (sys === 'IP' ? 2000 : 1000));
+                const plotQ = isValidOP ? Q_m3s : (isPipe ? (sys === 'IP' ? 0.0094 : 0.000833) : (sys === 'IP' ? 0.943 : 1.0));
+                const plotD = isValidOP ? D_m : (isPipe ? 0.032 : 0.4);
+                const flowToM3s = plotQ / plotFlow;
 
                 const currentF_si = calcFlowProps(plotQ, plotD, rho, mu, epsilon).F;
 
-                // Unit conversions for the chart display labels
+                // Unit conversions for chart display labels
                 const f_conv = sys === 'IP' ? (isPipe ? (1 / 98.0665) : (1 / 8.1722)) : 1;
                 const v_conv = sys === 'IP' ? (isPipe ? 3.28084 : 196.85) : 1;
                 const f_label = sys === 'IP' ? (isPipe ? 'ft/100ft' : 'in.wg/100ft') : 'Pa/m';
                 const v_label = sys === 'IP' ? (isPipe ? 'ft/s' : 'FPM') : 'm/s';
 
-                let displayF = currentF_si * f_conv;
-                let displayMaxFric = maxFric * f_conv;
+                const displayF = currentF_si * f_conv;
+                const displayMaxFric = maxFric * f_conv;
 
-                let logQ = Math.log10(Math.max(plotFlow, 1e-10));
-                let logF = Math.log10(Math.max(displayF, 1e-5));
+                // Lock grid bounds while dragging so the axes don't jump mid-drag
+                const prevSt = window._nomogramStates[canvasId] || { hoverPt: null, isDragging: false, lockedBounds: null };
+                let pStartQ, pEndQ, pStartF, pEndF;
+                if (prevSt.isDragging && prevSt.lockedBounds) {
+                    ({ pStartQ, pEndQ, pStartF, pEndF } = prevSt.lockedBounds);
+                } else {
+                    const logQ = Math.log10(Math.max(plotFlow, 1e-10));
+                    const logF = Math.log10(Math.max(displayF, 1e-5));
+                    pStartQ = Math.floor(logQ) - 1;
+                    pEndQ = Math.ceil(logQ) + 1;
+                    if (pEndQ - pStartQ < 2) pEndQ = pStartQ + 2;
+                    pStartF = Math.floor(logF) - 1;
+                    pEndF = Math.ceil(logF) + 1;
+                    if (pEndF - pStartF < 2) pEndF = pStartF + 2;
+                }
 
-                // Mathematically safe integer boundaries for Log-Log grid to prevent floating-point loop breaks
-                let pStartQ = Math.floor(logQ) - 1;
-                let pEndQ = Math.ceil(logQ) + 1;
-                if (pEndQ - pStartQ < 2) pEndQ = pStartQ + 2;
-
-                let pStartF = Math.floor(logF) - 1;
-                let pEndF = Math.ceil(logF) + 1;
-                if (pEndF - pStartF < 2) pEndF = pStartF + 2;
-
-                let qMin = Math.pow(10, pStartQ);
-                let qMax = Math.pow(10, pEndQ);
-                let fMin = Math.pow(10, pStartF);
-                let fMax = Math.pow(10, pEndF);
+                const qMin = Math.pow(10, pStartQ);
+                const qMax = Math.pow(10, pEndQ);
+                const fMin = Math.pow(10, pStartF);
+                const fMax = Math.pow(10, pEndF);
 
                 const getX = (q) => margins.left + ((Math.log10(q) - pStartQ) / (pEndQ - pStartQ)) * chartW;
                 const getY = (f) => height - margins.bottom - ((Math.log10(f) - pStartF) / (pEndF - pStartF)) * chartH;
 
+                // Standard commercial sizes (mm)
+                const stdSizesMm = isPipe
+                    ? [15, 20, 25, 32, 40, 50, 65, 80, 100, 125, 150, 200, 250, 300, 350, 400, 500, 600]
+                    : [80, 100, 125, 150, 200, 250, 315, 355, 400, 450, 500, 560, 630, 710, 800, 900, 1000, 1250, 1600];
+
+                const exactD_mm = plotD * 1000;
+                const recStdMm = stdSizesMm.find(s => s >= exactD_mm - 0.1) || stdSizesMm[stdSizesMm.length - 1];
+                const recStdD_m = recStdMm / 1000;
+
+                window._nomogramStates[canvasId] = {
+                    ...prevSt,
+                    margins, pStartQ, pEndQ, pStartF, pEndF,
+                    flowToM3s, f_conv, v_conv, f_label, v_label, flowUnit,
+                    rho, mu, epsilon, isPipe, sys, stdSizesMm,
+                    opX: getX(plotFlow), opY: getY(displayF)
+                };
+
+                // Interactive Hover & Drag-and-Drop Binding
+                if (!canvas.dataset.nomoInteractiveBound) {
+                    canvas.dataset.nomoInteractiveBound = 'true';
+
+                    const getNomoEvent = (evt) => {
+                        const r = canvas.getBoundingClientRect();
+                        const mx = evt.clientX - r.left;
+                        const my = evt.clientY - r.top;
+                        const st = window._nomogramStates[canvasId];
+                        const m = st.margins;
+                        const cw = r.width - m.left - m.right;
+                        const ch = r.height - m.top - m.bottom;
+                        const inBounds = (mx >= m.left && mx <= r.width - m.right && my >= m.top && my <= r.height - m.bottom);
+
+                        const fracX = Math.max(0, Math.min(1, (mx - m.left) / cw));
+                        const fracY = Math.max(0, Math.min(1, (r.height - m.bottom - my) / ch));
+                        const qVal = Math.pow(10, st.pStartQ + fracX * (st.pEndQ - st.pStartQ));
+                        const fVal = Math.pow(10, st.pStartF + fracY * (st.pEndF - st.pStartF));
+
+                        const opPx = m.left + ((Math.log10(Math.max(1e-9, parseFloat(document.getElementById(st.isPipe ? 'pipe_flow' : 'duct_flow').value) || 1)) - st.pStartQ) / (st.pEndQ - st.pStartQ)) * cw;
+                        const nearOP = Math.hypot(mx - st.opX * (r.width / width), my - st.opY * (r.height / height)) <= 16;
+
+                        return { mx, my, inBounds, qVal, fVal, nearOP };
+                    };
+
+                    canvas.addEventListener('mousedown', (evt) => {
+                        const info = getNomoEvent(evt);
+                        const st = window._nomogramStates[canvasId];
+                        if (info.inBounds) {
+                            st.isDragging = true;
+                            st.lockedBounds = { pStartQ: st.pStartQ, pEndQ: st.pEndQ, pStartF: st.pStartF, pEndF: st.pEndF };
+                            canvas.style.cursor = 'grabbing';
+                            const flowEl = document.getElementById(st.isPipe ? 'pipe_flow' : 'duct_flow');
+                            const fricEl = document.getElementById(st.isPipe ? 'pipe_maxFric' : 'duct_maxFric');
+                            if (flowEl) flowEl.value = info.qVal >= 10 ? Math.round(info.qVal) : Number(info.qVal.toPrecision(3));
+                            if (fricEl) fricEl.value = info.fVal >= 10 ? Math.round(info.fVal) : Number(info.fVal.toPrecision(3));
+                            if (st.isPipe) updatePipeSizer();
+                            else updateDuctSizer();
+                            evt.preventDefault();
+                        }
+                    });
+
+                    canvas.addEventListener('mousemove', (evt) => {
+                        const info = getNomoEvent(evt);
+                        const st = window._nomogramStates[canvasId];
+                        if (!st) return;
+
+                        if (st.isDragging) {
+                            canvas.style.cursor = 'grabbing';
+                            const flowEl = document.getElementById(st.isPipe ? 'pipe_flow' : 'duct_flow');
+                            const fricEl = document.getElementById(st.isPipe ? 'pipe_maxFric' : 'duct_maxFric');
+                            if (flowEl) flowEl.value = info.qVal >= 10 ? Math.round(info.qVal) : Number(info.qVal.toPrecision(3));
+                            if (fricEl) fricEl.value = info.fVal >= 10 ? Math.round(info.fVal) : Number(info.fVal.toPrecision(3));
+                            st.hoverPt = { q: info.qVal, f: info.fVal };
+                            if (st.isPipe) updatePipeSizer();
+                            else updateDuctSizer();
+                            return;
+                        }
+
+                        if (!info.inBounds) {
+                            if (st.hoverPt !== null) {
+                                st.hoverPt = null;
+                                canvas.style.cursor = 'default';
+                                if (st.isPipe) updatePipeSizer();
+                                else updateDuctSizer();
+                            }
+                            return;
+                        }
+
+                        canvas.style.cursor = info.nearOP ? 'grab' : 'crosshair';
+                        st.hoverPt = { q: info.qVal, f: info.fVal };
+                        if (st.isPipe) updatePipeSizer();
+                        else updateDuctSizer();
+                    });
+
+                    canvas.addEventListener('mouseleave', () => {
+                        const st = window._nomogramStates[canvasId];
+                        if (st && !st.isDragging && st.hoverPt !== null) {
+                            st.hoverPt = null;
+                            canvas.style.cursor = 'default';
+                            if (st.isPipe) updatePipeSizer();
+                            else updateDuctSizer();
+                        }
+                    });
+
+                    window.addEventListener('mouseup', () => {
+                        const st = window._nomogramStates[canvasId];
+                        if (st && st.isDragging) {
+                            st.isDragging = false;
+                            st.lockedBounds = null;
+                            canvas.style.cursor = 'grab';
+                            if (st.isPipe) updatePipeSizer();
+                            else updateDuctSizer();
+                        }
+                    });
+                }
+
                 // 1. Draw Log-Log Grid
                 ctx.lineWidth = 1;
-                ctx.font = '10px Inter';
+                ctx.font = '600 10.5px Inter, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
 
                 for (let p = pStartQ; p <= pEndQ; p++) {
                     for (let i = 1; i <= 9; i++) {
-                        let val = i * Math.pow(10, p);
-                        if (val > qMax) break;
-                        let x = getX(val);
+                        const val = i * Math.pow(10, p);
+                        if (val > qMax * 1.0001) break;
+                        const x = getX(val);
                         ctx.beginPath();
                         ctx.moveTo(x, margins.top);
                         ctx.lineTo(x, height - margins.bottom);
-                        ctx.strokeStyle = (i === 1) ? (isDark ? '#475569' : '#cbd5e1') : (isDark ? '#334155' : '#f1f5f9');
+                        ctx.strokeStyle = (i === 1) ? (isDark ? '#475569' : '#cbd5e1') : (isDark ? 'rgba(51, 65, 85, 0.55)' : '#f1f5f9');
                         ctx.stroke();
 
                         if (i === 1 || i === 2 || i === 5) {
                             ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
-                            let displayVal = val >= 1 ? val.toFixed(0) : val.toPrecision(1);
-                            ctx.fillText(displayVal, x, height - margins.bottom + 5);
+                            const displayVal = val >= 1 ? val.toFixed(0) : val.toPrecision(1);
+                            ctx.fillText(displayVal, x, height - margins.bottom + 6);
                         }
                     }
                 }
-                ctx.font = 'bold 12px Inter';
-                ctx.fillText(`Volumetric Flow Rate (${flowUnit})`, margins.left + chartW / 2, height - margins.bottom + 25);
+                ctx.fillStyle = isDark ? '#cbd5e1' : '#334155';
+                ctx.font = 'bold 12px Inter, sans-serif';
+                ctx.fillText(`Volumetric Flow Rate (${flowUnit})`, margins.left + chartW / 2, height - margins.bottom + 24);
 
+                ctx.font = '600 10.5px Inter, sans-serif';
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'middle';
                 for (let p = pStartF; p <= pEndF; p++) {
                     for (let i = 1; i <= 9; i++) {
-                        let val = i * Math.pow(10, p);
-                        if (val > fMax) break;
-                        let y = getY(val);
+                        const val = i * Math.pow(10, p);
+                        if (val > fMax * 1.0001) break;
+                        const y = getY(val);
                         ctx.beginPath();
                         ctx.moveTo(margins.left, y);
                         ctx.lineTo(width - margins.right, y);
-                        ctx.strokeStyle = (i === 1) ? (isDark ? '#475569' : '#cbd5e1') : (isDark ? '#334155' : '#f1f5f9');
+                        ctx.strokeStyle = (i === 1) ? (isDark ? '#475569' : '#cbd5e1') : (isDark ? 'rgba(51, 65, 85, 0.55)' : '#f1f5f9');
                         ctx.stroke();
 
                         if (i === 1 || i === 2 || i === 5) {
                             ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
-                            let displayVal = val >= 1 ? val.toFixed(0) : val.toPrecision(1);
-                            ctx.fillText(displayVal, margins.left - 5, y);
+                            const displayVal = val >= 1 ? val.toFixed(0) : val.toPrecision(1);
+                            ctx.fillText(displayVal, margins.left - 8, y);
                         }
                     }
                 }
                 ctx.save();
-                ctx.translate(20, margins.top + chartH / 2);
+                ctx.translate(16, margins.top + chartH / 2);
                 ctx.rotate(-Math.PI / 2);
-                ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+                ctx.fillStyle = isDark ? '#cbd5e1' : '#334155';
                 ctx.textAlign = 'center';
-                ctx.font = 'bold 12px Inter';
+                ctx.font = 'bold 12px Inter, sans-serif';
                 ctx.fillText(`Pressure Drop (${f_label})`, 0, 0);
                 ctx.restore();
 
+                // Clip inside plot frame
                 ctx.save();
                 ctx.beginPath();
                 ctx.rect(margins.left, margins.top, chartW, chartH);
                 ctx.clip();
 
-                // 2. Draw Reference Velocity Lines dynamically generated based on unit system
-                let velocities;
-                if (isPipe) {
-                    velocities = sys === 'IP' ? [1.5, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0, 20.0] : [0.4, 0.6, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0, 10.0];
-                } else {
-                    velocities = sys === 'IP' ? [400, 600, 800, 1000, 1500, 2000, 3000, 4000] : [2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0];
-                }
+                // 2. Family of Standard Commercial Diameter Curves (upward-sloping reference lines)
+                stdSizesMm.forEach(dMm => {
+                    const dM = dMm / 1000;
+                    const isRecStd = (dMm === recStdMm && isValidOP);
+                    ctx.beginPath();
+                    const pts = [];
+                    for (let i = 0; i <= 80; i++) {
+                        const q_in = qMin * Math.pow(qMax / qMin, i / 80);
+                        const q_si = q_in * flowToM3s;
+                        const f_val = calcFlowProps(q_si, dM, rho, mu, epsilon).F * f_conv;
+                        if (f_val > 0) pts.push({ x: getX(q_in), y: getY(f_val) });
+                    }
+                    if (pts.length > 1) {
+                        ctx.moveTo(pts[0].x, pts[0].y);
+                        for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+                        ctx.strokeStyle = isRecStd
+                            ? '#10b981'
+                            : (isDark ? 'rgba(56, 189, 248, 0.22)' : 'rgba(14, 165, 233, 0.28)');
+                        ctx.lineWidth = isRecStd ? 2.4 : 1.1;
+                        if (isRecStd) ctx.setLineDash([6, 4]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
 
-                ctx.strokeStyle = isDark ? '#64748b' : '#94a3b8';
-                ctx.lineWidth = 1;
+                    const vis = pts.filter(p => p.x >= margins.left + 20 && p.x <= width - margins.right - 20 && p.y >= margins.top + 14 && p.y <= height - margins.bottom - 14);
+                    if (vis.length > 4) {
+                        const lp = vis[Math.floor(vis.length * 0.78)];
+                        const angle = Math.atan2(pts[pts.length - 1].y - pts[0].y, pts[pts.length - 1].x - pts[0].x);
+                        ctx.save();
+                        ctx.translate(lp.x, lp.y);
+                        ctx.rotate(angle);
+                        ctx.fillStyle = isRecStd ? '#10b981' : (isDark ? 'rgba(125, 211, 252, 0.65)' : 'rgba(2, 132, 199, 0.7)');
+                        ctx.font = isRecStd ? 'bold 10.5px Inter, sans-serif' : '600 9.5px Inter, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+                        const lbl = isPipe
+                            ? (sys === 'IP' ? `${(dMm / 25.4).toFixed(1)}"` : `DN${dMm}`)
+                            : (sys === 'IP' ? `Ø${Math.round(dMm / 25.4)}"` : `Ø${dMm}`);
+                        ctx.fillText(lbl, 0, -2);
+                        ctx.restore();
+                    }
+                });
+
+                // 3. Family of Constant Velocity Lines (downward-sloping reference lines)
+                const velocities = isPipe
+                    ? (sys === 'IP' ? [1.5, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0] : [0.4, 0.6, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0])
+                    : (sys === 'IP' ? [400, 600, 800, 1000, 1500, 2000, 3000, 4000] : [2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0]);
 
                 velocities.forEach(v => {
                     ctx.beginPath();
-                    let pts = [];
-                    let v_si = v / v_conv; // Convert display velocity to SI for rigorous fluid dynamic physics equations
-
-                    for (let i = 0; i <= 30; i++) {
-                        let q_input = qMin * Math.pow(qMax / qMin, i / 30);
-                        let q_m3s_i = q_input * (plotQ / plotFlow);
-
-                        let req_D = Math.sqrt((4 * q_m3s_i) / (Math.PI * v_si));
-                        let f_val = calcFlowProps(q_m3s_i, req_D, rho, mu, epsilon).F * f_conv;
-                        if (f_val > 0) {
-                            pts.push({ x: getX(q_input), y: getY(f_val) });
-                        }
+                    const pts = [];
+                    const v_si = v / v_conv;
+                    for (let i = 0; i <= 80; i++) {
+                        const q_in = qMin * Math.pow(qMax / qMin, i / 80);
+                        const q_si = q_in * flowToM3s;
+                        const req_D = Math.sqrt((4 * q_si) / (Math.PI * v_si));
+                        const f_val = calcFlowProps(q_si, req_D, rho, mu, epsilon).F * f_conv;
+                        if (f_val > 0) pts.push({ x: getX(q_in), y: getY(f_val) });
                     }
-
-                    if (pts.length > 0) {
+                    if (pts.length > 1) {
                         ctx.moveTo(pts[0].x, pts[0].y);
                         for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+                        ctx.strokeStyle = isDark ? 'rgba(148, 163, 184, 0.35)' : 'rgba(100, 116, 139, 0.35)';
+                        ctx.lineWidth = 1;
                         ctx.stroke();
                     }
 
-                    let visiblePts = pts.filter(p => p.x >= margins.left && p.x <= width - margins.right && p.y >= margins.top && p.y <= height - margins.bottom);
-                    if (visiblePts.length > 2) {
-                        let labelPt = visiblePts[Math.floor(visiblePts.length / 4)];
-                        let dx = pts[pts.length - 1].x - pts[0].x;
-                        let dy = pts[pts.length - 1].y - pts[0].y;
-                        let angle = Math.atan2(dy, dx);
-
+                    const vis = pts.filter(p => p.x >= margins.left + 20 && p.x <= width - margins.right - 20 && p.y >= margins.top + 14 && p.y <= height - margins.bottom - 14);
+                    if (vis.length > 4) {
+                        const lp = vis[Math.floor(vis.length * 0.25)];
+                        const angle = Math.atan2(pts[pts.length - 1].y - pts[0].y, pts[pts.length - 1].x - pts[0].x);
                         ctx.save();
-                        ctx.translate(labelPt.x, labelPt.y);
+                        ctx.translate(lp.x, lp.y);
                         ctx.rotate(angle);
                         ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'bottom';
-                        ctx.font = '10px Inter';
+                        ctx.font = '600 9.5px Inter, sans-serif';
                         ctx.fillText(`${v} ${v_label}`, 0, -2);
                         ctx.restore();
                     }
                 });
 
-                // 3. Draw Design Limits
-                let yMaxFric = getY(displayMaxFric);
+                // 4. Draw Both Design Limits: Max Friction Limit (red dashed) & Max Velocity Limit (amber dashed)
+                const yMaxFric = getY(displayMaxFric);
                 if (yMaxFric >= margins.top && yMaxFric <= height - margins.bottom) {
                     ctx.beginPath();
                     ctx.moveTo(margins.left, yMaxFric);
                     ctx.lineTo(width - margins.right, yMaxFric);
-                    ctx.strokeStyle = isDark ? '#ef4444' : '#fca5a5';
-                    ctx.setLineDash([5, 5]); ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.setLineDash([6, 4]);
+                    ctx.lineWidth = 1.8;
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#ef4444';
+                    ctx.font = 'bold 10px Inter, sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText(`Max Friction: ${displayMaxFric.toFixed(2)} ${f_label}`, margins.left + 8, yMaxFric - 4);
                 }
 
-                // 4. Draw Selected Diameter Curve (ONLY IF VALID OP)
+                if (maxVel > 0) {
+                    const maxVelPts = [];
+                    for (let i = 0; i <= 80; i++) {
+                        const q_in = qMin * Math.pow(qMax / qMin, i / 80);
+                        const q_si = q_in * flowToM3s;
+                        const req_D = Math.sqrt((4 * q_si) / (Math.PI * maxVel));
+                        const f_val = calcFlowProps(q_si, req_D, rho, mu, epsilon).F * f_conv;
+                        if (f_val > 0) maxVelPts.push({ x: getX(q_in), y: getY(f_val) });
+                    }
+                    if (maxVelPts.length > 1) {
+                        ctx.beginPath();
+                        ctx.moveTo(maxVelPts[0].x, maxVelPts[0].y);
+                        for (let i = 1; i < maxVelPts.length; i++) ctx.lineTo(maxVelPts[i].x, maxVelPts[i].y);
+                        ctx.strokeStyle = '#f59e0b';
+                        ctx.setLineDash([5, 4]);
+                        ctx.lineWidth = 1.8;
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+                }
+
+                // 5. Draw Exact Calculated Diameter Curve & Operating Points
                 if (isValidOP) {
                     ctx.beginPath();
-                    ctx.strokeStyle = isDark ? '#60a5fa' : '#3b82f6';
-                    ctx.lineWidth = 2.5;
-                    let dPts = [];
-                    for (let i = 0; i <= 40; i++) {
-                        let q_input = qMin * Math.pow(qMax / qMin, i / 40);
-                        let q_m3s_i = q_input * (Q_m3s / inputFlow);
-                        let f_val = calcFlowProps(q_m3s_i, D_m, rho, mu, epsilon).F * f_conv;
-                        if (f_val > 0) {
-                            dPts.push({ x: getX(q_input), y: getY(f_val) });
-                        }
+                    ctx.strokeStyle = isDark ? '#60a5fa' : '#2563eb';
+                    ctx.lineWidth = 2.8;
+                    const dPts = [];
+                    for (let i = 0; i <= 100; i++) {
+                        const q_in = qMin * Math.pow(qMax / qMin, i / 100);
+                        const q_si = q_in * flowToM3s;
+                        const f_val = calcFlowProps(q_si, D_m, rho, mu, epsilon).F * f_conv;
+                        if (f_val > 0) dPts.push({ x: getX(q_in), y: getY(f_val) });
                     }
-
-                    if (dPts.length > 0) {
+                    if (dPts.length > 1) {
                         ctx.moveTo(dPts[0].x, dPts[0].y);
                         for (let i = 1; i < dPts.length; i++) ctx.lineTo(dPts[i].x, dPts[i].y);
                         ctx.stroke();
                     }
 
-                    let validDPts = dPts.filter(pt => pt.y <= height - margins.bottom && pt.y >= margins.top);
+                    const validDPts = dPts.filter(pt => pt.y <= height - margins.bottom - 10 && pt.y >= margins.top + 10);
                     if (validDPts.length > 5) {
-                        let p1 = validDPts[validDPts.length - 2];
-                        let p2 = validDPts[validDPts.length - 1];
-                        let angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-                        let midPt = validDPts[Math.floor(validDPts.length * 0.85)];
+                        const p1 = validDPts[validDPts.length - 2];
+                        const p2 = validDPts[validDPts.length - 1];
+                        const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                        const midPt = validDPts[Math.floor(validDPts.length * 0.82)];
 
                         ctx.save();
                         ctx.translate(midPt.x, midPt.y);
@@ -8107,51 +8307,158 @@
                         ctx.fillStyle = isDark ? '#93c5fd' : '#1d4ed8';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'bottom';
-                        ctx.font = 'bold 12px Inter';
+                        ctx.font = 'bold 11.5px Inter, sans-serif';
 
-                        let dLabel = isPipe ?
-                            (sys === 'IP' ? `${(D_m * 39.3701).toFixed(1)} in` : `DN${Math.round(D_m * 1000)}`) :
-                            (sys === 'IP' ? `Ø${(D_m * 39.3701).toFixed(1)} in` : `Ø${Math.round(D_m * 1000)} mm`);
+                        const dLabel = isPipe
+                            ? (sys === 'IP' ? `Exact ${(D_m * 39.3701).toFixed(2)}" (DN${recStdMm})` : `Exact Ø${(D_m * 1000).toFixed(1)}mm (Std DN${recStdMm})`)
+                            : (sys === 'IP' ? `Exact Ø${(D_m * 39.3701).toFixed(1)}"` : `Exact Ø${Math.round(D_m * 1000)} mm`);
 
-                        ctx.fillText(dLabel, 0, -4);
+                        ctx.fillText(dLabel, 0, -5);
                         ctx.restore();
                     }
 
-                    // 5. Draw Operating Point
-                    let currentX = getX(inputFlow);
-                    let currentY = getY(displayF);
+                    // Plot Commercial Standard Size Operating Point (emerald ring) at inputFlow
+                    const stdProps = calcFlowProps(Q_m3s, recStdD_m, rho, mu, epsilon);
+                    const stdF_disp = stdProps.F * f_conv;
+                    const currentX = getX(inputFlow);
+                    const currentY = getY(displayF);
+                    const stdY = getY(stdF_disp);
 
+                    if (Math.abs(stdY - currentY) > 3) {
+                        ctx.beginPath();
+                        ctx.arc(currentX, stdY, 5, 0, 2 * Math.PI);
+                        ctx.fillStyle = '#10b981';
+                        ctx.fill();
+                        ctx.lineWidth = 1.8;
+                        ctx.strokeStyle = isDark ? '#0f172a' : '#ffffff';
+                        ctx.stroke();
+                    }
+
+                    // Operating Point Crosshairs & Draggable Marker
                     ctx.beginPath();
                     ctx.moveTo(currentX, margins.top); ctx.lineTo(currentX, height - margins.bottom);
                     ctx.moveTo(margins.left, currentY); ctx.lineTo(width - margins.right, currentY);
-                    ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(15, 23, 42, 0.2)';
-                    ctx.setLineDash([3, 3]); ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+                    ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(15, 23, 42, 0.25)';
+                    ctx.setLineDash([3, 3]); ctx.lineWidth = 1.2; ctx.stroke(); ctx.setLineDash([]);
 
                     ctx.beginPath();
-                    ctx.arc(currentX, currentY, 5, 0, 2 * Math.PI);
+                    ctx.arc(currentX, currentY, 10, 0, 2 * Math.PI);
+                    ctx.fillStyle = 'rgba(59, 130, 246, 0.22)';
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(currentX, currentY, 6, 0, 2 * Math.PI);
                     ctx.fillStyle = isDark ? '#f8fafc' : '#1e293b';
                     ctx.fill();
-                    ctx.lineWidth = 2;
-                    ctx.strokeStyle = isDark ? '#0f172a' : '#ffffff';
+                    ctx.lineWidth = 2.2;
+                    ctx.strokeStyle = '#3b82f6';
                     ctx.stroke();
 
                     ctx.restore();
 
-                    ctx.fillStyle = isDark ? '#f8fafc' : '#1e293b';
+                    // Operating Point Callout Badge
+                    const currV = calcFlowProps(Q_m3s, D_m, rho, mu, epsilon).V * v_conv;
+                    const stdV = stdProps.V * v_conv;
+                    const opLine1 = `Exact OP: ${displayF.toFixed(2)} ${f_label} | V: ${currV.toFixed(2)} ${v_label}`;
+                    const opLine2 = isPipe
+                        ? `Std DN${recStdMm}: ${stdF_disp.toFixed(0)} ${f_label} | V: ${stdV.toFixed(2)} ${v_label}`
+                        : `Std Ø${recStdMm}mm: ${stdF_disp.toFixed(2)} ${f_label} | V: ${stdV.toFixed(2)} ${v_label}`;
+
+                    ctx.font = 'bold 11px Inter, sans-serif';
+                    const bw = Math.max(ctx.measureText(opLine1).width, ctx.measureText(opLine2).width) + 18;
+                    let bx = currentX + 12;
+                    if (bx + bw > width - margins.right) bx = currentX - bw - 12;
+                    const by = Math.max(margins.top + 6, currentY - 42);
+
+                    ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.90)' : 'rgba(255, 255, 255, 0.94)';
+                    ctx.strokeStyle = '#3b82f6';
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.roundRect(bx, by, bw, 38, 6);
+                    ctx.fill();
+                    ctx.stroke();
+
                     ctx.textAlign = 'left';
-                    ctx.textBaseline = 'middle';
-                    ctx.font = 'bold 12px Inter';
-                    ctx.fillText(`OP: ${displayF.toFixed(2)} ${f_label}`, currentX + 10, currentY - 10);
-                    let currV = calcFlowProps(Q_m3s, D_m, rho, mu, epsilon).V * v_conv;
-                    ctx.fillStyle = isDark ? '#ef4444' : '#ef4444';
-                    ctx.fillText(`V: ${currV.toFixed(1)} ${v_label}`, currentX + 10, currentY + 10);
+                    ctx.textBaseline = 'top';
+                    ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+                    ctx.fillText(opLine1, bx + 9, by + 5);
+                    ctx.fillStyle = '#10b981';
+                    ctx.fillText(opLine2, bx + 9, by + 20);
                 } else {
                     ctx.restore();
                     ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
                     ctx.textAlign = 'center';
-                    ctx.font = 'italic 14px Inter';
-                    ctx.fillText("Enter a valid Flow Rate > 0 to plot operating point.", margins.left + chartW / 2, margins.top + chartH / 2);
+                    ctx.font = 'italic 14px Inter, sans-serif';
+                    ctx.fillText('Enter a valid Flow Rate > 0 to plot operating point.', margins.left + chartW / 2, margins.top + chartH / 2);
                 }
+
+                // 6. Interactive Hover Crosshair & Parameter Readout Tooltip
+                const hPt = window._nomogramStates[canvasId]?.hoverPt;
+                if (hPt) {
+                    const hx = getX(hPt.q);
+                    const hy = getY(hPt.f);
+                    const hQ_m3s = hPt.q * flowToM3s;
+                    const hF_si = hPt.f / f_conv;
+                    const solved = solveFluidDiameter(hQ_m3s, hF_si, 999, rho, mu, epsilon);
+                    const hD_mm = solved.D * 1000;
+                    const hStdMm = stdSizesMm.find(s => s >= hD_mm - 0.1) || stdSizesMm[stdSizesMm.length - 1];
+                    const hVelDisp = solved.V * v_conv;
+
+                    ctx.save();
+                    ctx.setLineDash([3, 3]);
+                    ctx.strokeStyle = '#06b6d4';
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.moveTo(hx, margins.top);
+                    ctx.lineTo(hx, height - margins.bottom);
+                    ctx.moveTo(margins.left, hy);
+                    ctx.lineTo(width - margins.right, hy);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    ctx.beginPath();
+                    ctx.arc(hx, hy, 4.5, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#06b6d4';
+                    ctx.fill();
+
+                    const l1 = `Flow (Q): ${hPt.q >= 10 ? hPt.q.toFixed(1) : hPt.q.toPrecision(3)} ${flowUnit}`;
+                    const l2 = `Friction (ΔP/L): ${hPt.f >= 10 ? hPt.f.toFixed(1) : hPt.f.toFixed(2)} ${f_label}`;
+                    const l3 = isPipe
+                        ? `Diameter: ${hD_mm.toFixed(1)} mm (${(hD_mm / 25.4).toFixed(2)}") → Std DN${hStdMm}`
+                        : `Diameter: Ø${hD_mm.toFixed(0)} mm (${(hD_mm / 25.4).toFixed(1)}") → Std Ø${hStdMm}mm`;
+                    const l4 = `Velocity (V): ${hVelDisp.toFixed(2)} ${v_label}`;
+
+                    ctx.font = '600 10.5px Inter, sans-serif';
+                    const tw = Math.max(ctx.measureText(l1).width, ctx.measureText(l2).width, ctx.measureText(l3).width, ctx.measureText(l4).width) + 20;
+                    const th = 72;
+                    let tx = hx + 14;
+                    if (tx + tw > width - margins.right) tx = hx - tw - 14;
+                    let ty = hy - th - 10;
+                    if (ty < margins.top + 4) ty = Math.min(height - margins.bottom - th - 4, hy + 12);
+
+                    ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.97)';
+                    ctx.strokeStyle = '#06b6d4';
+                    ctx.lineWidth = 1.3;
+                    ctx.beginPath();
+                    ctx.roundRect(tx, ty, tw, th, 7);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    ctx.fillStyle = isDark ? '#38bdf8' : '#0284c7';
+                    ctx.font = 'bold 11px Inter, sans-serif';
+                    ctx.fillText(l1, tx + 10, ty + 7);
+                    ctx.font = '600 10.5px Inter, sans-serif';
+                    ctx.fillStyle = isDark ? '#f8fafc' : '#1e293b';
+                    ctx.fillText(l2, tx + 10, ty + 23);
+                    ctx.fillStyle = '#10b981';
+                    ctx.fillText(l3, tx + 10, ty + 39);
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.fillText(l4, tx + 10, ty + 54);
+                }
+
+                ctx.restore();
             }
 
             // Global state for Duct Unit System
