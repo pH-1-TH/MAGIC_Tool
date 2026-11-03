@@ -949,7 +949,7 @@
 
                 <div
                     class="flex flex-col xl:flex-row xl:items-end justify-between border-b border-slate-200 dark:border-slate-700 pb-2 mt-8 mb-4 gap-4">
-                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">Psychrometric Chart</h2>
+                    <div class="flex flex-wrap items-center gap-2.5"><h2 class="text-xl font-bold text-slate-900 dark:text-white">Psychrometric Chart</h2><span class="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-800/60">Drag points to adjust • Hover to inspect parameters</span></div>
                     <div
                         class="flex flex-wrap items-center gap-3 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700">
                         <label
@@ -1371,7 +1371,7 @@
 
                 <div
                     class="flex flex-col xl:flex-row xl:items-end justify-between border-b border-slate-200 dark:border-slate-700 pb-2 mt-8 mb-4 gap-4">
-                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">Psychrometric Chart</h2>
+                    <div class="flex flex-wrap items-center gap-2.5"><h2 class="text-xl font-bold text-slate-900 dark:text-white">Psychrometric Chart</h2><span class="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-800/60">Drag points to adjust • Hover to inspect parameters</span></div>
                     <div
                         class="flex flex-wrap items-center gap-3 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700">
                         <label
@@ -1570,7 +1570,7 @@
 
                 <div
                     class="flex flex-col xl:flex-row xl:items-end justify-between border-b border-slate-200 dark:border-slate-700 pb-2 mt-8 mb-4 gap-4">
-                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">Psychrometric Chart</h2>
+                    <div class="flex flex-wrap items-center gap-2.5"><h2 class="text-xl font-bold text-slate-900 dark:text-white">Psychrometric Chart</h2><span class="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-800/60">Drag points to adjust • Hover to inspect parameters</span></div>
                     <div
                         class="flex flex-wrap items-center gap-3 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-slate-700">
                         <label
@@ -6427,6 +6427,21 @@
                 else updateAll();
             }
 
+            function calcWetBulb(Tdb, Tdp, W) {
+                if (W <= 0) return Tdp;
+                let low = Math.max(-50, Math.min(Tdp, Tdb));
+                let high = Tdb;
+                for (let i = 0; i < 24; i++) {
+                    const mid = 0.5 * (low + high);
+                    const pws_wb = 0.61078 * Math.exp((17.27 * mid) / (mid + 237.3));
+                    const ws_wb = 0.621945 * (pws_wb / Math.max(0.1, Patm - pws_wb));
+                    const w_calc = ((2501 - 2.326 * mid) * ws_wb - 1.006 * (Tdb - mid)) / (2501 + 1.86 * Tdb - 4.186 * mid);
+                    if (w_calc > W) high = mid;
+                    else low = mid;
+                }
+                return 0.5 * (low + high);
+            }
+
             function calcProperties(Tdb, val2, type) {
                 const Pws = 0.61078 * Math.exp((17.27 * Tdb) / (Tdb + 237.3));
                 let Pw, RH, W, Tdp;
@@ -6442,9 +6457,10 @@
                     Pw = (W * Patm) / (0.621945 + W);
                 }
 
+                if (Pw < 0) Pw = 0;
                 if (Pw > Pws) Pw = Pws; // Cap at saturation
 
-                RH = (Pw / Pws) * 100;
+                RH = Pws > 0 ? (Pw / Pws) * 100 : 0;
                 W = 0.621945 * (Pw / (Patm - Pw));
                 const H = 1.006 * Tdb + W * (2501 + 1.846 * Tdb);
                 const V = (0.287042 * (Tdb + 273.15) * (1 + 1.6078 * W)) / Patm;
@@ -6456,7 +6472,33 @@
                     Tdp = -273.15;
                 }
 
-                return { Tdb, RH, Pws, Pw, W, H, V, Tdp };
+                const Twb = calcWetBulb(Tdb, Tdp, W);
+
+                return { Tdb, Twb, RH, Pws, Pw, W, H, V, Tdp };
+            }
+
+            function setPsyInputsFromDrag(tdbId, val2Id, typeId, newTdb, newW) {
+                const st = calcProperties(newTdb, newW, 'W');
+                const tEl = document.getElementById(tdbId);
+                const vEl = document.getElementById(val2Id);
+                const type = document.getElementById(typeId)?.value || 'RH';
+                if (tEl) tEl.value = st.Tdb.toFixed(1);
+                if (vEl) {
+                    if (type === 'RH') vEl.value = st.RH.toFixed(1);
+                    else if (type === 'Tdp') vEl.value = st.Tdp.toFixed(1);
+                    else if (type === 'W') vEl.value = st.W.toFixed(5);
+                }
+            }
+
+            function projectMixFraction(tdb, w, s1, s2) {
+                if (!s1 || !s2) return 0.2;
+                const dx = (s2.Tdb - s1.Tdb) / 50;
+                const dy = (s2.W - s1.W) / 0.030;
+                const len2 = dx * dx + dy * dy;
+                if (len2 < 1e-7) return 0.2;
+                const px = (tdb - s1.Tdb) / 50;
+                const py = (w - s1.W) / 0.030;
+                return Math.max(0, Math.min(1, (px * dx + py * dy) / len2));
             }
 
             function calculateCapacityVals(sIn, sOut, massFlow) {
@@ -6562,6 +6604,7 @@
 
                 const rows = [
                     { label: 'Dry Bulb Temp', unit: '°C', k: 'Tdb' },
+                    { label: 'Wet Bulb Temp', unit: '°C', k: 'Twb' },
                     { label: 'Relative Humidity', unit: '%', k: 'RH' },
                     { label: 'Dew Point Temp', unit: '°C', k: 'Tdp' },
                     { label: 'Humidity Ratio', unit: 'kg/kg', k: 'W', dec: 5 },
@@ -6626,15 +6669,30 @@
                 updateFn();
             }
 
+            window._psyChartStates = window._psyChartStates || {};
+
             function drawChart(canvasId, points, lines, boundary = null) {
                 const canvas = document.getElementById(canvasId);
+                if (!canvas) return;
+
+                // High-DPI responsive canvas setup
+                const rect = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                const defaultH = canvasId === 'ms_psyChart' ? 480 : 410;
+                const width = rect.width > 120 ? rect.width : 900;
+                const height = rect.height > 120 ? Math.round(width * (defaultH / 900)) : defaultH;
+                if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
+                    canvas.width = Math.round(width * dpr);
+                    canvas.height = Math.round(height * dpr);
+                }
+
                 const ctx = canvas.getContext('2d');
-                const width = canvas.width, height = canvas.height;
+                ctx.save();
+                ctx.scale(dpr, dpr);
                 ctx.clearRect(0, 0, width, height);
 
                 const isDark = document.documentElement.classList.contains('dark');
-
-                const margins = { left: 60, right: 30, top: 20, bottom: 40 };
+                const margins = { left: 66, right: 34, top: 24, bottom: 44 };
                 const chartW = width - margins.left - margins.right;
                 const chartH = height - margins.top - margins.bottom;
 
@@ -6642,8 +6700,151 @@
                 const getX = (Tdb) => margins.left + (Tdb / maxTdb) * chartW;
                 const getY = (W) => height - margins.bottom - (W / maxW) * chartH;
 
+                const prevState = window._psyChartStates[canvasId] || { hoverInfo: null, dragIndex: null };
+                window._psyChartStates[canvasId] = {
+                    ...prevState,
+                    points, lines, boundary,
+                    margins, maxTdb, maxW
+                };
+
+                // Bind interactive Drag-and-Drop & Hover listeners once per canvas
+                if (!canvas.dataset.psyInteractiveBound) {
+                    canvas.dataset.psyInteractiveBound = 'true';
+
+                    const getEventCoords = (evt) => {
+                        const r = canvas.getBoundingClientRect();
+                        const mx = evt.clientX - r.left;
+                        const my = evt.clientY - r.top;
+                        const st = window._psyChartStates[canvasId];
+                        const m = st.margins;
+                        const cw = r.width - m.left - m.right;
+                        const ch = r.height - m.top - m.bottom;
+
+                        // Convert pixel to (Tdb, W)
+                        let rawTdb = ((mx - m.left) / cw) * st.maxTdb;
+                        let rawW = ((r.height - m.bottom - my) / ch) * st.maxW;
+                        const inBounds = (mx >= m.left - 10 && mx <= r.width - m.right + 10 && my >= m.top - 10 && my <= r.height - m.bottom + 10);
+
+                        const clampedTdb = Math.max(0, Math.min(st.maxTdb, rawTdb));
+                        const pws = 0.61078 * Math.exp((17.27 * clampedTdb) / (clampedTdb + 237.3));
+                        const wSat = 0.621945 * (pws / (Patm - pws));
+                        const clampedW = Math.max(0, Math.min(Math.min(st.maxW, wSat), rawW));
+
+                        // Hit-test existing state points (within 14px radius)
+                        let hitIndex = null;
+                        let minDist = 14;
+                        (st.points || []).forEach((pt, idx) => {
+                            if (!pt.s) return;
+                            const px = m.left + (pt.s.Tdb / st.maxTdb) * cw;
+                            const py = r.height - m.bottom - (pt.s.W / st.maxW) * ch;
+                            const dist = Math.hypot(mx - px, my - py);
+                            if (dist <= minDist) {
+                                minDist = dist;
+                                hitIndex = idx;
+                            }
+                        });
+
+                        return { mx, my, inBounds, tdb: clampedTdb, w: clampedW, hitIndex };
+                    };
+
+                    canvas.addEventListener('mousedown', (evt) => {
+                        const info = getEventCoords(evt);
+                        const st = window._psyChartStates[canvasId];
+                        if (info.hitIndex !== null && st.points[info.hitIndex]?.onDrag) {
+                            st.dragIndex = info.hitIndex;
+                            canvas.style.cursor = 'grabbing';
+                            evt.preventDefault();
+                        }
+                    });
+
+                    canvas.addEventListener('mousemove', (evt) => {
+                        const info = getEventCoords(evt);
+                        const st = window._psyChartStates[canvasId];
+                        if (!st) return;
+
+                        if (st.dragIndex !== null) {
+                            const pt = st.points[st.dragIndex];
+                            canvas.style.cursor = 'grabbing';
+                            if (pt && typeof pt.onDrag === 'function') {
+                                pt.onDrag(info.tdb, info.w);
+                            }
+                            // Update hoverInfo to follow the dragged point
+                            const updatedSt = window._psyChartStates[canvasId];
+                            const updatedPt = updatedSt.points[st.dragIndex];
+                            if (updatedPt && updatedPt.s) {
+                                updatedSt.hoverInfo = {
+                                    tdb: updatedPt.s.Tdb,
+                                    w: updatedPt.s.W,
+                                    props: updatedPt.s,
+                                    ptIndex: st.dragIndex,
+                                    ptLabel: updatedPt.name || `Point ${updatedPt.l}`,
+                                    ptColor: updatedPt.c,
+                                    isDragging: true
+                                };
+                                drawChart(canvasId, updatedSt.points, updatedSt.lines, updatedSt.boundary);
+                            }
+                            return;
+                        }
+
+                        if (!info.inBounds) {
+                            if (st.hoverInfo !== null) {
+                                st.hoverInfo = null;
+                                canvas.style.cursor = 'default';
+                                drawChart(canvasId, st.points, st.lines, st.boundary);
+                            }
+                            return;
+                        }
+
+                        if (info.hitIndex !== null) {
+                            const hitPt = st.points[info.hitIndex];
+                            canvas.style.cursor = hitPt.onDrag ? 'grab' : 'pointer';
+                            st.hoverInfo = {
+                                tdb: hitPt.s.Tdb,
+                                w: hitPt.s.W,
+                                props: hitPt.s,
+                                ptIndex: info.hitIndex,
+                                ptLabel: hitPt.name || `Point ${hitPt.l}`,
+                                ptColor: hitPt.c,
+                                canDrag: !!hitPt.onDrag
+                            };
+                        } else {
+                            canvas.style.cursor = 'crosshair';
+                            const cursorProps = calcProperties(info.tdb, info.w, 'W');
+                            st.hoverInfo = {
+                                tdb: cursorProps.Tdb,
+                                w: cursorProps.W,
+                                props: cursorProps,
+                                ptIndex: null,
+                                ptLabel: 'Cursor Air State',
+                                ptColor: '#06b6d4',
+                                canDrag: false
+                            };
+                        }
+                        drawChart(canvasId, st.points, st.lines, st.boundary);
+                    });
+
+                    canvas.addEventListener('mouseleave', () => {
+                        const st = window._psyChartStates[canvasId];
+                        if (st && st.dragIndex === null && st.hoverInfo !== null) {
+                            st.hoverInfo = null;
+                            canvas.style.cursor = 'default';
+                            drawChart(canvasId, st.points, st.lines, st.boundary);
+                        }
+                    });
+
+                    window.addEventListener('mouseup', () => {
+                        const st = window._psyChartStates[canvasId];
+                        if (st && st.dragIndex !== null) {
+                            st.dragIndex = null;
+                            canvas.style.cursor = 'grab';
+                            drawChart(canvasId, st.points, st.lines, st.boundary);
+                        }
+                    });
+                }
+
+                // 1. Background Grid (Tdb & W)
                 ctx.beginPath();
-                ctx.strokeStyle = isDark ? '#334155' : '#f1f5f9';
+                ctx.strokeStyle = isDark ? 'rgba(51, 65, 85, 0.65)' : 'rgba(226, 232, 240, 0.9)';
                 ctx.lineWidth = 1;
 
                 for (let t = 0; t <= maxTdb; t += 5) {
@@ -6651,29 +6852,47 @@
                     ctx.moveTo(x, margins.top);
                     ctx.lineTo(x, height - margins.bottom);
                     ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
-                    ctx.font = '11px Inter';
+                    ctx.font = '600 11px Inter, sans-serif';
                     ctx.textAlign = 'center';
-                    ctx.fillText(t, x, height - margins.bottom + 15);
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(`${t}°`, x, height - margins.bottom + 8);
                 }
 
-                for (let w = 0; w <= maxW; w += 0.005) {
+                for (let w = 0; w <= maxW + 0.0001; w += 0.005) {
                     const y = getY(w);
                     ctx.moveTo(margins.left, y);
                     ctx.lineTo(width - margins.right, y);
                     ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
-                    ctx.font = '11px Inter';
+                    ctx.font = '600 11px Inter, sans-serif';
                     ctx.textAlign = 'right';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(w.toFixed(3), margins.left - 8, y);
                 }
                 ctx.stroke();
 
+                // Axis Titles
+                ctx.fillStyle = isDark ? '#cbd5e1' : '#334155';
+                ctx.font = 'bold 11.5px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText('Dry Bulb Temperature Tdb (°C)', margins.left + chartW / 2, height - margins.bottom + 25);
+
+                ctx.save();
+                ctx.translate(14, margins.top + chartH / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText('Humidity Ratio W (kg/kg)', 0, 0);
+                ctx.restore();
+
+                // 2. Smooth Relative Humidity Curves (20%, 40%, 60%, 80%, 100%)
                 [0.2, 0.4, 0.6, 0.8, 1.0].forEach((rh) => {
                     ctx.beginPath();
-                    ctx.strokeStyle = rh === 1.0 ? (isDark ? '#38bdf8' : '#0ea5e9') : (isDark ? '#1e3a8a' : '#e0f2fe');
-                    ctx.lineWidth = rh === 1.0 ? 2 : 1.5;
+                    ctx.strokeStyle = rh === 1.0 ? (isDark ? '#38bdf8' : '#0284c7') : (isDark ? 'rgba(56, 189, 248, 0.25)' : 'rgba(14, 165, 233, 0.30)');
+                    ctx.lineWidth = rh === 1.0 ? 2.2 : 1.4;
                     let started = false;
-                    for (let t = 0; t <= maxTdb; t += 0.5) {
+                    let labelPos = null;
+                    for (let t = 0; t <= maxTdb; t += 0.25) {
                         const pws = 0.61078 * Math.exp((17.27 * t) / (t + 237.3));
                         const pw = rh * pws;
                         let W = 0.621945 * (pw / (Patm - pw));
@@ -6686,11 +6905,22 @@
                         } else {
                             ctx.lineTo(x, y);
                         }
+                        if (Math.abs(t - 32) < 0.15 && W < maxW * 0.95) {
+                            labelPos = { x, y };
+                        }
                     }
                     ctx.stroke();
+
+                    if (labelPos) {
+                        ctx.fillStyle = rh === 1.0 ? (isDark ? '#38bdf8' : '#0284c7') : (isDark ? '#64748b' : '#94a3b8');
+                        ctx.font = '600 9.5px Inter, sans-serif';
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'bottom';
+                        ctx.fillText(`${Math.round(rh * 100)}%`, labelPos.x + 2, labelPos.y - 2);
+                    }
                 });
 
-                // Draw Operating Boundary Zone
+                // 3. Draw Operating Boundary Zone
                 if (boundary && boundary.show) {
                     ctx.beginPath();
                     if (boundary.humType === 'Tdp') {
@@ -6716,7 +6946,7 @@
                         ctx.moveTo(getX(boundary.tMin), getY(wLMin));
                         ctx.lineTo(getX(boundary.tMin), getY(wLMax));
 
-                        for (let t = boundary.tMin; t <= boundary.tMax; t += 0.5) {
+                        for (let t = boundary.tMin; t <= boundary.tMax; t += 0.25) {
                             let pws = 0.61078 * Math.exp((17.27 * t) / (t + 237.3));
                             let w = 0.621945 * ((rhMax * pws) / (Patm - (rhMax * pws)));
                             ctx.lineTo(getX(t), getY(w));
@@ -6729,7 +6959,7 @@
                         ctx.lineTo(getX(boundary.tMax), getY(wRMax));
                         ctx.lineTo(getX(boundary.tMax), getY(wRMin));
 
-                        for (let t = boundary.tMax; t >= boundary.tMin; t -= 0.5) {
+                        for (let t = boundary.tMax; t >= boundary.tMin; t -= 0.25) {
                             let pws = 0.61078 * Math.exp((17.27 * t) / (t + 237.3));
                             let w = 0.621945 * ((rhMin * pws) / (Patm - (rhMin * pws)));
                             ctx.lineTo(getX(t), getY(w));
@@ -6737,42 +6967,142 @@
                         ctx.closePath();
                     }
 
-                    ctx.fillStyle = isDark ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.25)';
+                    ctx.fillStyle = isDark ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.22)';
                     ctx.fill();
-                    ctx.strokeStyle = isDark ? 'rgba(34, 197, 94, 0.5)' : 'rgba(34, 197, 94, 0.7)';
+                    ctx.strokeStyle = isDark ? 'rgba(34, 197, 94, 0.55)' : 'rgba(34, 197, 94, 0.75)';
                     ctx.lineWidth = 1.5;
                     if (isDark) ctx.setLineDash([4, 4]);
                     ctx.stroke();
                     ctx.setLineDash([]);
                 }
 
+                // 4. Process Lines
                 lines.forEach(line => {
                     if (!line.p1 || !line.p2) return;
                     ctx.beginPath();
                     ctx.moveTo(getX(line.p1.Tdb), getY(line.p1.W));
                     ctx.lineTo(getX(line.p2.Tdb), getY(line.p2.W));
                     ctx.strokeStyle = line.c;
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 2.4;
                     if (line.d) ctx.setLineDash([5, 5]);
                     ctx.stroke();
                     ctx.setLineDash([]);
                 });
 
-                points.forEach(pt => {
+                const activeHover = window._psyChartStates[canvasId]?.hoverInfo;
+
+                // 5. Draggable State Points
+                points.forEach((pt, idx) => {
                     if (!pt.s) return;
-                    let px = getX(pt.s.Tdb), py = getY(pt.s.W);
+                    const px = getX(pt.s.Tdb), py = getY(pt.s.W);
+                    const isHoveredPt = activeHover && activeHover.ptIndex === idx;
+
+                    if (isHoveredPt) {
+                        ctx.beginPath();
+                        ctx.arc(px, py, 12, 0, 2 * Math.PI);
+                        ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(15, 23, 42, 0.12)';
+                        ctx.fill();
+                    }
+
                     ctx.beginPath();
-                    ctx.arc(px, py, 6, 0, 2 * Math.PI);
+                    ctx.arc(px, py, isHoveredPt ? 7.5 : 6.2, 0, 2 * Math.PI);
                     ctx.fillStyle = pt.c;
                     ctx.fill();
-                    ctx.lineWidth = 2;
-                    ctx.strokeStyle = isDark ? '#1e293b' : '#ffffff';
+                    ctx.lineWidth = 2.2;
+                    ctx.strokeStyle = isDark ? '#0f172a' : '#ffffff';
                     ctx.stroke();
-                    ctx.fillStyle = isDark ? '#f8fafc' : '#1e293b';
-                    ctx.font = 'bold 12px Inter';
+
+                    ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+                    ctx.font = 'bold 12px Inter, sans-serif';
                     ctx.textAlign = 'left';
-                    ctx.fillText(pt.l, px + 8, py - 8);
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText(pt.l, px + 8, py - 4);
                 });
+
+                // 6. Interactive Hover Crosshairs & Psychrometric Parameter Tooltip
+                if (activeHover && activeHover.props) {
+                    const hp = activeHover.props;
+                    const hx = getX(hp.Tdb);
+                    const hy = getY(hp.W);
+
+                    // Crosshair lines to Tdb and W axes
+                    ctx.save();
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeStyle = activeHover.ptColor || (isDark ? '#38bdf8' : '#0284c7');
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.moveTo(hx, margins.top);
+                    ctx.lineTo(hx, height - margins.bottom);
+                    ctx.moveTo(margins.left, hy);
+                    ctx.lineTo(width - margins.right, hy);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    // If hovering arbitrary chart point (not snapped to an existing state node), draw probe dot
+                    if (activeHover.ptIndex === null) {
+                        ctx.beginPath();
+                        ctx.arc(hx, hy, 5, 0, 2 * Math.PI);
+                        ctx.fillStyle = '#06b6d4';
+                        ctx.fill();
+                        ctx.lineWidth = 1.8;
+                        ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+                        ctx.stroke();
+                    }
+
+                    const dragTag = activeHover.isDragging
+                        ? ' [Dragging...]'
+                        : (activeHover.canDrag ? ' [Drag to Move]' : '');
+                    const title = `${activeHover.ptLabel}${dragTag}`;
+                    const row1 = `Tdb: ${hp.Tdb.toFixed(1)} °C   |   Twb: ${(hp.Twb ?? calcWetBulb(hp.Tdb, hp.Tdp, hp.W)).toFixed(1)} °C`;
+                    const row2 = `RH:  ${hp.RH.toFixed(1)} %    |   Tdp: ${hp.Tdp.toFixed(1)} °C`;
+                    const row3 = `W:   ${hp.W.toFixed(5)} kg/kg (${(hp.W * 1000).toFixed(2)} g/kg)`;
+                    const row4 = `h:   ${hp.H.toFixed(2)} kJ/kg  |   v: ${hp.V.toFixed(4)} m³/kg`;
+                    const row5 = `Pw:  ${hp.Pw.toFixed(4)} kPa`;
+
+                    ctx.font = 'bold 11.5px Inter, sans-serif';
+                    const wTitle = ctx.measureText(title).width;
+                    ctx.font = '600 10.5px Inter, sans-serif';
+                    const boxW = Math.max(
+                        wTitle,
+                        ctx.measureText(row1).width,
+                        ctx.measureText(row2).width,
+                        ctx.measureText(row3).width,
+                        ctx.measureText(row4).width
+                    ) + 24;
+                    const boxH = 108;
+
+                    let tx = hx + 14;
+                    if (tx + boxW > width - margins.right) tx = hx - boxW - 14;
+                    if (tx < margins.left + 4) tx = margins.left + 4;
+                    let ty = hy - boxH - 10;
+                    if (ty < margins.top + 4) ty = Math.min(height - margins.bottom - boxH - 4, hy + 12);
+
+                    ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.97)';
+                    ctx.strokeStyle = activeHover.ptColor || '#06b6d4';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.roundRect(tx, ty, boxW, boxH, 8);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    ctx.font = 'bold 11.5px Inter, sans-serif';
+                    ctx.fillStyle = activeHover.ptColor || (isDark ? '#38bdf8' : '#0284c7');
+                    ctx.fillText(title, tx + 11, ty + 8);
+
+                    ctx.font = '600 10.5px Inter, sans-serif';
+                    ctx.fillStyle = isDark ? '#f8fafc' : '#1e293b';
+                    ctx.fillText(row1, tx + 11, ty + 27);
+                    ctx.fillText(row2, tx + 11, ty + 43);
+                    ctx.fillStyle = isDark ? '#cbd5e1' : '#334155';
+                    ctx.fillText(row3, tx + 11, ty + 59);
+                    ctx.fillText(row4, tx + 11, ty + 75);
+                    ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+                    ctx.fillText(row5, tx + 11, ty + 90);
+                }
+
+                ctx.restore();
             }
 
 
@@ -6832,10 +7162,28 @@
 
                 drawChart('psyChart',
                     [
-                        { s: state1, c: '#2563eb', l: '1' },
-                        { s: state2, c: '#16a34a', l: '2' },
-                        { s: state3, c: '#d97706', l: '3' },
-                        { s: state4, c: '#9333ea', l: '4' }
+                        {
+                            s: state1, c: '#2563eb', l: '1', name: 'Point 1 (Room / Return Air)',
+                            onDrag: (tdb, w) => { setPsyInputsFromDrag('t1', 'val2_1', 'inputType1', tdb, w); updateAll(); }
+                        },
+                        {
+                            s: state2, c: '#16a34a', l: '2', name: 'Point 2 (Outdoor Air)',
+                            onDrag: (tdb, w) => { setPsyInputsFromDrag('t2', 'val2_2', 'inputType2', tdb, w); updateAll(); }
+                        },
+                        {
+                            s: state3, c: '#d97706', l: '3', name: 'Point 3 (Mixed Air - Drag to Mix)',
+                            onDrag: (tdb, w) => {
+                                const alpha = projectMixFraction(tdb, w, state1, state2);
+                                const totF = (parseFloat(document.getElementById('flow1').value) || 0) + (parseFloat(document.getElementById('flow2').value) || 0) || 1000;
+                                document.getElementById('flow2').value = Math.round(totF * alpha);
+                                document.getElementById('flow1').value = Math.round(totF * (1 - alpha));
+                                updateAll();
+                            }
+                        },
+                        {
+                            s: state4, c: '#9333ea', l: '4', name: 'Point 4 (Supply Air)',
+                            onDrag: (tdb, w) => { setPsyInputsFromDrag('t4', 'val2_4', 'inputType4', tdb, w); updateAll(); }
+                        }
                     ],
                     [
                         { p1: state1, p2: state3, c: '#94a3b8', d: true },
@@ -7009,11 +7357,65 @@
 
                 drawChart('load_psyChart',
                     [
-                        { s: ls1, c: '#2563eb', l: '1' },
-                        { s: ls2, c: '#16a34a', l: '2' },
-                        { s: ls3, c: '#d97706', l: '3' },
-                        { s: ls4, c: '#9333ea', l: '4' },
-                        { s: ls5, c: '#ef4444', l: '5' }
+                        {
+                            s: ls1, c: '#2563eb', l: '1', name: 'Point 1 (Room Air)',
+                            onDrag: (tdb, w) => {
+                                document.getElementById('load_t1').value = tdb.toFixed(1);
+                                if (mFlow3 > 0 && ls5 && ls5.H !== undefined) {
+                                    const st1 = calcProperties(tdb, w, 'W');
+                                    const curQs = parseFloat(document.getElementById('load_Qs').value) || 0;
+                                    const targetQt = Math.max(curQs, mFlow3 * (st1.H - ls5.H));
+                                    document.getElementById('load_Ql').value = Math.max(0, targetQt - curQs).toFixed(2);
+                                }
+                                updateLoadAnalyzer();
+                            }
+                        },
+                        {
+                            s: ls2, c: '#16a34a', l: '2', name: 'Point 2 (Outdoor Air)',
+                            onDrag: (tdb, w) => { setPsyInputsFromDrag('load_t2', 'load_val2_2', 'load_inputType2', tdb, w); updateLoadAnalyzer(); }
+                        },
+                        {
+                            s: ls3, c: '#d97706', l: '3', name: 'Point 3 (Mixed Air - Drag OA Ratio)',
+                            onDrag: (tdb, w) => {
+                                const alpha = projectMixFraction(tdb, w, ls1, ls2);
+                                if (document.getElementById('load_calc_mode').value === 'flow') {
+                                    const totF = (parseFloat(document.getElementById('load_flow1').value) || 0) + (parseFloat(document.getElementById('load_flow2').value) || 0) || 1000;
+                                    document.getElementById('load_flow2').value = Math.round(totF * alpha);
+                                    document.getElementById('load_flow1').value = Math.round(totF * (1 - alpha));
+                                } else {
+                                    document.getElementById('load_oa_ratio').value = (alpha * 100).toFixed(1);
+                                }
+                                updateLoadAnalyzer();
+                            }
+                        },
+                        {
+                            s: ls4, c: '#9333ea', l: '4', name: 'Point 4 (Off-Coil Air)',
+                            onDrag: (tdb, w) => {
+                                if (mFlow3 > 0 && ls5) {
+                                    const cpH = 1.006 + 1.846 * (ls4.W || 0.008);
+                                    const newReheat = Math.max(0, mFlow3 * cpH * (ls5.Tdb - tdb));
+                                    document.getElementById('load_Qreheat').value = newReheat.toFixed(2);
+                                    updateLoadAnalyzer();
+                                }
+                            }
+                        },
+                        {
+                            s: ls5, c: '#ef4444', l: '5', name: 'Point 5 (Required Supply Air)',
+                            onDrag: (tdb, w) => {
+                                const clampedT5 = Math.min((ls1.Tdb || 24) - 0.5, Math.max(5, tdb));
+                                if (document.getElementById('load_calc_mode').value === 'temp') {
+                                    document.getElementById('load_supply_t').value = clampedT5.toFixed(1);
+                                } else if (Qs > 0) {
+                                    const cpR = 1.006 + 1.846 * ((ls1.W + ls5.W) / 2);
+                                    const reqM3 = Qs / (cpR * Math.max(0.5, ls1.Tdb - clampedT5));
+                                    const reqM1 = Math.max(0.01, reqM3 - mFlow2);
+                                    const reqV1 = reqM1 * ls1.V;
+                                    const newF1 = unit === 'LPS' ? reqV1 * 1000 : unit === 'CFM' ? reqV1 / 0.000471947 : reqV1 * 3600;
+                                    document.getElementById('load_flow1').value = Math.round(newF1);
+                                }
+                                updateLoadAnalyzer();
+                            }
+                        }
                     ],
                     [
                         { p1: ls1, p2: ls3, c: '#94a3b8', d: true },
@@ -7386,7 +7788,36 @@
                 ms_nodes.forEach((n, i) => {
                     if (!n.state) return;
                     const color = getMsColor(i);
-                    chartPoints.push({ s: n.state, c: color, l: `${i + 1}` });
+                    let dragFn = null;
+                    if (n.type === 'source' || n.type === 'process') {
+                        dragFn = (tdb, w) => {
+                            const st = calcProperties(tdb, w, 'W');
+                            const tEl = document.getElementById(`ms_${n.id}_tdb`);
+                            const vEl = document.getElementById(`ms_${n.id}_propVal`);
+                            if (tEl) tEl.value = st.Tdb.toFixed(1);
+                            if (vEl) {
+                                if (n.propType === 'RH') vEl.value = st.RH.toFixed(1);
+                                else if (n.propType === 'Tdp') vEl.value = st.Tdp.toFixed(1);
+                                else if (n.propType === 'W') vEl.value = st.W.toFixed(5);
+                            }
+                            syncMsState();
+                        };
+                    } else if (n.type === 'mix') {
+                        dragFn = (tdb, w) => {
+                            const p1 = ms_nodes.find(pn => pn.id === n.p1);
+                            const p2 = ms_nodes.find(pn => pn.id === n.p2);
+                            if (p1 && p1.state && p2 && p2.state) {
+                                const alpha = projectMixFraction(tdb, w, p1.state, p2.state);
+                                const totF = (n.flow1 || 0) + (n.flow2 || 0) || 1000;
+                                const f1El = document.getElementById(`ms_${n.id}_flow1`);
+                                const f2El = document.getElementById(`ms_${n.id}_flow2`);
+                                if (f1El) f1El.value = Math.round(totF * (1 - alpha));
+                                if (f2El) f2El.value = Math.round(totF * alpha);
+                                syncMsState();
+                            }
+                        };
+                    }
+                    chartPoints.push({ s: n.state, c: color, l: `${i + 1}`, name: `Point ${i + 1}: ${n.name}`, onDrag: dragFn });
 
                     if (n.type === 'process') {
                         let p1 = ms_nodes.find(pn => pn.id === n.p1);
