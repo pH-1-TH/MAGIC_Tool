@@ -3323,16 +3323,56 @@
                         Load Parameters</h2>
                     <div class="space-y-4">
                         <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300">Motor Step Catalog (IEC / EIT)</label>
+                                <span id="wire_motor_badge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">15 kW (20 HP)</span>
+                            </div>
+                            <select id="wire_motor_catalog"
+                                class="w-full p-2 rounded border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white text-sm font-medium outline-none focus:ring-2 focus:ring-orange-500"
+                                onchange="applyMotorCatalogStep('wire', this.value)">
+                                <option value="custom">-- Custom / Manual Load Entry --</option>
+                                <option value="0.37">0.37 kW (0.5 HP)</option>
+                                <option value="0.55">0.55 kW (0.75 HP)</option>
+                                <option value="0.75">0.75 kW (1.0 HP)</option>
+                                <option value="1.1">1.1 kW (1.5 HP)</option>
+                                <option value="1.5">1.5 kW (2.0 HP)</option>
+                                <option value="2.2">2.2 kW (3.0 HP)</option>
+                                <option value="3.0">3.0 kW (4.0 HP)</option>
+                                <option value="4.0">4.0 kW (5.5 HP)</option>
+                                <option value="5.5">5.5 kW (7.5 HP)</option>
+                                <option value="7.5">7.5 kW (10 HP)</option>
+                                <option value="11">11 kW (15 HP)</option>
+                                <option value="15" selected>15 kW (20 HP)</option>
+                                <option value="18.5">18.5 kW (25 HP)</option>
+                                <option value="22">22 kW (30 HP)</option>
+                                <option value="30">30 kW (40 HP)</option>
+                                <option value="37">37 kW (50 HP)</option>
+                                <option value="45">45 kW (60 HP)</option>
+                                <option value="55">55 kW (75 HP)</option>
+                                <option value="75">75 kW (100 HP)</option>
+                                <option value="90">90 kW (125 HP)</option>
+                                <option value="110">110 kW (150 HP)</option>
+                                <option value="132">132 kW (175 HP)</option>
+                                <option value="160">160 kW (215 HP)</option>
+                                <option value="200">200 kW (270 HP)</option>
+                                <option value="250">250 kW (335 HP)</option>
+                                <option value="315">315 kW (425 HP)</option>
+                                <option value="355">355 kW (475 HP)</option>
+                                <option value="400">400 kW (550 HP)</option>
+                            </select>
+                        </div>
+                        <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Load
                                 Value</label>
                             <div class="flex gap-2">
-                                <input type="number" id="wire_load" value="15" step="1"
+                                <input type="number" id="wire_load" value="15" step="0.1"
                                     class="flex-grow p-2 rounded focus:ring-2 focus:ring-orange-500 focus:outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-white"
-                                    oninput="calcWiring()">
+                                    oninput="syncMotorCatalogFromInput('wire'); calcWiring()">
                                 <select id="wire_load_unit"
                                     class="w-1/3 p-2 rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white outline-none"
-                                    onchange="calcWiring()">
+                                    onchange="syncMotorCatalogFromInput('wire'); calcWiring()">
                                     <option value="kW">kW</option>
+                                    <option value="HP">HP</option>
                                     <option value="kVA">kVA</option>
                                     <option value="A">Amps</option>
                                 </select>
@@ -3366,13 +3406,22 @@
                                 oninput="calcWiring()">
                         </div>
                         <div class="pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Derating & Ampacity Standard</label>
+                            <select id="wire_std"
+                                class="w-full p-2 rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white outline-none text-sm font-medium"
+                                onchange="populateWiringTable(); calcWiring()">
+                                <option value="EIT" selected>EIT 2001-64 (Thailand • Ref. 40°C Air)</option>
+                                <option value="IEC">IEC 60364-5-52 (International • Ref. 30°C Air)</option>
+                            </select>
+                        </div>
+                        <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Cable
                                 Type & Insulation</label>
                             <select id="wire_type"
                                 class="w-full p-2 rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white outline-none"
                                 onchange="calcWiring()">
-                                <option value="PVC">Cu/PVC (70°C) - IEC01/NYY</option>
-                                <option value="XLPE" selected>Cu/XLPE (90°C) - CV</option>
+                                <option value="PVC">Cu/PVC (70°C) - IEC01 / NYY</option>
+                                <option value="XLPE" selected>Cu/XLPE (90°C) - CV / FD-CV</option>
                             </select>
                         </div>
                         <div>
@@ -3382,8 +3431,8 @@
                             <select id="wire_install"
                                 class="w-full p-2 rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white outline-none"
                                 onchange="calcWiring()">
-                                <option value="G2">Group 2: Conduit in Air</option>
-                                <option value="G5">Group 5: Ventilated Tray</option>
+                                <option value="G2">Group 2 (Method B): Conduit / Wireway in Air</option>
+                                <option value="G5">Group 5 (Method E/F): Perforated Cable Tray / Ladder</option>
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
@@ -3394,11 +3443,14 @@
                                 <select id="wire_temp_amb"
                                     class="w-full p-2 rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white outline-none"
                                     onchange="calcWiring()">
-                                    <option value="30">30°C</option>
+                                    <option value="25">25°C</option>
+                                    <option value="30">30°C (IEC Ref)</option>
                                     <option value="35">35°C</option>
-                                    <option value="40" selected>40°C</option>
+                                    <option value="40" selected>40°C (EIT Ref)</option>
                                     <option value="45">45°C</option>
                                     <option value="50">50°C</option>
+                                    <option value="55">55°C</option>
+                                    <option value="60">60°C</option>
                                 </select>
                             </div>
                             <div>
@@ -3458,34 +3510,38 @@
                             <span class="text-xl font-normal text-slate-500">%</span></div>
                         <div class="text-[10px] text-slate-400 mt-1">Target < 3-5%</div>
                         </div>
-                        <!-- Sized Raceway Card (Now Multi-Display with SI units) -->
+                        <!-- Sized Raceway Card (Multi-Display with SI mm & Imperial in) -->
                         <div class="stat-card border-t-4 border-t-teal-500 md:col-span-3">
-                            <div
-                                class="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider mb-3">
-                                Sized Raceways (Parallel Comparison)</div>
-                            <div class="grid grid-cols-3 gap-4">
-                                <div class="text-center">
-                                    <div class="text-[10px] text-slate-400 uppercase">IMC Conduit</div>
-                                    <div id="wire_res_imc" class="text-xl font-black text-teal-600 dark:text-teal-400">
-                                        --</div>
-                                    <div id="wire_res_imc_mm" class="text-[10px] font-bold text-slate-500 mt-1">-- mm
-                                    </div>
-                                    <div class="text-[8px] text-slate-400">40% Fill</div>
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                                <div class="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
+                                    Sized Raceways (SI mm & Imperial Parallel Comparison)</div>
+                                <div id="wire_res_cable_area_badge" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
+                                    Total Cable Bundle Area: -- mm²
                                 </div>
-                                <div class="text-center border-l border-slate-100 dark:border-slate-700">
-                                    <div class="text-[10px] text-slate-400 uppercase">Wireway</div>
-                                    <div id="wire_res_ww" class="text-xl font-black text-teal-600 dark:text-teal-400">--
-                                    </div>
-                                    <div id="wire_res_ww_mm" class="text-[10px] font-bold text-slate-500 mt-1">-- mm²
-                                    </div>
-                                    <div class="text-[8px] text-slate-400">20% Fill</div>
-                                </div>
-                                <div class="text-center border-l border-slate-100 dark:border-slate-700">
-                                    <div class="text-[10px] text-slate-400 uppercase">Cable Tray</div>
-                                    <div id="wire_res_tray" class="text-xl font-black text-teal-600 dark:text-teal-400">
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="text-center p-2 rounded-lg bg-slate-50/60 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-700/60">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">IMC Conduit</div>
+                                    <div id="wire_res_imc" class="text-xl font-black text-teal-600 dark:text-teal-400 mt-1">
                                         --</div>
-                                    <div class="text-[10px] font-bold text-slate-500 mt-1">Sized Width</div>
-                                    <div class="text-[8px] text-slate-400">Standard Width</div>
+                                    <div id="wire_res_imc_mm" class="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1">-- mm
+                                    </div>
+                                    <div id="wire_res_imc_fill" class="text-[10px] text-slate-400 mt-0.5">40% Max Fill (EIT)</div>
+                                </div>
+                                <div class="text-center p-2 rounded-lg bg-slate-50/60 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-700/60">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Wireway (W × H)</div>
+                                    <div id="wire_res_ww" class="text-xl font-black text-teal-600 dark:text-teal-400 mt-1">--
+                                    </div>
+                                    <div id="wire_res_ww_mm" class="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1">-- mm²
+                                    </div>
+                                    <div id="wire_res_ww_fill" class="text-[10px] text-slate-400 mt-0.5">20% Max Fill (EIT)</div>
+                                </div>
+                                <div class="text-center p-2 rounded-lg bg-slate-50/60 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-700/60">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cable Tray (W × H)</div>
+                                    <div id="wire_res_tray" class="text-xl font-black text-teal-600 dark:text-teal-400 mt-1">
+                                        --</div>
+                                    <div id="wire_res_tray_mm" class="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1">Sized Width (mm)</div>
+                                    <div id="wire_res_tray_fill" class="text-[10px] text-slate-400 mt-0.5">Single-Layer Spacing</div>
                                 </div>
                             </div>
                         </div>
@@ -3500,22 +3556,24 @@
                                     Recommended Cable Size</div>
                                 <div class="text-5xl font-black text-slate-900 dark:text-white" id="wire_res_size">--
                                     <span class="text-2xl font-bold text-slate-400">mm²</span></div>
-                                <p class="text-slate-500 dark:text-slate-400 mt-4 text-sm max-w-md" id="wire_res_desc">
+                                <p class="text-slate-500 dark:text-slate-400 mt-4 text-sm max-w-xl leading-relaxed" id="wire_res_desc">
                                     Selection based on EIT 2001-64 tables for copper conductors under specified
                                     installation conditions.</p>
                             </div>
-                            <div class="w-full md:w-48 space-y-4">
+                            <div class="w-full md:w-56 space-y-3">
                                 <div
-                                    class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase">Max Ampacity (Iz')</div>
+                                    class="bg-slate-50 dark:bg-slate-900/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase">Derated Ampacity (Iz')</div>
                                     <div id="wire_res_max_iz"
-                                        class="text-xl font-bold text-slate-700 dark:text-slate-300">-- A</div>
+                                        class="text-xl font-bold text-slate-700 dark:text-slate-200">-- A</div>
+                                    <div id="wire_res_base_iz" class="text-[10px] text-slate-400 mt-0.5">Base Iz: -- A</div>
                                 </div>
                                 <div
-                                    class="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-800/50 text-center">
-                                    <div class="text-[10px] font-bold text-orange-400 uppercase">Derating Factor</div>
+                                    class="bg-orange-50 dark:bg-orange-900/20 p-3.5 rounded-xl border border-orange-100 dark:border-orange-800/50 text-center">
+                                    <div class="text-[10px] font-bold text-orange-500 dark:text-orange-400 uppercase">Total Derating (Ca × Cg)</div>
                                     <div id="wire_res_total_df"
                                         class="text-xl font-bold text-orange-600 dark:text-orange-400">1.00</div>
+                                    <div id="wire_res_df_detail" class="text-[10px] font-semibold text-orange-600/80 dark:text-orange-300/80 mt-0.5">Ca: 1.00 × Cg: 1.00</div>
                                 </div>
                             </div>
                         </div>
@@ -3524,9 +3582,13 @@
                     <!-- Detailed Table -->
                     <div
                         class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
-                        <h2
-                            class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">
-                            Reference Ampacity Table (Copper)</h2>
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">
+                            <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100" id="wire_table_title">
+                                Reference Ampacity Table (Copper • EIT 2001-64 @ 40°C Air)</h2>
+                            <span id="wire_table_std_badge" class="text-xs font-semibold px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                                EIT 2001-64 Tables 5-20 / 5-23 / 5-27 / 5-29
+                            </span>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
@@ -3912,6 +3974,45 @@
                             Motor Specifications
                         </h2>
                         <div class="space-y-4">
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Standard Motor Step Catalog</label>
+                                    <span id="motor_step_badge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20">7.5 kW (10 HP)</span>
+                                </div>
+                                <select id="motor_step_catalog"
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-slate-50 dark:bg-slate-700 text-sm font-medium outline-none focus:ring-2 focus:ring-yellow-500"
+                                    onchange="applyMotorCatalogStep('motor', this.value)">
+                                    <option value="custom">-- Custom / Manual Rating --</option>
+                                    <option value="0.37">0.37 kW (0.5 HP)</option>
+                                    <option value="0.55">0.55 kW (0.75 HP)</option>
+                                    <option value="0.75">0.75 kW (1.0 HP)</option>
+                                    <option value="1.1">1.1 kW (1.5 HP)</option>
+                                    <option value="1.5">1.5 kW (2.0 HP)</option>
+                                    <option value="2.2">2.2 kW (3.0 HP)</option>
+                                    <option value="3.0">3.0 kW (4.0 HP)</option>
+                                    <option value="4.0">4.0 kW (5.5 HP)</option>
+                                    <option value="5.5">5.5 kW (7.5 HP)</option>
+                                    <option value="7.5" selected>7.5 kW (10 HP)</option>
+                                    <option value="11">11 kW (15 HP)</option>
+                                    <option value="15">15 kW (20 HP)</option>
+                                    <option value="18.5">18.5 kW (25 HP)</option>
+                                    <option value="22">22 kW (30 HP)</option>
+                                    <option value="30">30 kW (40 HP)</option>
+                                    <option value="37">37 kW (50 HP)</option>
+                                    <option value="45">45 kW (60 HP)</option>
+                                    <option value="55">55 kW (75 HP)</option>
+                                    <option value="75">75 kW (100 HP)</option>
+                                    <option value="90">90 kW (125 HP)</option>
+                                    <option value="110">110 kW (150 HP)</option>
+                                    <option value="132">132 kW (175 HP)</option>
+                                    <option value="160">160 kW (215 HP)</option>
+                                    <option value="200">200 kW (270 HP)</option>
+                                    <option value="250">250 kW (335 HP)</option>
+                                    <option value="315">315 kW (425 HP)</option>
+                                    <option value="355">355 kW (475 HP)</option>
+                                    <option value="400">400 kW (550 HP)</option>
+                                </select>
+                            </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label
@@ -3920,10 +4021,10 @@
                                     <div class="flex">
                                         <input type="number" id="motor_power" value="7.5" step="0.1"
                                             class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-l focus:ring-2 focus:ring-yellow-500 outline-none bg-white dark:bg-slate-700"
-                                            oninput="calcMotor()">
+                                            oninput="syncMotorCatalogFromInput('motor'); calcMotor()">
                                         <select id="motor_power_unit"
                                             class="p-2 border border-l-0 border-slate-300 dark:border-slate-600 rounded-r bg-slate-50 dark:bg-slate-600 text-sm"
-                                            onchange="calcMotor()">
+                                            onchange="syncMotorCatalogFromInput('motor'); calcMotor()">
                                             <option value="kW">kW</option>
                                             <option value="HP">HP</option>
                                         </select>
@@ -5555,10 +5656,47 @@
                         <h2 class="text-lg font-bold mb-4">Motor & Starter Inputs</h2>
                         <div class="space-y-4">
                             <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Standard Motor Step Catalog</label>
+                                    <span id="sim_motor_badge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">15 kW (20 HP)</span>
+                                </div>
+                                <select id="sim_motor_catalog"
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white text-sm font-medium outline-none focus:ring-2 focus:ring-emerald-500 mb-3"
+                                    onchange="applyMotorCatalogStep('sim', this.value)">
+                                    <option value="custom">-- Custom / Manual Rating --</option>
+                                    <option value="0.37">0.37 kW (0.5 HP)</option>
+                                    <option value="0.55">0.55 kW (0.75 HP)</option>
+                                    <option value="0.75">0.75 kW (1.0 HP)</option>
+                                    <option value="1.1">1.1 kW (1.5 HP)</option>
+                                    <option value="1.5">1.5 kW (2.0 HP)</option>
+                                    <option value="2.2">2.2 kW (3.0 HP)</option>
+                                    <option value="3.0">3.0 kW (4.0 HP)</option>
+                                    <option value="4.0">4.0 kW (5.5 HP)</option>
+                                    <option value="5.5">5.5 kW (7.5 HP)</option>
+                                    <option value="7.5">7.5 kW (10 HP)</option>
+                                    <option value="11">11 kW (15 HP)</option>
+                                    <option value="15" selected>15 kW (20 HP)</option>
+                                    <option value="18.5">18.5 kW (25 HP)</option>
+                                    <option value="22">22 kW (30 HP)</option>
+                                    <option value="30">30 kW (40 HP)</option>
+                                    <option value="37">37 kW (50 HP)</option>
+                                    <option value="45">45 kW (60 HP)</option>
+                                    <option value="55">55 kW (75 HP)</option>
+                                    <option value="75">75 kW (100 HP)</option>
+                                    <option value="90">90 kW (125 HP)</option>
+                                    <option value="110">110 kW (150 HP)</option>
+                                    <option value="132">132 kW (175 HP)</option>
+                                    <option value="160">160 kW (215 HP)</option>
+                                    <option value="200">200 kW (270 HP)</option>
+                                    <option value="250">250 kW (335 HP)</option>
+                                    <option value="315">315 kW (425 HP)</option>
+                                    <option value="355">355 kW (475 HP)</option>
+                                    <option value="400">400 kW (550 HP)</option>
+                                </select>
                                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Motor
                                     Rating (kW)</label>
                                 <input type="number" id="sim_motor_kw" value="15" step="0.1"
-                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" oninput="calcStarter()">
+                                    class="w-full p-2 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" oninput="syncMotorCatalogFromInput('sim'); calcStarter()">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">System
@@ -10073,36 +10211,171 @@
             }
 
             // ============================================================================
-            // 11. MODULE 9: WIRING & BREAKER
+            // 11. MODULE 9: WIRING & BREAKER (EIT 2001-64 & IEC 60364-5-52)
             // ============================================================================
 
-            const ampacityTable = [
-                { size: 1.5, pvc_g2: 15, pvc_g5: 17, xlpe_g2: 0, xlpe_g5: 0, r: 12.1, x: 0.11 },
-                { size: 2.5, pvc_g2: 21, pvc_g5: 23, xlpe_g2: 0, xlpe_g5: 0, r: 7.41, x: 0.10 },
-                { size: 4, pvc_g2: 28, pvc_g5: 31, xlpe_g2: 0, xlpe_g5: 0, r: 4.61, x: 0.09 },
-                { size: 6, pvc_g2: 36, pvc_g5: 40, xlpe_g2: 0, xlpe_g5: 0, r: 3.08, x: 0.085 },
-                { size: 10, pvc_g2: 50, pvc_g5: 55, xlpe_g2: 0, xlpe_g5: 0, r: 1.83, x: 0.082 },
-                { size: 16, pvc_g2: 66, pvc_g5: 74, xlpe_g2: 88, xlpe_g5: 110, r: 1.15, x: 0.080 },
-                { size: 25, pvc_g2: 84, pvc_g5: 99, xlpe_g2: 114, xlpe_g5: 147, r: 0.727, x: 0.078 },
-                { size: 35, pvc_g2: 104, pvc_g5: 123, xlpe_g2: 143, xlpe_g5: 183, r: 0.524, x: 0.075 },
-                { size: 50, pvc_g2: 125, pvc_g5: 158, xlpe_g2: 174, xlpe_g5: 224, r: 0.387, x: 0.072 },
-                { size: 70, pvc_g2: 160, pvc_g5: 199, xlpe_g2: 222, xlpe_g5: 289, r: 0.268, x: 0.070 },
-                { size: 95, pvc_g2: 194, pvc_g5: 247, xlpe_g2: 272, xlpe_g5: 354, r: 0.193, x: 0.068 },
-                { size: 120, pvc_g2: 225, pvc_g5: 290, xlpe_g2: 317, xlpe_g5: 413, r: 0.153, x: 0.067 }
+            // Standard IEC 60034-1 / EIT Motor Step Catalog (kW, HP, typical IE3 eff & PF)
+            const motorStepCatalog = [
+                { kw: 0.37, hp: 0.5, eff: 0.78, pf: 0.75 },
+                { kw: 0.55, hp: 0.75, eff: 0.81, pf: 0.77 },
+                { kw: 0.75, hp: 1.0, eff: 0.83, pf: 0.79 },
+                { kw: 1.1,  hp: 1.5, eff: 0.84, pf: 0.81 },
+                { kw: 1.5,  hp: 2.0, eff: 0.85, pf: 0.82 },
+                { kw: 2.2,  hp: 3.0, eff: 0.87, pf: 0.83 },
+                { kw: 3.0,  hp: 4.0, eff: 0.87, pf: 0.83 },
+                { kw: 4.0,  hp: 5.5, eff: 0.88, pf: 0.84 },
+                { kw: 5.5,  hp: 7.5, eff: 0.89, pf: 0.85 },
+                { kw: 7.5,  hp: 10,  eff: 0.90, pf: 0.85 },
+                { kw: 11,   hp: 15,  eff: 0.91, pf: 0.85 },
+                { kw: 15,   hp: 20,  eff: 0.92, pf: 0.86 },
+                { kw: 18.5, hp: 25,  eff: 0.92, pf: 0.86 },
+                { kw: 22,   hp: 30,  eff: 0.93, pf: 0.86 },
+                { kw: 30,   hp: 40,  eff: 0.93, pf: 0.86 },
+                { kw: 37,   hp: 50,  eff: 0.94, pf: 0.87 },
+                { kw: 45,   hp: 60,  eff: 0.94, pf: 0.87 },
+                { kw: 55,   hp: 75,  eff: 0.94, pf: 0.87 },
+                { kw: 75,   hp: 100, eff: 0.95, pf: 0.88 },
+                { kw: 90,   hp: 125, eff: 0.95, pf: 0.88 },
+                { kw: 110,  hp: 150, eff: 0.95, pf: 0.88 },
+                { kw: 132,  hp: 175, eff: 0.95, pf: 0.88 },
+                { kw: 160,  hp: 215, eff: 0.96, pf: 0.89 },
+                { kw: 200,  hp: 270, eff: 0.96, pf: 0.89 },
+                { kw: 250,  hp: 335, eff: 0.96, pf: 0.89 },
+                { kw: 315,  hp: 425, eff: 0.96, pf: 0.90 },
+                { kw: 355,  hp: 475, eff: 0.96, pf: 0.90 },
+                { kw: 400,  hp: 550, eff: 0.96, pf: 0.90 }
             ];
 
-            const standardBreakers = [10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600];
+            function applyMotorCatalogStep(target, val) {
+                if (val === 'custom') {
+                    const badgeId = target === 'wire' ? 'wire_motor_badge' : (target === 'motor' ? 'motor_step_badge' : 'sim_motor_badge');
+                    const badge = document.getElementById(badgeId);
+                    if (badge) badge.innerText = 'Custom Load';
+                    return;
+                }
+                const kwVal = parseFloat(val);
+                const step = motorStepCatalog.find(m => Math.abs(m.kw - kwVal) < 0.01);
+                if (!step) return;
+
+                if (target === 'wire') {
+                    const unitEl = document.getElementById('wire_load_unit');
+                    const loadEl = document.getElementById('wire_load');
+                    if (unitEl && (unitEl.value === 'A' || unitEl.value === 'kVA')) {
+                        unitEl.value = 'kW';
+                    }
+                    if (loadEl) {
+                        loadEl.value = (unitEl && unitEl.value === 'HP') ? step.hp : step.kw;
+                    }
+                    const badge = document.getElementById('wire_motor_badge');
+                    if (badge) badge.innerText = `${step.kw} kW (${step.hp} HP)`;
+                    calcWiring();
+                } else if (target === 'motor') {
+                    const unitEl = document.getElementById('motor_power_unit');
+                    const loadEl = document.getElementById('motor_power');
+                    const effEl = document.getElementById('motor_eff');
+                    const pfEl = document.getElementById('motor_pf');
+                    if (loadEl) loadEl.value = (unitEl && unitEl.value === 'HP') ? step.hp : step.kw;
+                    if (effEl) effEl.value = step.eff.toFixed(2);
+                    if (pfEl) pfEl.value = step.pf.toFixed(2);
+                    const badge = document.getElementById('motor_step_badge');
+                    if (badge) badge.innerText = `${step.kw} kW (${step.hp} HP)`;
+                    calcMotor();
+                } else if (target === 'sim') {
+                    const loadEl = document.getElementById('sim_motor_kw');
+                    if (loadEl) loadEl.value = step.kw;
+                    const badge = document.getElementById('sim_motor_badge');
+                    if (badge) badge.innerText = `${step.kw} kW (${step.hp} HP)`;
+                    calcStarter();
+                }
+            }
+
+            function syncMotorCatalogFromInput(target) {
+                let val = 0, unit = 'kW', selId = '', badgeId = '';
+                if (target === 'wire') {
+                    val = parseFloat(document.getElementById('wire_load')?.value) || 0;
+                    unit = document.getElementById('wire_load_unit')?.value || 'kW';
+                    selId = 'wire_motor_catalog';
+                    badgeId = 'wire_motor_badge';
+                } else if (target === 'motor') {
+                    val = parseFloat(document.getElementById('motor_power')?.value) || 0;
+                    unit = document.getElementById('motor_power_unit')?.value || 'kW';
+                    selId = 'motor_step_catalog';
+                    badgeId = 'motor_step_badge';
+                } else if (target === 'sim') {
+                    val = parseFloat(document.getElementById('sim_motor_kw')?.value) || 0;
+                    unit = 'kW';
+                    selId = 'sim_motor_catalog';
+                    badgeId = 'sim_motor_badge';
+                }
+                const sel = document.getElementById(selId);
+                const badge = document.getElementById(badgeId);
+                if (!sel) return;
+
+                let match = null;
+                if (unit === 'kW') {
+                    match = motorStepCatalog.find(m => Math.abs(m.kw - val) < 0.01);
+                } else if (unit === 'HP') {
+                    match = motorStepCatalog.find(m => Math.abs(m.hp - val) < 0.05);
+                }
+                if (match) {
+                    sel.value = String(match.kw);
+                    if (badge) badge.innerText = `${match.kw} kW (${match.hp} HP)`;
+                } else {
+                    sel.value = 'custom';
+                    if (badge) badge.innerText = unit === 'kW' ? `${val} kW (Custom)` : (unit === 'HP' ? `${val} HP (${(val * 0.746).toFixed(2)} kW)` : `Custom (${val} ${unit})`);
+                }
+            }
+
+            // Copper Conductor Ampacity Table
+            // pvc_g2 / pvc_g5 / xlpe_g2 / xlpe_g5: EIT 2001-64 (Thailand) at 40°C Ref Ambient (Tables 5-20, 5-23, 5-27, 5-29)
+            // iec_*: IEC 60364-5-52 at 30°C Ref Ambient (Tables B.52.2, B.52.3, B.52.4, B.52.5, 3 loaded conductors)
+            const ampacityTable = [
+                { size: 1.5, pvc_g2: 15,  pvc_g5: 17,  xlpe_g2: 20,  xlpe_g5: 23,  iec_pvc_g2: 15.5, iec_pvc_g5: 18.5, iec_xlpe_g2: 20,  iec_xlpe_g5: 24,  r: 12.1,   x: 0.110, od: 4.8 },
+                { size: 2.5, pvc_g2: 21,  pvc_g5: 23,  xlpe_g2: 28,  xlpe_g5: 32,  iec_pvc_g2: 21,   iec_pvc_g5: 25,   iec_xlpe_g2: 28,  iec_xlpe_g5: 33,  r: 7.41,   x: 0.100, od: 5.3 },
+                { size: 4,   pvc_g2: 28,  pvc_g5: 31,  xlpe_g2: 38,  xlpe_g5: 42,  iec_pvc_g2: 28,   iec_pvc_g5: 34,   iec_xlpe_g2: 37,  iec_xlpe_g5: 45,  r: 4.61,   x: 0.090, od: 5.9 },
+                { size: 6,   pvc_g2: 36,  pvc_g5: 40,  xlpe_g2: 49,  xlpe_g5: 54,  iec_pvc_g2: 36,   iec_pvc_g5: 43,   iec_xlpe_g2: 48,  iec_xlpe_g5: 58,  r: 3.08,   x: 0.085, od: 6.5 },
+                { size: 10,  pvc_g2: 50,  pvc_g5: 55,  xlpe_g2: 67,  xlpe_g5: 75,  iec_pvc_g2: 50,   iec_pvc_g5: 60,   iec_xlpe_g2: 66,  iec_xlpe_g5: 80,  r: 1.83,   x: 0.082, od: 7.6 },
+                { size: 16,  pvc_g2: 66,  pvc_g5: 74,  xlpe_g2: 88,  xlpe_g5: 110, iec_pvc_g2: 68,   iec_pvc_g5: 80,   iec_xlpe_g2: 88,  iec_xlpe_g5: 107, r: 1.15,   x: 0.080, od: 8.8 },
+                { size: 25,  pvc_g2: 84,  pvc_g5: 99,  xlpe_g2: 114, xlpe_g5: 147, iec_pvc_g2: 89,   iec_pvc_g5: 101,  iec_xlpe_g2: 117, iec_xlpe_g5: 138, r: 0.727,  x: 0.078, od: 11.0 },
+                { size: 35,  pvc_g2: 104, pvc_g5: 123, xlpe_g2: 143, xlpe_g5: 183, iec_pvc_g2: 110,  iec_pvc_g5: 126,  iec_xlpe_g2: 144, iec_xlpe_g5: 171, r: 0.524,  x: 0.075, od: 12.3 },
+                { size: 50,  pvc_g2: 125, pvc_g5: 158, xlpe_g2: 174, xlpe_g5: 224, iec_pvc_g2: 134,  iec_pvc_g5: 153,  iec_xlpe_g2: 175, iec_xlpe_g5: 209, r: 0.387,  x: 0.072, od: 14.1 },
+                { size: 70,  pvc_g2: 160, pvc_g5: 199, xlpe_g2: 222, xlpe_g5: 289, iec_pvc_g2: 171,  iec_pvc_g5: 196,  iec_xlpe_g2: 222, iec_xlpe_g5: 269, r: 0.268,  x: 0.070, od: 16.2 },
+                { size: 95,  pvc_g2: 194, pvc_g5: 247, xlpe_g2: 272, xlpe_g5: 354, iec_pvc_g2: 207,  iec_pvc_g5: 238,  iec_xlpe_g2: 269, iec_xlpe_g5: 328, r: 0.193,  x: 0.068, od: 18.8 },
+                { size: 120, pvc_g2: 225, pvc_g5: 290, xlpe_g2: 317, xlpe_g5: 413, iec_pvc_g2: 239,  iec_pvc_g5: 276,  iec_xlpe_g2: 312, iec_xlpe_g5: 382, r: 0.153,  x: 0.067, od: 20.8 },
+                { size: 150, pvc_g2: 260, pvc_g5: 334, xlpe_g2: 363, xlpe_g5: 476, iec_pvc_g2: 275,  iec_pvc_g5: 319,  iec_xlpe_g2: 358, iec_xlpe_g5: 441, r: 0.124,  x: 0.066, od: 23.0 },
+                { size: 185, pvc_g2: 297, pvc_g5: 382, xlpe_g2: 415, xlpe_g5: 545, iec_pvc_g2: 314,  iec_pvc_g5: 364,  iec_xlpe_g2: 408, iec_xlpe_g5: 506, r: 0.0991, x: 0.065, od: 25.6 },
+                { size: 240, pvc_g2: 350, pvc_g5: 453, xlpe_g2: 490, xlpe_g5: 644, iec_pvc_g2: 370,  iec_pvc_g5: 430,  iec_xlpe_g2: 481, iec_xlpe_g5: 599, r: 0.0754, x: 0.064, od: 29.2 },
+                { size: 300, pvc_g2: 400, pvc_g5: 521, xlpe_g2: 561, xlpe_g5: 743, iec_pvc_g2: 426,  iec_pvc_g5: 497,  iec_xlpe_g2: 553, iec_xlpe_g5: 693, r: 0.0601, x: 0.063, od: 32.6 },
+                { size: 400, pvc_g2: 477, pvc_g5: 625, xlpe_g2: 656, xlpe_g5: 868, iec_pvc_g2: 510,  iec_pvc_g5: 597,  iec_xlpe_g2: 646, iec_xlpe_g5: 825, r: 0.0470, x: 0.062, od: 36.8 },
+                { size: 500, pvc_g2: 545, pvc_g5: 720, xlpe_g2: 749, xlpe_g5: 990, iec_pvc_g2: 587,  iec_pvc_g5: 689,  iec_xlpe_g2: 738, iec_xlpe_g5: 946, r: 0.0366, x: 0.061, od: 41.2 }
+            ];
+
+            const standardBreakers = [10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500];
 
             function populateWiringTable() {
                 const tbody = document.getElementById('wire_table_body');
                 if (!tbody) return;
+                const std = document.getElementById('wire_std')?.value || 'EIT';
+                const prefix = std === 'IEC' ? 'iec_' : '';
+                const titleEl = document.getElementById('wire_table_title');
+                const badgeEl = document.getElementById('wire_table_std_badge');
+                if (titleEl) {
+                    titleEl.innerText = std === 'IEC'
+                        ? 'Reference Ampacity Table (Copper • IEC 60364-5-52 @ 30°C Air)'
+                        : 'Reference Ampacity Table (Copper • EIT 2001-64 @ 40°C Air)';
+                }
+                if (badgeEl) {
+                    badgeEl.innerText = std === 'IEC'
+                        ? 'IEC 60364-5-52 Tables B.52.2–B.52.5 (Ref 30°C)'
+                        : 'EIT 2001-64 Tables 5-20 / 5-23 / 5-27 / 5-29 (Ref 40°C)';
+                }
                 tbody.innerHTML = ampacityTable.map(row => `
                 <tr class="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
                     <td class="p-2 font-bold text-slate-700 dark:text-slate-300">${row.size}</td>
-                    <td class="p-2 text-center text-slate-500">${row.pvc_g2 || '-'}</td>
-                    <td class="p-2 text-center text-slate-500">${row.pvc_g5 || '-'}</td>
-                    <td class="p-2 text-center text-slate-500">${row.xlpe_g2 || '-'}</td>
-                    <td class="p-2 text-center text-slate-500">${row.xlpe_g5 || '-'}</td>
+                    <td class="p-2 text-center text-slate-500">${row[prefix + 'pvc_g2'] || '-'}</td>
+                    <td class="p-2 text-center text-slate-500">${row[prefix + 'pvc_g5'] || '-'}</td>
+                    <td class="p-2 text-center text-slate-500">${row[prefix + 'xlpe_g2'] || '-'}</td>
+                    <td class="p-2 text-center text-slate-500">${row[prefix + 'xlpe_g5'] || '-'}</td>
                 </tr>
             `).join('');
             }
@@ -10113,12 +10386,12 @@
                 const phase = parseInt(document.getElementById('wire_phase').value);
                 const volt = parseFloat(document.getElementById('wire_volt').value) || 400;
                 const pf = parseFloat(document.getElementById('wire_pf').value) || 0.85;
+                const std = document.getElementById('wire_std')?.value || 'EIT';
                 const type = document.getElementById('wire_type').value;
                 const install = document.getElementById('wire_install').value;
                 const length = parseFloat(document.getElementById('wire_len').value) || 0;
                 const ambTemp = parseInt(document.getElementById('wire_temp_amb').value) || 40;
-                const nCircuits = parseInt(document.getElementById('wire_grouping').value) || 1;
-                const racewayType = document.getElementById('wire_raceway_type').value;
+                const nCircuits = Math.max(1, parseInt(document.getElementById('wire_grouping').value) || 1);
 
                 // 1. Calculate Load Amps
                 let amps = 0;
@@ -10133,6 +10406,15 @@
                         amps = (load * 1000) / (Math.sqrt(3) * volt * pf);
                         document.getElementById('wire_calc_note').innerText = "I = (kW × 1000) / (√3 × V × PF)";
                     }
+                } else if (unit === 'HP') {
+                    const kwFromHp = load * 0.746;
+                    if (phase === 1) {
+                        amps = (kwFromHp * 1000) / (volt * pf);
+                        document.getElementById('wire_calc_note').innerText = `I = (${load} HP × 746) / (V × PF)`;
+                    } else {
+                        amps = (kwFromHp * 1000) / (Math.sqrt(3) * volt * pf);
+                        document.getElementById('wire_calc_note').innerText = `I = (${load} HP × 746) / (√3 × V × PF)`;
+                    }
                 } else if (unit === 'kVA') {
                     if (phase === 1) {
                         amps = (load * 1000) / volt;
@@ -10146,87 +10428,189 @@
                 const resAmpsEl = document.getElementById('wire_res_amps');
                 if (resAmpsEl) resAmpsEl.innerHTML = `${amps.toFixed(2)} <span class="text-xl font-normal text-slate-500">A</span>`;
 
-                // 2. Derating Factors (EIT 2001-64)
-                const caTable = {
-                    "PVC": { 30: 1.0, 35: 0.94, 40: 0.87, 45: 0.79, 50: 0.71 },
-                    "XLPE": { 30: 1.0, 35: 0.96, 40: 0.91, 45: 0.87, 50: 0.82 }
+                // 2. Ambient Temperature Correction Factor (Ca) & Grouping Derating Factor (Cg)
+                // EIT 2001-64 Table 5-43 (Reference Ambient = 40°C in Air): Ca = sqrt((Tmax - Tamb) / (Tmax - 40))
+                // IEC 60364-5-52 Table B.52.14 (Reference Ambient = 30°C in Air): Ca = sqrt((Tmax - Tamb) / (Tmax - 30))
+                const caTables = {
+                    EIT: {
+                        PVC:  { 25: 1.22, 30: 1.15, 35: 1.08, 40: 1.00, 45: 0.91, 50: 0.82, 55: 0.71, 60: 0.58 },
+                        XLPE: { 25: 1.14, 30: 1.10, 35: 1.05, 40: 1.00, 45: 0.95, 50: 0.89, 55: 0.84, 60: 0.77 }
+                    },
+                    IEC: {
+                        PVC:  { 25: 1.06, 30: 1.00, 35: 0.94, 40: 0.87, 45: 0.79, 50: 0.71, 55: 0.61, 60: 0.50 },
+                        XLPE: { 25: 1.04, 30: 1.00, 35: 0.96, 40: 0.91, 45: 0.87, 50: 0.82, 55: 0.76, 60: 0.71 }
+                    }
                 };
-                const Ca = caTable[type][ambTemp] || 1.0;
+                const Ca = (caTables[std] && caTables[std][type] && caTables[std][type][ambTemp]) || 1.00;
 
-                const cgTable = [
-                    { n: 1, factor: 1.0 }, { n: 2, factor: 0.8 }, { n: 3, factor: 0.7 },
-                    { n: 6, factor: 0.65 }, { n: 9, factor: 0.6 }, { n: 100, factor: 0.5 }
-                ];
-                const Cg = cgTable.find(row => nCircuits <= row.n).factor;
+                // Grouping Derating Factor (Cg) per EIT 2001-64 Table 5-8 / Table 5-44 & IEC 60364-5-52 Table B.52.17
+                // G2: Enclosed in conduit/wireway or bunched in air (Item 1)
+                // G5: Single layer on perforated cable tray / ladder (Item 4)
+                const cgTables = {
+                    G2: [
+                        { n: 1, factor: 1.00 },
+                        { n: 2, factor: 0.80 },
+                        { n: 3, factor: 0.70 },
+                        { n: 4, factor: 0.65 },
+                        { n: 5, factor: 0.60 },
+                        { n: 6, factor: 0.57 },
+                        { n: 7, factor: 0.54 },
+                        { n: 8, factor: 0.52 },
+                        { n: 9, factor: 0.50 },
+                        { n: 11, factor: 0.48 },
+                        { n: 15, factor: 0.45 },
+                        { n: 19, factor: 0.41 },
+                        { n: 999, factor: 0.38 }
+                    ],
+                    G5: [
+                        { n: 1, factor: 1.00 },
+                        { n: 2, factor: 0.88 },
+                        { n: 3, factor: 0.82 },
+                        { n: 5, factor: 0.78 },
+                        { n: 8, factor: 0.76 },
+                        { n: 999, factor: 0.73 }
+                    ]
+                };
+                const activeCgList = cgTables[install] || cgTables.G2;
+                const Cg = (activeCgList.find(row => nCircuits <= row.n) || activeCgList[activeCgList.length - 1]).factor;
                 const totalDf = Ca * Cg;
 
-                const dfEl = document.querySelector('#wiringPage .bg-orange-50 .text-xl');
-                if (dfEl) dfEl.innerText = totalDf.toFixed(2);
+                const dfEl = document.getElementById('wire_res_total_df');
+                if (dfEl) dfEl.innerText = totalDf.toFixed(3).replace(/0$/, '');
+                const dfDetailEl = document.getElementById('wire_res_df_detail');
+                if (dfDetailEl) dfDetailEl.innerText = `Ca: ${Ca.toFixed(2)} (${ambTemp}°C) × Cg: ${Cg.toFixed(2)} (${nCircuits} cct)`;
 
-                // 3. Breaker selection (1.25x load for continuous)
+                // 3. Breaker selection (1.25x load for continuous duty per EIT)
                 const targetBreaker = amps * 1.25;
-                let breakerAT = standardBreakers.find(b => b >= targetBreaker) || standardBreakers[standardBreakers.length - 1];
+                let breakerAT = standardBreakers.find(b => b >= targetBreaker) || Math.ceil(targetBreaker / 100) * 100;
                 const resBreakerEl = document.getElementById('wire_res_breaker');
                 if (resBreakerEl) resBreakerEl.innerHTML = `${breakerAT} <span class="text-xl font-normal text-slate-500">A</span>`;
 
-                // 4. Cable selection (Iz' >= In where Iz' = Iz * Ca * Cg) => Iz >= In / (Ca * Cg)
-                const lookupKey = `${type.toLowerCase()}_${install.toLowerCase()}`;
-                const requiredIz = breakerAT / totalDf;
-                let recommendedRow = ampacityTable.find(row => row[lookupKey] >= requiredIz);
+                // 4. Cable selection (Iz' >= In where Iz' = nRuns * Iz * Ca * Cg)
+                const prefix = std === 'IEC' ? 'iec_' : '';
+                const lookupKey = `${prefix}${type.toLowerCase()}_${install.toLowerCase()}`;
+                const requiredTotalIz = breakerAT / totalDf;
+
+                let nRuns = 1;
+                let recommendedRow = ampacityTable.find(row => row[lookupKey] >= requiredTotalIz);
+                if (!recommendedRow) {
+                    // Use parallel runs (prefer practical cable sizes <= 300 mm² per run)
+                    const maxPracticalRow = ampacityTable.find(r => r.size === 300) || ampacityTable[ampacityTable.length - 1];
+                    nRuns = Math.max(2, Math.ceil(requiredTotalIz / maxPracticalRow[lookupKey]));
+                    const reqPerRun = requiredTotalIz / nRuns;
+                    recommendedRow = ampacityTable.find(row => row[lookupKey] >= reqPerRun) || ampacityTable[ampacityTable.length - 1];
+                }
 
                 if (recommendedRow) {
                     const resSizeEl = document.getElementById('wire_res_size');
-                    if (resSizeEl) resSizeEl.innerHTML = `${recommendedRow.size} <span class="text-2xl font-bold text-slate-400">mm²</span>`;
+                    const sizePrefix = nRuns > 1 ? `${nRuns} × ` : '';
+                    if (resSizeEl) resSizeEl.innerHTML = `${sizePrefix}${recommendedRow.size} <span class="text-2xl font-bold text-slate-400">mm²</span>`;
 
-                    const actualIzPrime = recommendedRow[lookupKey] * totalDf;
+                    const baseIzTotal = recommendedRow[lookupKey] * nRuns;
+                    const actualIzPrime = baseIzTotal * totalDf;
                     const resMaxIzEl = document.getElementById('wire_res_max_iz');
                     if (resMaxIzEl) resMaxIzEl.innerText = `${actualIzPrime.toFixed(1)} A`;
+                    const resBaseIzEl = document.getElementById('wire_res_base_iz');
+                    if (resBaseIzEl) resBaseIzEl.innerText = `Base Iz: ${baseIzTotal.toFixed(0)} A (${std} ${std === 'IEC' ? '30°C' : '40°C'})`;
 
-                    // Voltage Drop
-                    const phi = Math.acos(pf);
+                    // Voltage Drop (accounting for parallel runs: current per run = amps / nRuns)
+                    const phi = Math.acos(Math.min(1, Math.max(0, pf)));
                     const sinPhi = Math.sin(phi);
+                    const ampsPerRun = amps / nRuns;
                     let vd = 0;
-                    if (phase === 3) vd = (Math.sqrt(3) * amps * (recommendedRow.r * pf + recommendedRow.x * sinPhi) * length) / 1000;
-                    else vd = (2 * amps * (recommendedRow.r * pf + recommendedRow.x * sinPhi) * length) / 1000;
+                    if (phase === 3) vd = (Math.sqrt(3) * ampsPerRun * (recommendedRow.r * pf + recommendedRow.x * sinPhi) * length) / 1000;
+                    else vd = (2 * ampsPerRun * (recommendedRow.r * pf + recommendedRow.x * sinPhi) * length) / 1000;
 
-                    const vdPct = (vd / volt) * 100;
+                    const vdPct = volt > 0 ? (vd / volt) * 100 : 0;
                     const resVdEl = document.getElementById('wire_res_vd');
-                    if (resVdEl) resVdEl.innerHTML = `${vdPct.toFixed(1)} <span class="text-xl font-normal text-slate-500">%</span>`;
+                    if (resVdEl) resVdEl.innerHTML = `${vdPct.toFixed(2)} <span class="text-xl font-normal text-slate-500">%</span>`;
 
-                    // 5. Raceway Sizing (Simultaneous Calculation)
-                    const cableODs = {
-                        1.5: 4.8, 2.5: 5.3, 4: 5.9, 6: 6.5, 10: 7.6, 16: 8.8,
-                        25: 11.0, 35: 12.3, 50: 14.1, 70: 16.2, 95: 18.8, 120: 20.8
-                    };
-                    const od = cableODs[recommendedRow.size] || (2 * Math.sqrt(recommendedRow.size));
-                    const nWires = phase === 3 ? 4 : 2;
-                    const totalCableArea = (Math.PI * Math.pow(od, 2) / 4) * (nWires + 1);
+                    // 5. Raceway Sizing (SI mm & Imperial Parallel Comparison)
+                    const od = recommendedRow.od || (2.1 * Math.sqrt(recommendedRow.size));
+                    const nCondPerRun = phase === 3 ? 4 : 2; // 3P+N or 1P+N
+                    const totalWiresPerRun = nCondPerRun + 1; // +1 for Ground/PE
+                    const singleRunCableArea = (Math.PI * Math.pow(od, 2) / 4) * totalWiresPerRun;
+                    const totalAllRunsCableArea = singleRunCableArea * nRuns;
 
-                    // IMC Sizing
+                    const bundleBadge = document.getElementById('wire_res_cable_area_badge');
+                    if (bundleBadge) {
+                        bundleBadge.innerText = `Cable OD: Ø${od.toFixed(1)} mm • Bundle Area: ${totalAllRunsCableArea.toFixed(0)} mm² (${nRuns * totalWiresPerRun} cores)`;
+                    }
+
+                    // IMC Conduit Sizing (EIT 40% fill limit; 1 conduit per run if single conduit exceeds DN100)
                     const imcTable = [
-                        { label: '1/2"', area: 240 }, { label: '3/4"', area: 415 }, { label: '1"', area: 674 },
-                        { label: '1-1/4"', area: 1167 }, { label: '1-1/2"', area: 1590 }, { label: '2"', area: 2616 },
-                        { label: '2-1/2"', area: 3739 }, { label: '3"', area: 5728 }, { label: '4"', area: 9800 }
+                        { inch: '1/2"',   mm: 15,  dn: 'DN15',  area: 240 },
+                        { inch: '3/4"',   mm: 20,  dn: 'DN20',  area: 415 },
+                        { inch: '1"',     mm: 25,  dn: 'DN25',  area: 674 },
+                        { inch: '1-1/4"', mm: 32,  dn: 'DN32',  area: 1167 },
+                        { inch: '1-1/2"', mm: 40,  dn: 'DN40',  area: 1590 },
+                        { inch: '2"',     mm: 50,  dn: 'DN50',  area: 2616 },
+                        { inch: '2-1/2"', mm: 65,  dn: 'DN65',  area: 3739 },
+                        { inch: '3"',     mm: 80,  dn: 'DN80',  area: 5728 },
+                        { inch: '3-1/2"', mm: 90,  dn: 'DN90',  area: 7460 },
+                        { inch: '4"',     mm: 100, dn: 'DN100', area: 9800 },
+                        { inch: '5"',     mm: 125, dn: 'DN125', area: 15300 },
+                        { inch: '6"',     mm: 150, dn: 'DN150', area: 22100 }
                     ];
-                    const selectedIMC = imcTable.find(c => (c.area * 0.4) >= totalCableArea);
-                    document.getElementById('wire_res_imc').innerText = selectedIMC ? `${selectedIMC.label}` : "N/A";
+                    let imcConduitCount = nRuns;
+                    let selectedIMC = imcTable.find(c => (c.area * 0.4) >= singleRunCableArea) || imcTable[imcTable.length - 1];
+                    // If nRuns == 1, single conduit; if nRuns > 1, 1 conduit per parallel run
+                    const imcPrefix = imcConduitCount > 1 ? `${imcConduitCount} × ` : '';
+                    const imcFillPct = (singleRunCableArea / selectedIMC.area) * 100;
+                    const imcEl = document.getElementById('wire_res_imc');
+                    const imcMmEl = document.getElementById('wire_res_imc_mm');
+                    const imcFillEl = document.getElementById('wire_res_imc_fill');
+                    if (imcEl) imcEl.innerText = `${imcPrefix}Ø${selectedIMC.mm} mm (${selectedIMC.inch})`;
+                    if (imcMmEl) imcMmEl.innerText = `${selectedIMC.dn} • ID Area: ${selectedIMC.area.toLocaleString()} mm²`;
+                    if (imcFillEl) imcFillEl.innerText = `Actual Fill: ${imcFillPct.toFixed(1)}% (≤ 40% EIT Max)`;
 
-                    // Wireway Sizing
+                    // Wireway Sizing (EIT 20% cross-sectional fill limit, shown in SI mm×mm and in×in)
                     const wwSizes = [
-                        { label: '2"x3"', area: 3870 }, { label: '2"x4"', area: 5160 }, { label: '3"x4"', area: 7740 },
-                        { label: '4"x4"', area: 10320 }, { label: '4"x6"', area: 15480 }, { label: '6"x6"', area: 23220 }
+                        { mmLabel: '50 × 75 mm',   inLabel: '2"×3"',  area: 3750 },
+                        { mmLabel: '50 × 100 mm',  inLabel: '2"×4"',  area: 5000 },
+                        { mmLabel: '75 × 100 mm',  inLabel: '3"×4"',  area: 7500 },
+                        { mmLabel: '100 × 100 mm', inLabel: '4"×4"',  area: 10000 },
+                        { mmLabel: '100 × 150 mm', inLabel: '4"×6"',  area: 15000 },
+                        { mmLabel: '100 × 200 mm', inLabel: '4"×8"',  area: 20000 },
+                        { mmLabel: '150 × 150 mm', inLabel: '6"×6"',  area: 22500 },
+                        { mmLabel: '150 × 200 mm', inLabel: '6"×8"',  area: 30000 },
+                        { mmLabel: '150 × 300 mm', inLabel: '6"×12"', area: 45000 },
+                        { mmLabel: '200 × 200 mm', inLabel: '8"×8"',  area: 40000 },
+                        { mmLabel: '200 × 300 mm', inLabel: '8"×12"', area: 60000 }
                     ];
-                    const selectedWW = wwSizes.find(w => (w.area * 0.2) >= totalCableArea);
-                    document.getElementById('wire_res_ww').innerText = selectedWW ? `${selectedWW.label}` : "N/A";
+                    const selectedWW = wwSizes.find(w => (w.area * 0.2) >= totalAllRunsCableArea) || wwSizes[wwSizes.length - 1];
+                    const wwFillPct = (totalAllRunsCableArea / selectedWW.area) * 100;
+                    const wwEl = document.getElementById('wire_res_ww');
+                    const wwMmEl = document.getElementById('wire_res_ww_mm');
+                    const wwFillEl = document.getElementById('wire_res_ww_fill');
+                    if (wwEl) wwEl.innerText = `${selectedWW.mmLabel} (${selectedWW.inLabel})`;
+                    if (wwMmEl) wwMmEl.innerText = `Area: ${selectedWW.area.toLocaleString()} mm² (20% Cap: ${(selectedWW.area * 0.2).toLocaleString()} mm²)`;
+                    if (wwFillEl) wwFillEl.innerText = `Actual Fill: ${wwFillPct.toFixed(1)}% (≤ 20% EIT Max)`;
 
-                    // Tray Sizing
-                    const trayWidths = [100, 200, 300, 400, 500, 600];
-                    const reqWidth = od * (nWires + 1) * 1.2;
-                    const selectedTray = trayWidths.find(w => w >= reqWidth) || 600;
-                    document.getElementById('wire_res_tray').innerText = `${selectedTray}mm`;
+                    // Cable Tray Sizing (SI Width × Height in mm + Imperial inches)
+                    const trayTable = [
+                        { w: 100, h: 50,  inW: '4"',  inH: '2"' },
+                        { w: 150, h: 75,  inW: '6"',  inH: '3"' },
+                        { w: 200, h: 100, inW: '8"',  inH: '4"' },
+                        { w: 300, h: 100, inW: '12"', inH: '4"' },
+                        { w: 400, h: 100, inW: '16"', inH: '4"' },
+                        { w: 500, h: 100, inW: '20"', inH: '4"' },
+                        { w: 600, h: 100, inW: '24"', inH: '4"' },
+                        { w: 800, h: 100, inW: '32"', inH: '4"' }
+                    ];
+                    const reqWidth = od * totalWiresPerRun * nRuns * 1.25;
+                    const selectedTray = trayTable.find(t => t.w >= reqWidth) || trayTable[trayTable.length - 1];
+                    const trayEl = document.getElementById('wire_res_tray');
+                    const trayMmEl = document.getElementById('wire_res_tray_mm');
+                    const trayFillEl = document.getElementById('wire_res_tray_fill');
+                    if (trayEl) trayEl.innerText = `${selectedTray.w} × ${selectedTray.h} mm (${selectedTray.inW}×${selectedTray.inH})`;
+                    if (trayMmEl) trayMmEl.innerText = `Req. Span: ${reqWidth.toFixed(0)} mm • Area: ${(selectedTray.w * selectedTray.h).toLocaleString()} mm²`;
+                    if (trayFillEl) trayFillEl.innerText = `Single-Layer (${((reqWidth / selectedTray.w) * 100).toFixed(0)}% Width Used)`;
 
                     const resDescEl = document.getElementById('wire_res_desc');
-                    if (resDescEl) resDescEl.innerText = `Circuit Breaker ${breakerAT}A (AT) protected by ${recommendedRow.size}mm² cable. Applied derating: ${totalDf.toFixed(2)} (${Ca} temp, ${Cg} group). Final ampacity: ${actualIzPrime.toFixed(1)}A.`;
+                    if (resDescEl) {
+                        resDescEl.innerText = `[${std === 'IEC' ? 'IEC 60364-5-52' : 'EIT 2001-64'}] Breaker ${breakerAT} A (AT) protected by ${sizePrefix}${recommendedRow.size} mm² Cu/${type} (${install}). Derating: Cf = ${totalDf.toFixed(3)} (Ca = ${Ca.toFixed(2)} @ ${ambTemp}°C, Cg = ${Cg.toFixed(2)} for ${nCircuits} circuit${nCircuits > 1 ? 's' : ''}). Derated Ampacity Iz' = ${actualIzPrime.toFixed(1)} A ≥ ${breakerAT} A.`;
+                    }
                 }
             }
 
