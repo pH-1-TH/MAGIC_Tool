@@ -26,6 +26,24 @@ function setRandomQuote() {
     }
 }
 
+function toggleHamburgerMenu(forceState) {
+    const drawer = document.getElementById('hamburgerDrawer');
+    if (!drawer) return;
+    const isHidden = drawer.classList.contains('hidden');
+    const shouldOpen = typeof forceState === 'boolean' ? forceState : isHidden;
+    if (shouldOpen) {
+        drawer.classList.remove('hidden');
+    } else {
+        drawer.classList.add('hidden');
+    }
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        toggleHamburgerMenu(false);
+    }
+});
+
 function toggleDarkMode() {
     document.documentElement.classList.toggle('dark');
     const isDark = document.documentElement.classList.contains('dark');
@@ -42,6 +60,7 @@ function updateThemeIcon() {
 }
 
 function switchView(viewId) {
+    toggleHamburgerMenu(false);
     const views = [
         'mainMenuPage', 'analyzerPage', 'loadAnalyzerPage', 'multiStagePage',
         'ductSizerPage', 'pipeSizerPage', 'ctPage', 'roiPage', 'eqListPage',

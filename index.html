@@ -255,54 +255,135 @@
     </button>
 
 
+        <!-- Hamburger System & Project Menu Button (Top Left) -->
+    <button id="hamburgerMenuBtn" type="button" onclick="toggleHamburgerMenu()" title="System Settings, SSOT Hub & Project Menu"
+        class="fixed top-4 left-4 z-50 bg-white dark:bg-slate-800 p-3 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-blue-500 dark:hover:border-blue-400 hover:scale-110 transition-all focus:outline-none cursor-pointer no-print">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="20" y2="18" />
+        </svg>
+    </button>
+
+    <!-- Slide-Out Hamburger Control Drawer (Global Settings, SSOT Hub, Import/Export & Master Report) -->
+    <div id="hamburgerDrawer" class="hidden fixed inset-0 z-50 no-print">
+        <!-- Backdrop -->
+        <div onclick="toggleHamburgerMenu(false)" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"></div>
+
+        <!-- Drawer Panel -->
+        <aside class="fixed top-0 left-0 h-full w-80 sm:w-96 max-w-[90vw] bg-white dark:bg-slate-800 shadow-2xl border-r border-slate-200 dark:border-slate-700 z-10 flex flex-col justify-between p-5 overflow-y-auto">
+            <div class="space-y-5">
+                <!-- Drawer Header -->
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3.5">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-blue-600/15 dark:bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-black text-sm">
+                            M
+                        </div>
+                        <div>
+                            <div class="text-sm font-extrabold text-slate-900 dark:text-white tracking-tight">M.A.G.I.C. Control Center</div>
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400">Settings, SSOT & Project Reports</div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="toggleHamburgerMenu(false)"
+                        class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 hover:bg-red-500/15 hover:text-red-500 flex items-center justify-center font-bold transition cursor-pointer">
+                        ✕
+                    </button>
+                </div>
+
+                <!-- Active Project Info Card -->
+                <div id="globalToolbar" class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-700/80 space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Active Project</span>
+                        <div class="flex items-center gap-1.5">
+                            <span id="landing_unit_badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">SI (Metric)</span>
+                            <span id="landing_std_badge" class="std-hover-wrap">
+                                <span class="std-icon-trigger" aria-label="Active Global Standards">ⓘ</span>
+                                <span class="std-hover-card std-hover-card--bottom std-hover-card--right">
+                                    <span class="block text-[9px] font-bold uppercase tracking-wider text-amber-400 mb-0.5">Active Global Standards</span>
+                                    <span class="block text-xs font-extrabold text-white mb-1">EIT 2001-64 (Ref 40°C) • 400V / 50Hz</span>
+                                    <span class="block text-[11px] text-slate-300">Mechanical: ASHRAE Fundamentals • Plumbing: ASPE/IPC • Fire: NFPA 13/14/20/22</span>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div id="landing_project_title" class="text-sm font-extrabold text-slate-900 dark:text-white leading-snug">
+                        M.A.G.I.C. MEP Design Project (PRJ-2026-001)
+                    </div>
+                    <p id="landing_project_meta" class="text-xs text-slate-500 dark:text-slate-400">
+                        Bangkok • Eng: Lead MEP Engineer • Rev. 0
+                    </p>
+                </div>
+
+                <!-- System & Settings Panels -->
+                <div class="space-y-2">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">Settings & Data Panels</div>
+
+                    <button type="button" onclick="toggleHamburgerMenu(false); window.MagicSettings.openGlobalModal()"
+                        class="w-full flex items-center gap-3 p-3 rounded-xl text-left bg-slate-50 hover:bg-blue-500/10 dark:bg-slate-700/60 dark:hover:bg-blue-500/15 border border-slate-200/80 dark:border-slate-700 hover:border-blue-500/40 transition cursor-pointer">
+                        <span class="w-9 h-9 rounded-lg bg-slate-200/80 dark:bg-slate-700 flex items-center justify-center text-base">⚙️</span>
+                        <div>
+                            <div class="text-xs font-bold text-slate-900 dark:text-white">Global Project & Standards Settings</div>
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400">Units (SI/IP), EIT/IEC codes, voltage & ambient</div>
+                        </div>
+                    </button>
+
+                    <button type="button" onclick="toggleHamburgerMenu(false); window.MagicIO.openSSOTModal()"
+                        class="w-full flex items-center gap-3 p-3 rounded-xl text-left bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/25 transition cursor-pointer">
+                        <span class="w-9 h-9 rounded-lg bg-indigo-500/20 flex items-center justify-center text-base">🔗</span>
+                        <div>
+                            <div class="text-xs font-bold text-indigo-600 dark:text-indigo-300">SSOT Central Data Hub</div>
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400">Live shared engineering parameters across modules</div>
+                        </div>
+                    </button>
+
+                    <button type="button" onclick="toggleHamburgerMenu(false); window.MagicIO.openMasterReportModal()"
+                        class="w-full flex items-center gap-3 p-3 rounded-xl text-left bg-blue-600 hover:bg-blue-500 text-white shadow-sm shadow-blue-500/20 transition cursor-pointer">
+                        <span class="w-9 h-9 rounded-lg bg-white/15 flex items-center justify-center text-base">📑</span>
+                        <div>
+                            <div class="text-xs font-bold">Master & Separation Report Builder</div>
+                            <div class="text-[11px] text-blue-100">Compile multi-discipline PDF & Excel calculation book</div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Project File Import / Export -->
+                <div class="space-y-2">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">Project File (.magic.json)</div>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <label class="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 transition cursor-pointer">
+                            <span>📂 Import JSON</span>
+                            <input type="file" accept=".json,.magic.json" class="hidden" onchange="toggleHamburgerMenu(false); window.MagicIO.importProjectJSON(this)">
+                        </label>
+                        <button type="button" onclick="toggleHamburgerMenu(false); window.MagicIO.exportProjectJSON()"
+                            class="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 transition cursor-pointer">
+                            <span>💾 Export JSON</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Navigation -->
+                <div class="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <button type="button" onclick="switchView('mainMenuPage')"
+                        class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700/70 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer">
+                        <span>🏠 Return to Landing Page Hub</span>
+                        <span class="text-slate-400">→</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Drawer Footer -->
+            <div class="pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-400">
+                <span>M.A.G.I.C. Suite V. 1.11</span>
+                <button type="button" onclick="toggleDarkMode()" class="font-semibold text-blue-500 hover:underline cursor-pointer">
+                    Toggle Theme 🌗
+                </button>
+            </div>
+        </aside>
+    </div>
+
     <!-- ================= MAIN MENU PAGE (MULTI-DISCIPLINE HUB) ================= -->
     <div id="mainMenuPage" class="max-w-6xl mx-auto space-y-6 py-6 block page-container">
-        <!-- Top Global Project & SSOT Control Bar -->
-        <div id="globalToolbar" class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-4 no-print">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-blue-600/10 dark:bg-blue-500/15 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 font-black text-sm">
-                    M
-                </div>
-                <div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span id="landing_project_title" class="text-sm font-extrabold text-slate-900 dark:text-white">M.A.G.I.C. MEP Design Project (PRJ-2026-001)</span>
-                        <span id="landing_unit_badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">SI (Metric)</span>
-                        <span id="landing_std_badge" class="std-hover-wrap">
-                            <span class="std-icon-trigger" aria-label="Active Global Standards">ⓘ</span>
-                            <span class="std-hover-card std-hover-card--bottom">
-                                <span class="block text-[9px] font-bold uppercase tracking-wider text-amber-400 mb-0.5">Active Global Standards</span>
-                                <span class="block text-xs font-extrabold text-white mb-1">EIT 2001-64 (Ref 40°C) • 400V / 50Hz</span>
-                                <span class="block text-[11px] text-slate-300">Mechanical: ASHRAE Fundamentals • Plumbing: ASPE/IPC • Fire: NFPA 13/14/20/22</span>
-                            </span>
-                        </span>
-                    </div>
-                    <p id="landing_project_meta" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Bangkok • Eng: Lead MEP Engineer • Rev. 0</p>
-                </div>
-            </div>
-            <div class="flex flex-wrap items-center gap-2 text-xs">
-                <button type="button" onclick="window.MagicSettings.openGlobalModal()"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition cursor-pointer">
-                    <span>⚙️ Global Settings</span>
-                </button>
-                <button type="button" onclick="window.MagicIO.openSSOTModal()"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/25 transition cursor-pointer">
-                    <span>🔗 SSOT Data Hub</span>
-                </button>
-                <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition cursor-pointer">
-                    <span>📂 Import</span>
-                    <input type="file" accept=".json,.magic.json" class="hidden" onchange="window.MagicIO.importProjectJSON(this)">
-                </label>
-                <button type="button" onclick="window.MagicIO.exportProjectJSON()"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition cursor-pointer">
-                    <span>💾 Export Project</span>
-                </button>
-                <button type="button" onclick="window.MagicIO.openMasterReportModal()"
-                    class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-sm shadow-blue-500/20 transition cursor-pointer">
-                    <span>📑 Master Report</span>
-                </button>
-            </div>
-        </div>
-
         <!-- Hero Branding Banner -->
                 <div class="text-center space-y-4">
 

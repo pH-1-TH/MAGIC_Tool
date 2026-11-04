@@ -276,9 +276,9 @@
         renderStdHoverIcon(moduleId, opts = {}) {
             const mod = this.getById(moduleId);
             const kb = (window.MagicDB && window.MagicDB.knowledgeBase && window.MagicDB.knowledgeBase[moduleId]) || {};
-            const stdCode = kb.std || (mod && mod.standard) || 'Engineering Standard';
+            const stdCode = kb.standard || kb.std || (mod && mod.standard) || 'Engineering Standard';
             const summary = kb.summary || (mod && mod.desc) || '';
-            const eqs = (kb.equations || []).slice(0, 3);
+            const eqs = (kb.formulas || kb.equations || []).slice(0, 3);
             const posClass = [
                 opts.direction === 'bottom' ? 'std-hover-card--bottom' : '',
                 opts.align === 'right' ? 'std-hover-card--right' : ''

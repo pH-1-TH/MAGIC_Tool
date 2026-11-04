@@ -194,7 +194,7 @@
                 stdBadge.className = 'std-hover-wrap';
                 stdBadge.innerHTML = `
                     <span class="std-icon-trigger" aria-label="Active Global Standards">ⓘ</span>
-                    <span class="std-hover-card std-hover-card--bottom">
+                    <span class="std-hover-card std-hover-card--bottom std-hover-card--right">
                         <span class="block text-[9px] font-bold uppercase tracking-wider text-amber-400 mb-0.5">Active Global Standards</span>
                         <span class="block text-xs font-extrabold text-white mb-1">${stdTitle} • ${g.voltage3P}V / ${g.frequency}Hz</span>
                         <span class="block text-[11px] text-slate-300">Mechanical: ASHRAE Fundamentals • Plumbing: ASPE/IPC • Fire: NFPA 13/14/20/22</span>
