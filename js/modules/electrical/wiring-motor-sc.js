@@ -97,14 +97,19 @@ function populateWiringTable() {
     const titleEl = document.getElementById('wire_table_title');
     const badgeEl = document.getElementById('wire_table_std_badge');
     if (titleEl) {
-        titleEl.innerText = std === 'IEC'
-            ? 'Reference Ampacity Table (Copper • IEC 60364-5-52 @ 30°C Air)'
-            : 'Reference Ampacity Table (Copper • EIT 2001-64 @ 40°C Air)';
+        titleEl.innerText = 'Reference Ampacity Table (Copper)';
     }
     if (badgeEl) {
-        badgeEl.innerText = std === 'IEC'
-            ? 'IEC 60364-5-52 Tables B.52.2–B.52.5 (Ref 30°C)'
-            : 'EIT 2001-64 Tables 5-20 / 5-23 / 5-27 / 5-29 (Ref 40°C)';
+        const stdRef = std === 'IEC'
+            ? 'IEC 60364-5-52 Tables B.52.2–B.52.5 (Ref 30°C Air)'
+            : 'EIT 2001-64 Tables 5-20 / 5-23 / 5-27 / 5-29 (Ref 40°C Air)';
+        badgeEl.className = 'std-hover-wrap';
+        badgeEl.innerHTML = '<span class="std-icon-trigger" aria-label="Ampacity Table Standard">ⓘ</span>' +
+            '<span class="std-hover-card std-hover-card--bottom std-hover-card--right">' +
+            '<span class="block text-[9px] font-bold uppercase tracking-wider text-blue-400 mb-0.5">Ampacity Reference</span>' +
+            '<span class="block text-xs font-extrabold text-white mb-1">' + stdRef + '</span>' +
+            '<span class="block text-[11px] text-slate-300">G2: Enclosed in conduit or wireway in air • G5: Single-layer on perforated/unperforated cable tray.</span>' +
+            '</span>';
     }
     tbody.innerHTML = ampacityTable.map(row => `
     <tr class="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
@@ -299,7 +304,7 @@ function calcWiring() {
         const imcFillEl = document.getElementById('wire_res_imc_fill');
         if (imcEl) imcEl.innerText = `${imcPrefix}Ø${selectedIMC.mm} mm (${selectedIMC.inch})`;
         if (imcMmEl) imcMmEl.innerText = `${selectedIMC.dn} • ID Area: ${selectedIMC.area.toLocaleString()} mm²`;
-        if (imcFillEl) imcFillEl.innerText = `Actual Fill: ${imcFillPct.toFixed(1)}% (≤ 40% EIT Max)`;
+        if (imcFillEl) imcFillEl.innerText = `Actual Fill: ${imcFillPct.toFixed(1)}% (≤ 40% Max)`;
 
         // Wireway Sizing (EIT 20% cross-sectional fill limit, shown in SI mm×mm and in×in)
         const wwSizes = [
@@ -322,7 +327,7 @@ function calcWiring() {
         const wwFillEl = document.getElementById('wire_res_ww_fill');
         if (wwEl) wwEl.innerText = `${selectedWW.mmLabel} (${selectedWW.inLabel})`;
         if (wwMmEl) wwMmEl.innerText = `Area: ${selectedWW.area.toLocaleString()} mm² (20% Cap: ${(selectedWW.area * 0.2).toLocaleString()} mm²)`;
-        if (wwFillEl) wwFillEl.innerText = `Actual Fill: ${wwFillPct.toFixed(1)}% (≤ 20% EIT Max)`;
+        if (wwFillEl) wwFillEl.innerText = `Actual Fill: ${wwFillPct.toFixed(1)}% (≤ 20% Max)`;
 
         // Cable Tray Sizing (SI Width × Height in mm + Imperial inches)
         const trayTable = [
@@ -346,7 +351,7 @@ function calcWiring() {
 
         const resDescEl = document.getElementById('wire_res_desc');
         if (resDescEl) {
-            resDescEl.innerText = `[${std === 'IEC' ? 'IEC 60364-5-52' : 'EIT 2001-64'}] Breaker ${breakerAT} A (AT) protected by ${sizePrefix}${recommendedRow.size} mm² Cu/${type} (${install}). Derating: Cf = ${totalDf.toFixed(3)} (Ca = ${Ca.toFixed(2)} @ ${ambTemp}°C, Cg = ${Cg.toFixed(2)} for ${nCircuits} circuit${nCircuits > 1 ? 's' : ''}). Derated Ampacity Iz' = ${actualIzPrime.toFixed(1)} A ≥ ${breakerAT} A.`;
+            resDescEl.innerText = `Breaker ${breakerAT} A (AT) protected by ${sizePrefix}${recommendedRow.size} mm² Cu/${type} (${install}). Derating: Cf = ${totalDf.toFixed(3)} (Ca = ${Ca.toFixed(2)} @ ${ambTemp}°C, Cg = ${Cg.toFixed(2)} for ${nCircuits} circuit${nCircuits > 1 ? 's' : ''}). Derated Ampacity Iz' = ${actualIzPrime.toFixed(1)} A ≥ ${breakerAT} A.`;
         }
     }
 }

@@ -189,7 +189,19 @@
             if (prjEl) prjEl.innerText = `${g.projectName} (${g.projectCode})`;
             if (metaEl) metaEl.innerText = `${g.location} • Eng: ${g.engineerName} • ${g.revision}`;
             if (unitBadge) unitBadge.innerText = g.unitSystem === 'IP' ? 'IP (Imperial)' : 'SI (Metric)';
-            if (stdBadge) stdBadge.innerText = `${g.electricalStd === 'IEC' ? 'IEC 60364 (30°C)' : 'EIT 2001-64 (40°C)'} • ${g.voltage3P}V`;
+            if (stdBadge) {
+                const stdTitle = g.electricalStd === 'IEC' ? 'IEC 60364-5-52 (Ref 30°C)' : 'EIT 2001-64 (Ref 40°C)';
+                stdBadge.className = 'std-hover-wrap';
+                stdBadge.innerHTML = `
+                    <span class="std-icon-trigger" aria-label="Active Global Standards">ⓘ</span>
+                    <span class="std-hover-card std-hover-card--bottom">
+                        <span class="block text-[9px] font-bold uppercase tracking-wider text-amber-400 mb-0.5">Active Global Standards</span>
+                        <span class="block text-xs font-extrabold text-white mb-1">${stdTitle} • ${g.voltage3P}V / ${g.frequency}Hz</span>
+                        <span class="block text-[11px] text-slate-300">Mechanical: ASHRAE Fundamentals • Plumbing: ASPE/IPC • Fire: NFPA 13/14/20/22</span>
+                        <span class="block mt-1 font-mono text-[10px] text-emerald-300">Ambient: ${g.elecAmbientTemp}°C | OA: ${g.oaDbC}°C DB / ${g.oaWbC}°C WB</span>
+                    </span>
+                `;
+            }
         },
 
         openGlobalModal() {
@@ -240,10 +252,12 @@
             const badge = document.getElementById(`local_badge_${moduleId}`);
             if (badge) {
                 if (eff.isOverridden) {
-                    badge.innerText = `Local Override (${eff.unitSystem} • ${eff.electricalStd})`;
+                    badge.innerText = `Local Override (${eff.unitSystem})`;
+                    badge.title = `Local Standard: ${eff.electricalStd} @ ${eff.elecAmbientTemp}°C`;
                     badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30";
                 } else {
                     badge.innerText = `Global (${eff.unitSystem})`;
+                    badge.title = `Inherited Global Standard: ${eff.electricalStd} @ ${eff.elecAmbientTemp}°C`;
                     badge.className = "px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300";
                 }
             }

@@ -222,7 +222,7 @@
             discipline: 'fire',
             disciplineLabel: 'Fire Protection',
             standard: 'NFPA 13 Fig. 19.3.3.1.1',
-            desc: 'Calculate K-factor head flow, Hazen-Williams pipe friction loss, and interactive Area/Density demand.',
+            desc: 'Calculate K-factor head flow, pipe friction loss, and interactive Area/Density demand.',
             color: 'red',
             canvasId: 'nfpaChart',
             calcFn: () => typeof calcFire === 'function' && calcFire(),
@@ -246,7 +246,7 @@
             discipline: 'fire',
             disciplineLabel: 'Fire Protection',
             standard: 'NFPA 13 / 14 / 20 / 22',
-            desc: 'Calculate combined sprinkler, hose stream, and standpipe demand, NFPA 20 pump size, and NFPA 22 tank volume.',
+            desc: 'Calculate combined sprinkler, hose stream, and standpipe demand, fire pump size, and storage tank volume.',
             color: 'rose',
             canvasId: 'fireWaterChart',
             calcFn: () => typeof calcFireWater === 'function' && calcFireWater(),
@@ -271,6 +271,37 @@
             const idx = modules.findIndex(m => m.id === modDef.id);
             if (idx >= 0) modules[idx] = Object.assign({}, modules[idx], modDef);
             else modules.push(modDef);
+        },
+
+        renderStdHoverIcon(moduleId, opts = {}) {
+            const mod = this.getById(moduleId);
+            const kb = (window.MagicDB && window.MagicDB.knowledgeBase && window.MagicDB.knowledgeBase[moduleId]) || {};
+            const stdCode = kb.std || (mod && mod.standard) || 'Engineering Standard';
+            const summary = kb.summary || (mod && mod.desc) || '';
+            const eqs = (kb.equations || []).slice(0, 3);
+            const posClass = [
+                opts.direction === 'bottom' ? 'std-hover-card--bottom' : '',
+                opts.align === 'right' ? 'std-hover-card--right' : ''
+            ].filter(Boolean).join(' ');
+
+            const eqHtml = eqs.length
+                ? `<div class="mt-2 pt-2 border-t border-slate-700/80 space-y-1">
+                    ${eqs.map(eq => `<div class="font-mono text-[10px] text-emerald-300 bg-slate-900/90 px-2 py-0.5 rounded border border-slate-700/70 truncate">${eq}</div>`).join('')}
+                   </div>`
+                : '';
+
+            return `
+                <span class="std-hover-wrap" onclick="event.stopPropagation(); showInfo('${moduleId}')">
+                    <span class="std-icon-trigger" aria-label="Standard & Methodology Reference">ⓘ</span>
+                    <span class="std-hover-card ${posClass}">
+                        <span class="block text-[9px] font-bold uppercase tracking-wider text-blue-400 mb-0.5">Standard & Methodology</span>
+                        <span class="block text-xs font-extrabold text-white mb-1">${stdCode}</span>
+                        <span class="block text-[11px] text-slate-300 leading-snug">${summary}</span>
+                        ${eqHtml}
+                        <span class="block mt-1.5 text-[9px] text-slate-400 italic">Click ⓘ for full reference sheet</span>
+                    </span>
+                </span>
+            `;
         },
 
         filterLanding(discipline, searchText) {
@@ -320,10 +351,28 @@
         },
 
         injectModuleToolbars() {
+            // 1. Hydrate Landing Page Card Standard Icons
+            document.querySelectorAll('[data-module-id]').forEach(card => {
+                const mId = card.dataset.moduleId;
+                const slot = card.querySelector('.std-card-slot');
+                if (slot && !slot.dataset.hydrated) {
+                    slot.dataset.hydrated = 'true';
+                    slot.innerHTML = this.renderStdHoverIcon(mId, { direction: 'top', align: 'left' });
+                }
+            });
+
+            // 2. Inject Module Toolbars & Header Standard Icons
             modules.forEach(mod => {
                 const pageEl = document.getElementById(mod.id);
                 if (!pageEl || pageEl.dataset.toolbarInjected) return;
                 pageEl.dataset.toolbarInjected = 'true';
+
+                // Inject hover standard icon next to module <header> <h1>
+                const headerH1 = pageEl.querySelector('header h1');
+                if (headerH1 && !headerH1.querySelector('.std-hover-wrap')) {
+                    headerH1.classList.add('inline-flex', 'items-center', 'gap-2.5', 'flex-wrap');
+                    headerH1.insertAdjacentHTML('beforeend', this.renderStdHoverIcon(mod.id, { direction: 'bottom', align: 'left' }));
+                }
 
                 const navEl = pageEl.querySelector('nav');
                 if (!navEl) return;
@@ -345,16 +394,11 @@
                 barWrapper.innerHTML = `
                     <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-100/90 dark:bg-slate-800/70 px-3.5 py-2 rounded-xl border border-slate-200/80 dark:border-slate-700/80 text-xs">
                         <div class="flex flex-wrap items-center gap-2">
-                            <span class="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px]">Standard:</span>
-                            <span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold border border-blue-500/20">${mod.standard}</span>
+                            ${this.renderStdHoverIcon(mod.id, { direction: 'bottom', align: 'left' })}
                             <span id="local_badge_${mod.id}" class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Global (SI)</span>
                             ${syncButtonsHtml}
                         </div>
                         <div class="flex flex-wrap items-center gap-1.5">
-                            <button type="button" onclick="showInfo('${mod.id}')"
-                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-semibold bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 hover:border-blue-500 transition cursor-pointer">
-                                <span>ⓘ Formulas & Ref</span>
-                            </button>
                             <button type="button" onclick="window.MagicSettings.toggleLocalPanel('${mod.id}')"
                                 class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-semibold bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 hover:border-amber-500 transition cursor-pointer">
                                 <span>⚙️ Local Settings</span>
