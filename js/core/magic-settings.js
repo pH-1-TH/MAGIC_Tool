@@ -226,7 +226,19 @@
             const eff = this.getEffective(moduleId);
             const sys = eff.unitSystem; // 'SI' | 'IP'
 
-            if (moduleId === 'ductSizerPage' && typeof setDuctSystem === 'function') {
+            if (moduleId === 'analyzerPage') {
+                const t1El = document.getElementById('t1');
+                const t2El = document.getElementById('t2');
+                if (t1El && eff.oaDbC !== undefined) t1El.value = String(eff.oaDbC);
+                if (t2El && eff.roomDbC !== undefined) t2El.value = String(eff.roomDbC);
+                if (typeof updateAll === 'function') updateAll();
+            } else if (moduleId === 'loadAnalyzerPage') {
+                const lt1El = document.getElementById('load_t1');
+                const lt2El = document.getElementById('load_t2');
+                if (lt1El && eff.oaDbC !== undefined) lt1El.value = String(eff.oaDbC);
+                if (lt2El && eff.roomDbC !== undefined) lt2El.value = String(eff.roomDbC);
+                if (typeof updateLoadAnalyzer === 'function') updateLoadAnalyzer();
+            } else if (moduleId === 'ductSizerPage' && typeof setDuctSystem === 'function') {
                 setDuctSystem(sys);
             } else if (moduleId === 'pipeSizerPage' && typeof setPipeSystem === 'function') {
                 setPipeSystem(sys);
@@ -313,11 +325,31 @@
             const locEl = document.getElementById('gs_location');
             if (!locEl || locEl.tagName !== 'SELECT') return;
             if (locEl.options.length > 5) return;
-            const provObj = (window.MagicDB && (window.MagicDB.provinceData || window.MagicDB.provinces)) || null;
-            const provs = provObj
-                ? Object.keys(provObj).sort()
+            const provList = (window.MagicDB && Array.isArray(window.MagicDB.thailandProvinces))
+                ? window.MagicDB.thailandProvinces.map(p => p.name).sort()
                 : ['Bangkok', 'Chiang Mai', 'Phuket', 'Chon Buri', 'Rayong', 'Khon Kaen', 'Nakhon Ratchasima', 'Songkhla'];
-            locEl.innerHTML = provs.map(p => `<option value="${p}">${p}</option>`).join('');
+            locEl.innerHTML = provList.map(p => `<option value="${p}">${p}</option>`).join('');
+        },
+
+        onGlobalProvinceChange(provName) {
+            const provList = (window.MagicDB && Array.isArray(window.MagicDB.thailandProvinces))
+                ? window.MagicDB.thailandProvinces
+                : [];
+            const prov = provList.find(p => p.name === provName);
+            if (!prov) return;
+
+            const oaDbEl = document.getElementById('gs_oaDbC');
+            const oaWbEl = document.getElementById('gs_oaWbC');
+            const elevEl = document.getElementById('gs_elevationM');
+            const idfBadge = document.getElementById('gsp_prov_idf_badge');
+
+            if (oaDbEl && prov.oaDbC !== undefined) oaDbEl.value = String(prov.oaDbC);
+            if (oaWbEl && prov.oaWbC !== undefined) oaWbEl.value = String(prov.oaWbC);
+            if (elevEl && prov.elevationM !== undefined) elevEl.value = String(prov.elevationM);
+            if (idfBadge) {
+                idfBadge.innerText = `${prov.name}: ${prov.oaDbC}°C DB / ${prov.oaWbC}°C WB • Elev ${prov.elevationM}m • Rain I₅=${prov.intensity} mm/h (C=${prov.C})`;
+            }
+            this.showToast(`📍 Loaded ${prov.name} Climate & Rainfall Data (${prov.oaDbC}°C DB / ${prov.oaWbC}°C WB, I=${prov.intensity} mm/h)`);
         },
 
         setGlobalUnitVisual(sys) {
@@ -392,9 +424,11 @@
 
         toggleModuleModeFromMatrix(moduleId) {
             const eff = this.getEffective(moduleId);
+            const mod = window.MagicRegistry && typeof window.MagicRegistry.getById === 'function' ? window.MagicRegistry.getById(moduleId) : null;
+            const label = (mod && (mod.title || mod.name)) || moduleId;
             if (eff.isOverridden) {
                 this.resetLocalToGlobal(moduleId);
-                this.showToast(`${moduleId} reset to Inherit Global`);
+                this.showToast(`${label} reset to Inherit Global`);
             } else {
                 this.setLocalOverride(moduleId, {
                     unitSystem: eff.unitSystem,
@@ -407,12 +441,14 @@
                     safetyFactorPct: eff.safetyFactorPct,
                     note: 'Custom module override'
                 });
-                this.showToast(`${moduleId} switched to Custom Local Override`);
+                this.showToast(`${label} switched to Custom Local Override`);
             }
         },
 
         quickChangeModuleUnit(moduleId, newUnit) {
             const eff = this.getEffective(moduleId);
+            const mod = window.MagicRegistry && typeof window.MagicRegistry.getById === 'function' ? window.MagicRegistry.getById(moduleId) : null;
+            const label = (mod && (mod.title || mod.name)) || moduleId;
             this.setLocalOverride(moduleId, {
                 unitSystem: newUnit,
                 electricalStd: eff.electricalStd,
@@ -424,7 +460,7 @@
                 safetyFactorPct: eff.safetyFactorPct,
                 note: eff.note || `Override to ${newUnit}`
             });
-            this.showToast(`Updated ${moduleId} unit system to ${newUnit}`);
+            this.showToast(`Updated ${label} unit system to ${newUnit}`);
         },
 
         renderOverridesMatrix() {
@@ -452,6 +488,7 @@
             };
 
             container.innerHTML = filteredMods.map(mod => {
+                const modTitle = mod.title || mod.name || mod.id;
                 const eff = this.getEffective(mod.id);
                 const isCustom = eff.isOverridden;
                 let summary = `Units: ${eff.unitSystem}`;
@@ -469,7 +506,7 @@
                         <div class="min-w-0 flex-1">
                             <div class="flex flex-wrap items-center gap-2">
                                 <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200/80 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${discBadges[mod.discipline] || mod.discipline}</span>
-                                <button type="button" onclick="switchView('${mod.id}')" class="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer text-left">${mod.name}</button>
+                                <button type="button" onclick="switchView('${mod.id}')" class="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer text-left">${modTitle}</button>
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${isCustom ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'}">
                                     ${isCustom ? '⚡ Custom Override' : '🔗 Inherit Global'}
                                 </span>
@@ -499,6 +536,13 @@
                 const el = document.getElementById(`gs_${f}`);
                 if (el && g[f] !== undefined) el.value = g[f];
             });
+            const idfBadge = document.getElementById('gsp_prov_idf_badge');
+            if (idfBadge && window.MagicDB && Array.isArray(window.MagicDB.thailandProvinces)) {
+                const prov = window.MagicDB.thailandProvinces.find(p => p.name === g.location);
+                if (prov) {
+                    idfBadge.innerText = `${prov.name}: ${prov.oaDbC}°C DB / ${prov.oaWbC}°C WB • Elev ${prov.elevationM}m • Rain I₅=${prov.intensity} mm/h (C=${prov.C})`;
+                }
+            }
             this.setGlobalUnitVisual(g.unitSystem);
             this.setGlobalElecStdVisual(g.electricalStd);
             this.renderGlobalHeaderBadges();

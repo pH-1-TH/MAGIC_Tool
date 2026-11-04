@@ -337,7 +337,9 @@
         }
 
         if (disc === 'plumbing') {
-            const provList = (window.MagicDB && window.MagicDB.provinceData) ? Object.keys(window.MagicDB.provinceData) : ['Bangkok', 'Chiang Mai', 'Chon Buri', 'Phuket', 'Nakhon Ratchasima', 'Khon Kaen', 'Songkhla'];
+            const provList = (window.MagicDB && Array.isArray(window.MagicDB.thailandProvinces))
+                ? window.MagicDB.thailandProvinces.map(p => p.name).sort()
+                : ['Bangkok', 'Chiang Mai', 'Chon Buri', 'Phuket', 'Nakhon Ratchasima', 'Khon Kaen', 'Songkhla'];
             const provOptions = provList.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
             return `
                 ${unitField}

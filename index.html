@@ -429,9 +429,10 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                         <div>
                             <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Project Province / Location (77 Provinces)</label>
-                            <select id="gs_location" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-semibold focus:border-blue-500 focus:outline-none">
+                            <select id="gs_location" onchange="window.MagicSettings.onGlobalProvinceChange(this.value)" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-semibold focus:border-blue-500 focus:outline-none">
                                 <option value="Bangkok">Bangkok</option>
                             </select>
+                            <div id="gsp_prov_idf_badge" class="mt-1.5 text-[10px] font-mono text-teal-600 dark:text-teal-400">Bangkok: 35.5°C DB / 28.0°C WB • Elev 4m • Rain I₅=120 mm/h (C=0.95)</div>
                         </div>
                         <div>
                             <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Hydronic Fluid Temperature (°C)</label>
