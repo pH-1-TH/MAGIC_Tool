@@ -367,6 +367,7 @@
     }
 
     window.MagicRegistry = {
+        modules,
         getAll() {
             return modules;
         },

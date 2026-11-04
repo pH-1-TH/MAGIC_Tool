@@ -1,5 +1,5 @@
 // ============================================================================
-// M.A.G.I.C. Global & Local Settings Manager
+// M.A.G.I.C. Global & Local Settings Manager (Full-Page Hub & Per-Module Engine)
 // File: js/core/magic-settings.js
 // ============================================================================
 
@@ -40,33 +40,62 @@
             unitSystem: 'SI',
             electricalStd: 'EIT',
             voltage3P: 400,
+            voltage1P: 230,
+            frequency: 50,
             elecAmbientTemp: 40,
             oaDbC: 35.0,
             oaWbC: 28.0,
+            roomDbC: 24.0,
+            roomRhPct: 50.0,
             waterTempC: 20,
-            location: 'Bangkok'
+            location: 'Bangkok',
+            safetyFactorPct: 10
         },
         INTL_IEC: {
             unitSystem: 'SI',
             electricalStd: 'IEC',
             voltage3P: 400,
+            voltage1P: 230,
+            frequency: 50,
             elecAmbientTemp: 30,
             oaDbC: 32.0,
             oaWbC: 25.0,
+            roomDbC: 24.0,
+            roomRhPct: 50.0,
             waterTempC: 20,
-            location: 'Bangkok'
+            location: 'Bangkok',
+            safetyFactorPct: 10
         },
         US_IP: {
             unitSystem: 'IP',
             electricalStd: 'IEC',
             voltage3P: 380,
+            voltage1P: 220,
+            frequency: 60,
             elecAmbientTemp: 30,
             oaDbC: 35.0,
             oaWbC: 26.0,
+            roomDbC: 24.0,
+            roomRhPct: 50.0,
             waterTempC: 10,
-            location: 'Bangkok'
+            location: 'Bangkok',
+            safetyFactorPct: 15
         }
     };
+
+    const GLOBAL_FIELD_IDS = [
+        'projectName', 'projectCode', 'clientName', 'location',
+        'engineerName', 'reviewerName', 'revision', 'unitSystem',
+        'electricalStd', 'voltage3P', 'voltage1P', 'frequency',
+        'elecAmbientTemp', 'oaDbC', 'oaWbC', 'waterTempC',
+        'roomDbC', 'roomRhPct', 'elevationM', 'safetyFactorPct'
+    ];
+
+    const NUMERIC_FIELDS = [
+        'voltage3P', 'voltage1P', 'frequency', 'elecAmbientTemp',
+        'oaDbC', 'oaWbC', 'waterTempC', 'roomDbC', 'roomRhPct',
+        'elevationM', 'safetyFactorPct'
+    ];
 
     let settings = JSON.parse(JSON.stringify(defaultSettings));
     try {
@@ -77,6 +106,8 @@
             if (parsed.local) Object.assign(settings.local, parsed.local);
         }
     } catch (e) { }
+
+    let currentOverrideFilter = 'all';
 
     function save() {
         try {
@@ -128,6 +159,7 @@
             this.applyModuleSettings(moduleId);
             this.updateLocalSettingsUI(moduleId);
             this.renderGlobalHeaderBadges();
+            this.renderOverridesMatrix();
         },
 
         resetLocalToGlobal(moduleId) {
@@ -149,6 +181,16 @@
             });
             this.renderGlobalHeaderBadges();
             this.renderOverridesMatrix();
+            this.showToast('All 20 modules reset to inherit Global Settings');
+        },
+
+        resetFactoryDefaults() {
+            settings = JSON.parse(JSON.stringify(defaultSettings));
+            save();
+            this.loadGlobalPageUI();
+            this.renderGlobalHeaderBadges();
+            this.propagateSettings();
+            this.showToast('Restored Factory Default Settings');
         },
 
         exportSettings() {
@@ -162,6 +204,7 @@
             save();
             this.renderGlobalHeaderBadges();
             this.propagateSettings();
+            this.loadGlobalPageUI();
         },
 
         propagateSettings() {
@@ -256,133 +299,268 @@
                     </span>
                 `;
             }
+
+            // Update Full-Page Live Summary Strip if present
+            const sumUnit = document.getElementById('gsp_summary_unit');
+            const sumStd = document.getElementById('gsp_summary_std');
+            const sumClimate = document.getElementById('gsp_summary_climate');
+            if (sumUnit) sumUnit.innerText = g.unitSystem === 'IP' ? 'IP (Imperial — CFM, in, TR, GPM)' : 'SI (Metric — L/s, mm, kW, m³/h)';
+            if (sumStd) sumStd.innerText = `${g.electricalStd === 'IEC' ? 'IEC 60364 (30°C)' : 'EIT 2001-64 (40°C)'} • ${g.voltage3P}V 3P / ${g.frequency}Hz @ ${g.elecAmbientTemp}°C`;
+            if (sumClimate) sumClimate.innerText = `${g.location} • OA ${g.oaDbC}°C DB / ${g.oaWbC}°C WB • Water ${g.waterTempC}°C`;
         },
 
         populateGlobalLocationOptions() {
             const locEl = document.getElementById('gs_location');
             if (!locEl || locEl.tagName !== 'SELECT') return;
             if (locEl.options.length > 5) return;
-            const provs = (window.MagicDB && window.MagicDB.provinces)
-                ? Object.keys(window.MagicDB.provinces).sort()
-                : ['Bangkok', 'Chiang Mai', 'Phuket', 'Chonburi', 'Rayong', 'Khon Kaen', 'Nakhon Ratchasima', 'Songkhla'];
+            const provObj = (window.MagicDB && (window.MagicDB.provinceData || window.MagicDB.provinces)) || null;
+            const provs = provObj
+                ? Object.keys(provObj).sort()
+                : ['Bangkok', 'Chiang Mai', 'Phuket', 'Chon Buri', 'Rayong', 'Khon Kaen', 'Nakhon Ratchasima', 'Songkhla'];
             locEl.innerHTML = provs.map(p => `<option value="${p}">${p}</option>`).join('');
         },
 
-        switchGlobalTab(tabId) {
-            const tabs = ['project', 'standards', 'climate', 'overrides'];
-            tabs.forEach(t => {
-                const panel = document.getElementById(`gs_tab_${t}`);
-                const btn = document.getElementById(`gs_tab_btn_${t}`);
-                if (panel) panel.classList.toggle('hidden', t !== tabId);
-                if (btn) {
-                    if (t === tabId) {
-                        btn.className = "w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-xs font-extrabold bg-blue-600 text-white shadow-sm transition cursor-pointer";
-                    } else {
-                        btn.className = "w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700/60 transition cursor-pointer";
-                    }
+        setGlobalUnitVisual(sys) {
+            const unitEl = document.getElementById('gs_unitSystem');
+            if (unitEl) unitEl.value = sys;
+            const btnSI = document.getElementById('gsp_unit_card_SI');
+            const btnIP = document.getElementById('gsp_unit_card_IP');
+            if (btnSI && btnIP) {
+                if (sys === 'IP') {
+                    btnIP.className = "p-3.5 rounded-xl border-2 border-blue-600 bg-blue-500/10 text-left transition cursor-pointer";
+                    btnSI.className = "p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/70 hover:border-blue-400 text-left transition cursor-pointer";
+                } else {
+                    btnSI.className = "p-3.5 rounded-xl border-2 border-blue-600 bg-blue-500/10 text-left transition cursor-pointer";
+                    btnIP.className = "p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/70 hover:border-blue-400 text-left transition cursor-pointer";
                 }
-            });
-            if (tabId === 'overrides') {
-                this.renderOverridesMatrix();
             }
         },
 
-        applyRegionalPreset(presetKey) {
+        setGlobalElecStdVisual(std) {
+            const stdEl = document.getElementById('gs_electricalStd');
+            if (stdEl) stdEl.value = std;
+            const btnEIT = document.getElementById('gsp_std_card_EIT');
+            const btnIEC = document.getElementById('gsp_std_card_IEC');
+            if (btnEIT && btnIEC) {
+                if (std === 'IEC') {
+                    btnIEC.className = "p-3.5 rounded-xl border-2 border-amber-500 bg-amber-500/10 text-left transition cursor-pointer";
+                    btnEIT.className = "p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/70 hover:border-amber-400 text-left transition cursor-pointer";
+                } else {
+                    btnEIT.className = "p-3.5 rounded-xl border-2 border-amber-500 bg-amber-500/10 text-left transition cursor-pointer";
+                    btnIEC.className = "p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/70 hover:border-amber-400 text-left transition cursor-pointer";
+                }
+            }
+        },
+
+        applyRegionalPreset(presetKey, activeBtnKey) {
             const preset = REGIONAL_PRESETS[presetKey];
             if (!preset) return;
             Object.keys(preset).forEach(k => {
                 const el = document.getElementById(`gs_${k}`);
                 if (el) el.value = String(preset[k]);
             });
+            this.setGlobalUnitVisual(preset.unitSystem);
+            this.setGlobalElecStdVisual(preset.electricalStd);
+
+            ['TH_EIT', 'INTL_IEC', 'US_IP'].forEach(k => {
+                const btn = document.getElementById(`gsp_preset_${k}`);
+                if (btn) {
+                    if (k === (activeBtnKey || presetKey)) {
+                        btn.className = "p-3.5 rounded-xl border-2 border-blue-600 bg-blue-600/10 dark:bg-blue-500/15 text-left transition cursor-pointer shadow-xs";
+                    } else {
+                        btn.className = "p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:border-blue-500/50 text-left transition cursor-pointer";
+                    }
+                }
+            });
+            this.showToast(`Loaded ${presetKey === 'TH_EIT' ? 'Thailand EIT' : presetKey === 'INTL_IEC' ? 'International IEC' : 'US Imperial'} Preset — Click Save to Apply`);
+        },
+
+        filterOverridesMatrix(discipline) {
+            currentOverrideFilter = discipline || 'all';
+            ['all', 'mechanical', 'electrical', 'plumbing', 'fire'].forEach(d => {
+                const btn = document.getElementById(`gsp_filter_${d}`);
+                if (btn) {
+                    if (d === currentOverrideFilter) {
+                        btn.className = "px-3 py-1.5 rounded-lg text-xs font-extrabold bg-blue-600 text-white shadow-xs transition cursor-pointer";
+                    } else {
+                        btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/70 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer";
+                    }
+                }
+            });
+            this.renderOverridesMatrix();
+        },
+
+        toggleModuleModeFromMatrix(moduleId) {
+            const eff = this.getEffective(moduleId);
+            if (eff.isOverridden) {
+                this.resetLocalToGlobal(moduleId);
+                this.showToast(`${moduleId} reset to Inherit Global`);
+            } else {
+                this.setLocalOverride(moduleId, {
+                    unitSystem: eff.unitSystem,
+                    electricalStd: eff.electricalStd,
+                    voltage3P: eff.voltage3P,
+                    elecAmbientTemp: eff.elecAmbientTemp,
+                    waterTempC: eff.waterTempC,
+                    oaDbC: eff.oaDbC,
+                    location: eff.location,
+                    safetyFactorPct: eff.safetyFactorPct,
+                    note: 'Custom module override'
+                });
+                this.showToast(`${moduleId} switched to Custom Local Override`);
+            }
+        },
+
+        quickChangeModuleUnit(moduleId, newUnit) {
+            const eff = this.getEffective(moduleId);
+            this.setLocalOverride(moduleId, {
+                unitSystem: newUnit,
+                electricalStd: eff.electricalStd,
+                voltage3P: eff.voltage3P,
+                elecAmbientTemp: eff.elecAmbientTemp,
+                waterTempC: eff.waterTempC,
+                oaDbC: eff.oaDbC,
+                location: eff.location,
+                safetyFactorPct: eff.safetyFactorPct,
+                note: eff.note || `Override to ${newUnit}`
+            });
+            this.showToast(`Updated ${moduleId} unit system to ${newUnit}`);
         },
 
         renderOverridesMatrix() {
             const container = document.getElementById('gs_overrides_matrix_body');
             const countBadge = document.getElementById('gs_overrides_count_badge');
-            const mods = (window.MagicRegistry && window.MagicRegistry.modules) || [];
+            const mods = (window.MagicRegistry && (typeof window.MagicRegistry.getAll === 'function' ? window.MagicRegistry.getAll() : window.MagicRegistry.modules)) || [];
             const activeOverrides = Object.keys(settings.local).filter(k => settings.local[k] && settings.local[k].mode === 'custom');
             if (countBadge) {
-                countBadge.innerText = String(activeOverrides.length);
+                countBadge.innerText = `${activeOverrides.length} Custom / ${mods.length} Total`;
                 countBadge.className = activeOverrides.length > 0
-                    ? "px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-white"
-                    : "px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300";
+                    ? "px-2.5 py-1 rounded-full text-xs font-extrabold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
+                    : "px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20";
             }
             if (!container) return;
 
-            const g = settings.global;
-            container.innerHTML = mods.map(mod => {
+            const filteredMods = currentOverrideFilter === 'all'
+                ? mods
+                : mods.filter(m => m.discipline === currentOverrideFilter);
+
+            const discBadges = {
+                mechanical: '⚙️ Mechanical',
+                electrical: '⚡ Electrical',
+                plumbing: '💧 Plumbing',
+                fire: '🔥 Fire'
+            };
+
+            container.innerHTML = filteredMods.map(mod => {
                 const eff = this.getEffective(mod.id);
                 const isCustom = eff.isOverridden;
                 let summary = `Units: ${eff.unitSystem}`;
                 if (mod.discipline === 'electrical') {
                     summary += ` • ${eff.electricalStd} • ${eff.voltage3P}V @ ${eff.elecAmbientTemp}°C`;
                 } else if (mod.discipline === 'mechanical') {
-                    summary += ` • Water ${eff.waterTempC}°C • OA ${eff.oaDbC}°C`;
+                    summary += ` • Fluid ${eff.waterTempC}°C • OA ${eff.oaDbC}°C`;
                 } else if (mod.discipline === 'plumbing') {
-                    summary += ` • Prov: ${eff.location}`;
+                    summary += ` • Province: ${eff.location}`;
                 } else if (mod.discipline === 'fire') {
-                    summary += ` • Margin: +${eff.safetyFactorPct}%`;
+                    summary += ` • Safety Margin: +${eff.safetyFactorPct}%`;
                 }
                 return `
-                    <div class="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl border ${isCustom ? 'bg-amber-500/5 border-amber-500/30' : 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200 dark:border-slate-700/70'}">
-                        <div class="min-w-0">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-xs text-slate-800 dark:text-slate-100">${mod.name}</span>
-                                <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${isCustom ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}">
-                                    ${isCustom ? '⚡ Custom Override' : '🔗 Inherited Global'}
+                    <div class="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl border transition ${isCustom ? 'bg-amber-500/5 border-amber-500/35' : 'bg-slate-50/80 dark:bg-slate-900/40 border-slate-200 dark:border-slate-700/80'}">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200/80 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${discBadges[mod.discipline] || mod.discipline}</span>
+                                <button type="button" onclick="switchView('${mod.id}')" class="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer text-left">${mod.name}</button>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${isCustom ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'}">
+                                    ${isCustom ? '⚡ Custom Override' : '🔗 Inherit Global'}
                                 </span>
                             </div>
-                            <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">${summary}${eff.note ? ` • "${eff.note}"` : ''}</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono">${summary}${eff.note ? ` • "${eff.note}"` : ''}</div>
                         </div>
-                        <div class="flex items-center gap-1.5">
-                            ${isCustom ? `<button type="button" onclick="window.MagicSettings.resetLocalToGlobal('${mod.id}')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 transition cursor-pointer">Reset to Global</button>` : `<span class="text-[10px] text-slate-400">Synced (${g.unitSystem})</span>`}
+                        <div class="flex flex-wrap items-center gap-2">
+                            <div class="inline-flex rounded-lg p-0.5 bg-slate-200/80 dark:bg-slate-700 border border-slate-300/60 dark:border-slate-600">
+                                <button type="button" onclick="window.MagicSettings.quickChangeModuleUnit('${mod.id}', 'SI')" class="px-2 py-1 rounded-md text-[10px] font-bold transition cursor-pointer ${eff.unitSystem === 'SI' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-300'}">SI</button>
+                                <button type="button" onclick="window.MagicSettings.quickChangeModuleUnit('${mod.id}', 'IP')" class="px-2 py-1 rounded-md text-[10px] font-bold transition cursor-pointer ${eff.unitSystem === 'IP' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-300'}">IP</button>
+                            </div>
+                            ${isCustom
+                                ? `<button type="button" onclick="window.MagicSettings.resetLocalToGlobal('${mod.id}')" class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/25 transition cursor-pointer">Reset to Global</button>`
+                                : `<button type="button" onclick="window.MagicSettings.toggleModuleModeFromMatrix('${mod.id}')" class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-slate-200/70 hover:bg-amber-500/15 dark:bg-slate-700 dark:hover:bg-amber-500/20 text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition cursor-pointer">Lock Custom</button>`
+                            }
+                            <button type="button" onclick="switchView('${mod.id}')" class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition cursor-pointer">Open →</button>
                         </div>
                     </div>
                 `;
             }).join('');
         },
 
-        openGlobalModal(initialTab = 'project') {
+        loadGlobalPageUI() {
             this.populateGlobalLocationOptions();
             const g = settings.global;
-            const modal = document.getElementById('globalSettingsModal');
-            if (!modal) return;
-            const fields = [
-                'projectName', 'projectCode', 'clientName', 'location',
-                'engineerName', 'reviewerName', 'revision', 'unitSystem',
-                'electricalStd', 'voltage3P', 'elecAmbientTemp', 'oaDbC', 'oaWbC', 'waterTempC',
-                'roomDbC', 'roomRhPct', 'elevationM', 'safetyFactorPct'
-            ];
-            fields.forEach(f => {
+            GLOBAL_FIELD_IDS.forEach(f => {
                 const el = document.getElementById(`gs_${f}`);
                 if (el && g[f] !== undefined) el.value = g[f];
             });
+            this.setGlobalUnitVisual(g.unitSystem);
+            this.setGlobalElecStdVisual(g.electricalStd);
+            this.renderGlobalHeaderBadges();
             this.renderOverridesMatrix();
-            this.switchGlobalTab(initialTab);
-            modal.classList.remove('hidden');
         },
 
-        saveFromGlobalModal() {
-            const fields = [
-                'projectName', 'projectCode', 'clientName', 'location',
-                'engineerName', 'reviewerName', 'revision', 'unitSystem',
-                'electricalStd', 'voltage3P', 'elecAmbientTemp', 'oaDbC', 'oaWbC', 'waterTempC',
-                'roomDbC', 'roomRhPct', 'elevationM', 'safetyFactorPct'
-            ];
-            const numFields = [
-                'voltage3P', 'elecAmbientTemp', 'oaDbC', 'oaWbC', 'waterTempC',
-                'roomDbC', 'roomRhPct', 'elevationM', 'safetyFactorPct'
-            ];
+        openGlobalPage(sectionId) {
+            if (typeof switchView === 'function') {
+                switchView('globalSettingsPage');
+            }
+            this.loadGlobalPageUI();
+            if (sectionId) {
+                setTimeout(() => {
+                    const sec = document.getElementById(sectionId);
+                    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 60);
+            }
+        },
+
+        // Backward-compatible alias so all existing openGlobalModal() calls open the full-page settings view
+        openGlobalModal(initialTab) {
+            const sectionMap = {
+                project: 'gsp_sec_project',
+                standards: 'gsp_sec_standards',
+                climate: 'gsp_sec_climate',
+                overrides: 'gsp_sec_overrides'
+            };
+            this.openGlobalPage(sectionMap[initialTab] || null);
+        },
+
+        saveFromGlobalModal(returnToMenu = false) {
             const updates = {};
-            fields.forEach(f => {
+            GLOBAL_FIELD_IDS.forEach(f => {
                 const el = document.getElementById(`gs_${f}`);
                 if (el) {
-                    updates[f] = numFields.includes(f) ? (parseFloat(el.value) || 0) : el.value;
+                    updates[f] = NUMERIC_FIELDS.includes(f) ? (parseFloat(el.value) || 0) : el.value;
                 }
             });
             this.updateGlobal(updates, true);
-            const modal = document.getElementById('globalSettingsModal');
-            if (modal) modal.classList.add('hidden');
+            this.loadGlobalPageUI();
+            this.showToast('✅ Global Settings Saved & Propagated Across All 20 Modules');
+            if (returnToMenu && typeof switchView === 'function') {
+                switchView('mainMenuPage');
+            }
+        },
+
+        showToast(message) {
+            let toast = document.getElementById('magic_settings_toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'magic_settings_toast';
+                toast.className = 'fixed bottom-5 right-5 z-[120] px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-extrabold shadow-xl border border-emerald-400/30 transition-all duration-300 opacity-0 pointer-events-none';
+                document.body.appendChild(toast);
+            }
+            toast.innerText = message;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            clearTimeout(this._toastTimer);
+            this._toastTimer = setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 2600);
         },
 
         toggleLocalPanel(moduleId) {
@@ -478,6 +656,7 @@
             if (marginIn) overridePayload.safetyFactorPct = parseFloat(marginIn.value) || 0;
 
             this.setLocalOverride(moduleId, overridePayload);
+            this.showToast(`Applied Local Override for ${moduleId}`);
         }
     };
 

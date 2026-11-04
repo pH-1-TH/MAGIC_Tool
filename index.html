@@ -70,208 +70,6 @@
     </div>
 
 
-    <!-- Global Settings Modal (4-Tab Sidebar UX/UI) -->
-    <div id="globalSettingsModal" class="fixed inset-0 z-[110] bg-slate-900/65 hidden flex items-center justify-center p-4 backdrop-blur-sm no-print">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <!-- Modal Header -->
-            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-blue-600/15 dark:bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-blue-400 text-base">⚙️</div>
-                    <div>
-                        <h2 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">Global Project & Engineering Standards Hub</h2>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Single Source of Truth project metadata, regional code presets, climate parameters, and module override audit.</p>
-                    </div>
-                </div>
-                <button type="button" onclick="document.getElementById('globalSettingsModal').classList.add('hidden')" class="w-8 h-8 rounded-lg bg-slate-200/70 dark:bg-slate-700 text-slate-500 dark:text-slate-300 hover:bg-rose-500/15 hover:text-rose-500 flex items-center justify-center font-bold transition cursor-pointer">✕</button>
-            </div>
-
-            <!-- 2-Column Sidebar + Content Body -->
-            <div class="grid grid-cols-1 md:grid-cols-12 min-h-[420px] max-h-[75vh]">
-                <!-- Left Sidebar Navigation (4 Tabs) -->
-                <div class="md:col-span-4 bg-slate-50/90 dark:bg-slate-900/40 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700 p-4 flex flex-col justify-between gap-4">
-                    <div class="space-y-1.5">
-                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 mb-2">Configuration Sections</div>
-                        <button type="button" id="gs_tab_btn_project" onclick="window.MagicSettings.switchGlobalTab('project')" class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-xs font-extrabold bg-blue-600 text-white shadow-sm transition cursor-pointer">
-                            <span>📋 Project & Sign-Off</span>
-                        </button>
-                        <button type="button" id="gs_tab_btn_standards" onclick="window.MagicSettings.switchGlobalTab('standards')" class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700/60 transition cursor-pointer">
-                            <span>🌐 Units & Standards</span>
-                        </button>
-                        <button type="button" id="gs_tab_btn_climate" onclick="window.MagicSettings.switchGlobalTab('climate')" class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700/60 transition cursor-pointer">
-                            <span>🌡️ Climate & Design Basis</span>
-                        </button>
-                        <button type="button" id="gs_tab_btn_overrides" onclick="window.MagicSettings.switchGlobalTab('overrides')" class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700/60 transition cursor-pointer">
-                            <span>🔀 Module Overrides</span>
-                            <span id="gs_overrides_count_badge" class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">0</span>
-                        </button>
-                    </div>
-
-                    <!-- Quick Regional Presets Card -->
-                    <div class="p-3 rounded-xl bg-blue-500/5 dark:bg-slate-800/80 border border-blue-500/20 space-y-2">
-                        <div class="text-[10px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400">⚡ 1-Click Regional Presets</div>
-                        <div class="grid grid-cols-1 gap-1.5">
-                            <button type="button" onclick="window.MagicSettings.applyRegionalPreset('TH_EIT')" class="text-left px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-700 hover:border-blue-500 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 transition cursor-pointer">
-                                🇹🇭 Thailand Standard (SI • EIT 40°C • 400V)
-                            </button>
-                            <button type="button" onclick="window.MagicSettings.applyRegionalPreset('INTL_IEC')" class="text-left px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-700 hover:border-blue-500 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 transition cursor-pointer">
-                                🌍 International IEC (SI • IEC 30°C • 400V)
-                            </button>
-                            <button type="button" onclick="window.MagicSettings.applyRegionalPreset('US_IP')" class="text-left px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-700 hover:border-blue-500 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 transition cursor-pointer">
-                                🇺🇸 US ASHRAE / NFPA (IP • CFM, in, GPM)
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Content Pane -->
-                <div class="md:col-span-8 p-6 overflow-y-auto text-xs space-y-5">
-                    <!-- TAB 1: Project & Sign-Off -->
-                    <div id="gs_tab_project" class="space-y-4">
-                        <div class="border-b border-slate-200 dark:border-slate-700 pb-2">
-                            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white">📋 Project Metadata & Engineering Sign-Off</h3>
-                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Appears on the Calculation Book cover page, module print headers, and exported Excel sheets.</p>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                            <div class="sm:col-span-2">
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Project Name</label>
-                                <input type="text" id="gs_projectName" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white font-semibold">
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Project Code / Job No.</label>
-                                <input type="text" id="gs_projectCode" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Document Revision</label>
-                                <input type="text" id="gs_revision" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Client / Project Owner</label>
-                                <input type="text" id="gs_clientName" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Lead MEP Engineer</label>
-                                <input type="text" id="gs_engineerName" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Reviewer / Principal Checker</label>
-                                <input type="text" id="gs_reviewerName" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- TAB 2: Units & Standards -->
-                    <div id="gs_tab_standards" class="hidden space-y-4">
-                        <div class="border-b border-slate-200 dark:border-slate-700 pb-2">
-                            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white">🌐 Global Unit System & Electrical Code Basis</h3>
-                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Propagates across all 20 modules unless a module has an active Local Override.</p>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                            <div>
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Global Unit System</label>
-                                <select id="gs_unitSystem" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 font-semibold">
-                                    <option value="SI">SI (Metric — L/s, mm, kW, m³/h)</option>
-                                    <option value="IP">IP (Imperial — CFM, in, TR, GPM)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Electrical Wiring Standard</label>
-                                <select id="gs_electricalStd" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 font-semibold">
-                                    <option value="EIT">EIT 2001-64 Thailand (Ref 40°C)</option>
-                                    <option value="IEC">IEC 60364-5-52 International (Ref 30°C)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">3-Phase Supply Voltage (V)</label>
-                                <select id="gs_voltage3P" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                                    <option value="400">400 V (50Hz Standard)</option>
-                                    <option value="380">380 V</option>
-                                    <option value="415">415 V</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Cable Ambient Temp (°C)</label>
-                                <select id="gs_elecAmbientTemp" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                                    <option value="30">30°C (IEC Reference)</option>
-                                    <option value="35">35°C</option>
-                                    <option value="40">40°C (EIT Standard Reference)</option>
-                                    <option value="45">45°C</option>
-                                    <option value="50">50°C</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Default Design Safety Margin (%)</label>
-                                <input type="number" step="5" min="0" max="50" id="gs_safetyFactorPct" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- TAB 3: Climate & Design Basis -->
-                    <div id="gs_tab_climate" class="hidden space-y-4">
-                        <div class="border-b border-slate-200 dark:border-slate-700 pb-2">
-                            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white">🌡️ Default Climate, Psychrometric & Hydronic Basis</h3>
-                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Synchronizes province rainfall intensity (77 Thai provinces), outdoor design air, and hydronic fluid properties.</p>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                            <div>
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Project Province / Location (77 Provinces)</label>
-                                <select id="gs_location" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 font-semibold">
-                                    <option value="Bangkok">Bangkok</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Hydronic Fluid Temperature (°C)</label>
-                                <select id="gs_waterTempC" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                                    <option value="10">10°C (Chilled Water Supply)</option>
-                                    <option value="20">20°C (Condenser / Make-up Water)</option>
-                                    <option value="60">60°C (Heating Hot Water)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Outdoor Dry-Bulb — OA DB (°C)</label>
-                                <input type="number" step="0.5" id="gs_oaDbC" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Outdoor Wet-Bulb — OA WB (°C)</label>
-                                <input type="number" step="0.5" id="gs_oaWbC" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Indoor Room DB (°C)</label>
-                                <input type="number" step="0.5" id="gs_roomDbC" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Indoor Room RH (%)</label>
-                                <input type="number" step="1" id="gs_roomRhPct" class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- TAB 4: Module Overrides Matrix -->
-                    <div id="gs_tab_overrides" class="hidden space-y-3">
-                        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-2">
-                            <div>
-                                <h3 class="text-sm font-extrabold text-slate-900 dark:text-white">🔀 Module Overrides Audit Matrix</h3>
-                                <p class="text-[11px] text-slate-500 dark:text-slate-400">Inspect which modules inherit Global Settings versus custom Local Overrides.</p>
-                            </div>
-                            <button type="button" onclick="window.MagicSettings.resetAllLocalOverrides()" class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 transition cursor-pointer">
-                                Reset All to Global
-                            </button>
-                        </div>
-                        <div id="gs_overrides_matrix_body" class="space-y-2 max-h-[48vh] overflow-y-auto pr-1"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200 dark:border-slate-700 flex flex-wrap justify-between items-center gap-2">
-                <span class="text-[11px] text-slate-500 dark:text-slate-400">Changes automatically propagate to all modules set to <strong>🔗 Inherit Global</strong>.</span>
-                <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('globalSettingsModal').classList.add('hidden')" class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 cursor-pointer">Cancel</button>
-                    <button type="button" onclick="window.MagicSettings.saveFromGlobalModal()" class="px-5 py-2 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-500/20 cursor-pointer">Save & Propagate to All Modules</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- SSOT Central Database & Live Parameter Hub Modal -->
     <div id="ssotModal" class="fixed inset-0 z-[110] bg-slate-900/65 hidden flex items-center justify-center p-4 backdrop-blur-sm no-print">
         <div class="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -411,12 +209,12 @@
                 <div class="space-y-2">
                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">Settings & Data Panels</div>
 
-                    <button type="button" onclick="toggleHamburgerMenu(false); window.MagicSettings.openGlobalModal()"
+                    <button type="button" onclick="window.MagicSettings.openGlobalPage()"
                         class="w-full flex items-center gap-3 p-3 rounded-xl text-left bg-slate-50 hover:bg-blue-500/10 dark:bg-slate-700/60 dark:hover:bg-blue-500/15 border border-slate-200/80 dark:border-slate-700 hover:border-blue-500/40 transition cursor-pointer">
                         <span class="w-9 h-9 rounded-lg bg-slate-200/80 dark:bg-slate-700 flex items-center justify-center text-base">⚙️</span>
                         <div>
                             <div class="text-xs font-bold text-slate-900 dark:text-white">Global Project & Standards Settings</div>
-                            <div class="text-[11px] text-slate-500 dark:text-slate-400">Units (SI/IP), EIT/IEC codes, voltage & ambient</div>
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400">Open full-page Settings Command Center</div>
                         </div>
                     </button>
 
@@ -472,6 +270,396 @@
                 </button>
             </div>
         </aside>
+    </div>
+
+    <!-- ================= GLOBAL SETTINGS FULL PAGE (ENGINEERING COMMAND CENTER) ================= -->
+    <div id="globalSettingsPage" class="hidden max-w-6xl mx-auto space-y-6 py-4 page-container no-print">
+        <!-- Sticky Top Action Header -->
+        <div class="sticky top-2 z-30 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="switchView('mainMenuPage')"
+                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition cursor-pointer">
+                    <span>←</span>
+                    <span>Back to Main Menu</span>
+                </button>
+                <div class="h-6 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600/15 dark:bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-lg">⚙️</div>
+                    <div>
+                        <h1 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-tight">Global Project & Engineering Standards Hub</h1>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Full-Page Single Source of Truth (SSOT) Configuration & 20-Module Override Command Center</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" onclick="window.MagicSettings.resetFactoryDefaults()"
+                    class="px-3 py-2 rounded-xl text-xs font-bold bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/25 transition cursor-pointer">
+                    ↺ Factory Defaults
+                </button>
+                <button type="button" onclick="window.MagicSettings.saveFromGlobalModal(false)"
+                    class="px-4 py-2 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition cursor-pointer">
+                    💾 Save & Apply
+                </button>
+                <button type="button" onclick="window.MagicSettings.saveFromGlobalModal(true)"
+                    class="px-4 py-2 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-500/25 transition cursor-pointer">
+                    ✅ Save & Return to Hub
+                </button>
+            </div>
+        </div>
+
+        <!-- Live Active Configuration Summary Strip -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="p-3.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center gap-3 shadow-xs">
+                <div class="w-9 h-9 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">🌐</div>
+                <div class="min-w-0">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Active Global Units</div>
+                    <div id="gsp_summary_unit" class="text-xs font-extrabold text-slate-900 dark:text-white truncate">SI (Metric — L/s, mm, kW, m³/h)</div>
+                </div>
+            </div>
+            <div class="p-3.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center gap-3 shadow-xs">
+                <div class="w-9 h-9 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-sm">⚡</div>
+                <div class="min-w-0">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Active Electrical Basis</div>
+                    <div id="gsp_summary_std" class="text-xs font-extrabold text-slate-900 dark:text-white truncate">EIT 2001-64 (40°C) • 400V 3P / 50Hz @ 40°C</div>
+                </div>
+            </div>
+            <div class="p-3.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center gap-3 shadow-xs">
+                <div class="w-9 h-9 rounded-lg bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold text-sm">🌡️</div>
+                <div class="min-w-0">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Active Climate & Fluid Basis</div>
+                    <div id="gsp_summary_climate" class="text-xs font-extrabold text-slate-900 dark:text-white truncate">Bangkok • OA 35°C DB / 28°C WB • Water 20°C</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1-Click Regional Engineering Code Presets Banner -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <h2 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">⚡ 1-Click Regional Engineering Code Presets</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Select a regional standard profile to auto-populate units, electrical code, voltage, and ambient design temperatures.</p>
+                </div>
+                <div class="flex flex-wrap gap-1.5 text-[11px]">
+                    <a href="#gsp_sec_project" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold hover:text-blue-500">1. Project</a>
+                    <a href="#gsp_sec_standards" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold hover:text-blue-500">2. Units & Codes</a>
+                    <a href="#gsp_sec_climate" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold hover:text-blue-500">3. Climate</a>
+                    <a href="#gsp_sec_overrides" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold hover:text-blue-500">4. Module Overrides</a>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <button type="button" id="gsp_preset_TH_EIT" onclick="window.MagicSettings.applyRegionalPreset('TH_EIT', 'TH_EIT')"
+                    class="p-3.5 rounded-xl border-2 border-blue-600 bg-blue-600/10 dark:bg-blue-500/15 text-left transition cursor-pointer shadow-xs">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-extrabold text-slate-900 dark:text-white">🇹🇭 Thailand EIT Standard</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white">SI Metric</span>
+                    </div>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-300">EIT 2001-64 (Ref 40°C) • 400V/230V 50Hz • OA 35°C DB / 28°C WB • Bangkok</p>
+                </button>
+                <button type="button" id="gsp_preset_INTL_IEC" onclick="window.MagicSettings.applyRegionalPreset('INTL_IEC', 'INTL_IEC')"
+                    class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:border-blue-500/50 text-left transition cursor-pointer">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-extrabold text-slate-900 dark:text-white">🌍 International IEC / ISO</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white">SI Metric</span>
+                    </div>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-300">IEC 60364-5-52 (Ref 30°C) • 400V/230V 50Hz • OA 32°C DB / 25°C WB</p>
+                </button>
+                <button type="button" id="gsp_preset_US_IP" onclick="window.MagicSettings.applyRegionalPreset('US_IP', 'US_IP')"
+                    class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:border-blue-500/50 text-left transition cursor-pointer">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-extrabold text-slate-900 dark:text-white">🇺🇸 US ASHRAE / NFPA (Imperial)</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-600 text-white">IP Imperial</span>
+                    </div>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-300">CFM, inches, TR, GPM, ftH₂O • 380V/60Hz • Chilled Water 10°C (50°F)</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main 2-Column Configuration Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left Column: Section 1 (Project Metadata) + Section 3 (Climate & Psychrometrics) -->
+            <div class="lg:col-span-6 space-y-6">
+                <!-- SECTION 1: Project Metadata & Engineering Sign-Off -->
+                <section id="gsp_sec_project" class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                        <div>
+                            <h2 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">📋 1. Project Metadata & Engineering Sign-Off</h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Printed on Master Calculation Books, Separation Reports, and Excel Title Blocks.</p>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400">Title Block SSOT</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                        <div class="sm:col-span-2">
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Project Name / Building Title</label>
+                            <input type="text" id="gs_projectName" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-semibold focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Project Code / Job Number</label>
+                            <input type="text" id="gs_projectCode" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-mono focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Submission Revision</label>
+                            <input type="text" id="gs_revision" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Client / Project Owner / Developer</label>
+                            <input type="text" id="gs_clientName" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Lead MEP Design Engineer</label>
+                            <input type="text" id="gs_engineerName" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Reviewer / Senior Checker</label>
+                            <input type="text" id="gs_reviewerName" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 3: Climate, Psychrometric & Hydronic Design Basis -->
+                <section id="gsp_sec_climate" class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                        <div>
+                            <h2 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">🌡️ 3. Climate, Psychrometric & Hydronic Basis</h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Synchronizes 77-Province Storm/Pond rainfall intensity, outdoor air state, and fluid properties.</p>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-teal-500/10 text-teal-600 dark:text-teal-400">ASHRAE / DPT</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Project Province / Location (77 Provinces)</label>
+                            <select id="gs_location" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-semibold focus:border-blue-500 focus:outline-none">
+                                <option value="Bangkok">Bangkok</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Hydronic Fluid Temperature (°C)</label>
+                            <select id="gs_waterTempC" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-semibold focus:border-blue-500 focus:outline-none">
+                                <option value="10">10°C — Chilled Water Supply</option>
+                                <option value="20">20°C — Condenser / Make-up Water</option>
+                                <option value="60">60°C — Heating Hot Water</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Outdoor Dry-Bulb — OA DB (°C)</label>
+                            <input type="number" step="0.5" id="gs_oaDbC" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-mono">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Outdoor Wet-Bulb — OA WB (°C)</label>
+                            <input type="number" step="0.5" id="gs_oaWbC" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-mono">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Indoor Room Design DB (°C)</label>
+                            <input type="number" step="0.5" id="gs_roomDbC" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-mono">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Indoor Room Design RH (%)</label>
+                            <input type="number" step="1" id="gs_roomRhPct" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-mono">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Site Elevation Above Sea Level (m)</label>
+                            <input type="number" step="10" id="gs_elevationM" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-mono">
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column: Section 2 (Units, Electrical & Safety) + Project Backup/SSOT Quick Actions -->
+            <div class="lg:col-span-6 space-y-6">
+                <!-- SECTION 2: Global Units, Electrical Standards & Safety Factors -->
+                <section id="gsp_sec_standards" class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                        <div>
+                            <h2 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">🌐 2. Units, Electrical Code & Safety Basis</h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Controls SI/IP unit conversion and EIT 2001-64 vs IEC 60364-5-52 cable ampacity derating.</p>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400">EIT / IEC / NFPA</span>
+                    </div>
+
+                    <!-- Interactive Visual Unit System Cards -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Global Engineering Unit System</label>
+                        <select id="gs_unitSystem" class="hidden" onchange="window.MagicSettings.setGlobalUnitVisual(this.value)">
+                            <option value="SI">SI</option>
+                            <option value="IP">IP</option>
+                        </select>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <button type="button" id="gsp_unit_card_SI" onclick="window.MagicSettings.setGlobalUnitVisual('SI')"
+                                class="p-3.5 rounded-xl border-2 border-blue-600 bg-blue-500/10 text-left transition cursor-pointer">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-extrabold text-slate-900 dark:text-white">SI (Metric System)</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-600 text-white">SI</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Airflow: L/s, m³/h • Duct/Pipe: mm • Load: kW • Pressure: Pa, kPa</p>
+                            </button>
+                            <button type="button" id="gsp_unit_card_IP" onclick="window.MagicSettings.setGlobalUnitVisual('IP')"
+                                class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/70 hover:border-blue-400 text-left transition cursor-pointer">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-extrabold text-slate-900 dark:text-white">IP (Imperial / US)</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">IP</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Airflow: CFM • Duct/Pipe: inch • Load: TR, BTU/h • Pressure: in.wg, psi</p>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Visual Electrical Standard Cards -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Governing Electrical Wiring & Ampacity Standard</label>
+                        <select id="gs_electricalStd" class="hidden" onchange="window.MagicSettings.setGlobalElecStdVisual(this.value)">
+                            <option value="EIT">EIT</option>
+                            <option value="IEC">IEC</option>
+                        </select>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <button type="button" id="gsp_std_card_EIT" onclick="window.MagicSettings.setGlobalElecStdVisual('EIT')"
+                                class="p-3.5 rounded-xl border-2 border-amber-500 bg-amber-500/10 text-left transition cursor-pointer">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-extrabold text-slate-900 dark:text-white">EIT 2001-64 (Thailand)</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500 text-white">40°C Ref</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Table 5-20 / 5-27 / 5-43 • Base Ambient 40°C Free Air & Conduit</p>
+                            </button>
+                            <button type="button" id="gsp_std_card_IEC" onclick="window.MagicSettings.setGlobalElecStdVisual('IEC')"
+                                class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/70 hover:border-amber-400 text-left transition cursor-pointer">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-extrabold text-slate-900 dark:text-white">IEC 60364-5-52 (Intl)</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">30°C Ref</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Table B.52.14 • Base Ambient 30°C with Ca Derating Multiplier</p>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-1">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">3-Phase Supply Voltage (V)</label>
+                            <select id="gs_voltage3P" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-semibold">
+                                <option value="400">400 V (50Hz Standard)</option>
+                                <option value="380">380 V</option>
+                                <option value="415">415 V</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">1-Phase Supply Voltage (V)</label>
+                            <select id="gs_voltage1P" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-semibold">
+                                <option value="230">230 V (50Hz Standard)</option>
+                                <option value="220">220 V</option>
+                                <option value="240">240 V</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Cable Ambient Temperature (°C)</label>
+                            <select id="gs_elecAmbientTemp" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-semibold">
+                                <option value="30">30°C (IEC Reference)</option>
+                                <option value="35">35°C</option>
+                                <option value="40">40°C (EIT Standard Reference)</option>
+                                <option value="45">45°C</option>
+                                <option value="50">50°C</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Power Grid Frequency (Hz)</label>
+                            <select id="gs_frequency" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-semibold">
+                                <option value="50">50 Hz (Thailand / IEC)</option>
+                                <option value="60">60 Hz (US / Americas)</option>
+                            </select>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Default Engineering Design Safety Margin (%)</label>
+                            <input type="number" step="5" min="0" max="50" id="gs_safetyFactorPct" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white font-mono">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Project File Backup, SSOT Hub & Master Calculation Book Card -->
+                <section class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+                    <div class="border-b border-slate-200 dark:border-slate-700 pb-3">
+                        <h2 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">💾 Project File (.magic.json), SSOT Hub & Master Reports</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Export or restore your entire project configuration, inspect live SSOT parameters, or compile reports.</p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <label class="flex items-center justify-center gap-2 p-3 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700/70 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 transition cursor-pointer">
+                            <span>📂 Import Project (.magic.json)</span>
+                            <input type="file" accept=".json,.magic.json" class="hidden" onchange="window.MagicIO.importProjectJSON(this)">
+                        </label>
+                        <button type="button" onclick="window.MagicIO.exportProjectJSON()"
+                            class="flex items-center justify-center gap-2 p-3 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700/70 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 transition cursor-pointer">
+                            <span>💾 Export Project (.magic.json)</span>
+                        </button>
+                        <button type="button" onclick="window.MagicIO.openSSOTModal()"
+                            class="flex items-center justify-center gap-2 p-3 rounded-xl font-bold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/25 transition cursor-pointer">
+                            <span>🔗 Open SSOT Central Data Hub</span>
+                        </button>
+                        <button type="button" onclick="window.MagicIO.openMasterReportModal()"
+                            class="flex items-center justify-center gap-2 p-3 rounded-xl font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition cursor-pointer">
+                            <span>📑 Open Master Report Builder</span>
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- SECTION 4: Full-Width 20-Module Local Overrides Matrix -->
+        <section id="gsp_sec_overrides" class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700 pb-4">
+                <div>
+                    <div class="flex items-center gap-2.5">
+                        <h2 class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">🔀 4. Per-Module Local Settings & Override Matrix (All 20 Modules)</h2>
+                        <span id="gs_overrides_count_badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">0 Custom / 20 Total</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Directly toggle any module between <strong>SI / IP</strong>, lock custom local overrides, or reset all modules back to inherit Global Settings.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" onclick="window.MagicSettings.resetAllLocalOverrides()"
+                        class="px-3.5 py-2 rounded-xl text-xs font-bold bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/25 transition cursor-pointer">
+                        🔗 Reset All 20 Modules to Global
+                    </button>
+                </div>
+            </div>
+
+            <!-- Discipline Filter Pills -->
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" id="gsp_filter_all" onclick="window.MagicSettings.filterOverridesMatrix('all')"
+                    class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-blue-600 text-white shadow-xs transition cursor-pointer">
+                    All Modules (20)
+                </button>
+                <button type="button" id="gsp_filter_mechanical" onclick="window.MagicSettings.filterOverridesMatrix('mechanical')"
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/70 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer">
+                    ⚙️ Mechanical & HVAC (8)
+                </button>
+                <button type="button" id="gsp_filter_electrical" onclick="window.MagicSettings.filterOverridesMatrix('electrical')"
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/70 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer">
+                    ⚡ Electrical (6)
+                </button>
+                <button type="button" id="gsp_filter_plumbing" onclick="window.MagicSettings.filterOverridesMatrix('plumbing')"
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/70 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer">
+                    💧 Plumbing & Sanitary (3)
+                </button>
+                <button type="button" id="gsp_filter_fire" onclick="window.MagicSettings.filterOverridesMatrix('fire')"
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/70 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer">
+                    🔥 Fire Protection (3)
+                </button>
+            </div>
+
+            <!-- 2-Column Module Override Cards Grid -->
+            <div id="gs_overrides_matrix_body" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+        </section>
+
+        <!-- Bottom Action Bar -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-3">
+            <span class="text-xs text-slate-500 dark:text-slate-400">All settings persist automatically in browser storage (<code>magic_settings_v3</code>) and export inside <code>.magic.json</code> project files.</span>
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" onclick="switchView('mainMenuPage')"
+                    class="px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition cursor-pointer">
+                    ← Return to Main Menu
+                </button>
+                <button type="button" onclick="window.MagicSettings.saveFromGlobalModal(true)"
+                    class="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-500/25 transition cursor-pointer">
+                    ✅ Save & Propagate to All Modules
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- ================= MAIN MENU PAGE (MULTI-DISCIPLINE HUB) ================= -->
