@@ -88,6 +88,41 @@ function syncMotorCatalogFromInput(target) {
 // Copper Conductor Ampacity Table
 // pvc_g2 / pvc_g5 / xlpe_g2 / xlpe_g5: EIT 2001-64 (Thailand) at 40°C Ref Ambient (Tables 5-20, 5-23, 5-27, 5-29)
 
+// Standard Low-Voltage Busway Ratings per IEC 61439-6 / UL 857
+const busDuctRatings = [
+    { rating: 250,  r: 0.125, x: 0.045, width: 125, height: 100, weightKgM: 9.5,  icwKa: 30 },
+    { rating: 400,  r: 0.080, x: 0.035, width: 135, height: 100, weightKgM: 12.0, icwKa: 40 },
+    { rating: 630,  r: 0.052, x: 0.026, width: 155, height: 100, weightKgM: 16.5, icwKa: 50 },
+    { rating: 800,  r: 0.040, x: 0.020, width: 175, height: 100, weightKgM: 19.8, icwKa: 65 },
+    { rating: 1000, r: 0.030, x: 0.016, width: 195, height: 100, weightKgM: 24.2, icwKa: 65 },
+    { rating: 1250, r: 0.024, x: 0.013, width: 220, height: 100, weightKgM: 29.5, icwKa: 80 },
+    { rating: 1600, r: 0.018, x: 0.010, width: 260, height: 100, weightKgM: 37.0, icwKa: 80 },
+    { rating: 2000, r: 0.014, x: 0.008, width: 310, height: 100, weightKgM: 46.5, icwKa: 100 },
+    { rating: 2500, r: 0.011, x: 0.006, width: 370, height: 100, weightKgM: 58.0, icwKa: 100 },
+    { rating: 3200, r: 0.008, x: 0.005, width: 440, height: 100, weightKgM: 74.0, icwKa: 120 },
+    { rating: 4000, r: 0.006, x: 0.004, width: 520, height: 100, weightKgM: 92.0, icwKa: 120 },
+    { rating: 5000, r: 0.005, x: 0.003, width: 620, height: 100, weightKgM: 115.0, icwKa: 150 }
+];
+
+function selectRaceway(type) {
+    const sel = document.getElementById('wire_raceway_type');
+    if (sel) sel.value = type;
+    onRacewayDropdownChanged();
+}
+
+function onRacewayDropdownChanged() {
+    const type = document.getElementById('wire_raceway_type')?.value || 'IMC';
+    const installSel = document.getElementById('wire_install');
+    if (installSel) {
+        if (type === 'Tray') {
+            installSel.value = 'G5';
+        } else if (type === 'IMC' || type === 'Wireway') {
+            installSel.value = 'G2';
+        }
+    }
+    calcWiring();
+}
+
 // Wiring & Breaker Sizer (uses ampacityTable & standardBreakers from magic-db.js)
 function populateWiringTable() {
     const tbody = document.getElementById('wire_table_body');
@@ -130,10 +165,22 @@ function calcWiring() {
     const pf = parseFloat(document.getElementById('wire_pf').value) || 0.85;
     const std = document.getElementById('wire_std')?.value || 'EIT';
     const type = document.getElementById('wire_type').value;
-    const install = document.getElementById('wire_install').value;
+    let install = document.getElementById('wire_install')?.value || 'G2';
+    const raceway = document.getElementById('wire_raceway_type')?.value || 'IMC';
     const length = parseFloat(document.getElementById('wire_len').value) || 0;
     const ambTemp = parseInt(document.getElementById('wire_temp_amb').value) || 40;
     const nCircuits = Math.max(1, parseInt(document.getElementById('wire_grouping').value) || 1);
+
+    // Automatically synchronize installation method to selected raceway
+    if (raceway === 'Tray' && install !== 'G5') {
+        install = 'G5';
+        const installSel = document.getElementById('wire_install');
+        if (installSel) installSel.value = 'G5';
+    } else if ((raceway === 'IMC' || raceway === 'Wireway') && install === 'G5') {
+        install = 'G2';
+        const installSel = document.getElementById('wire_install');
+        if (installSel) installSel.value = 'G2';
+    }
 
     // 1. Calculate Load Amps
     let amps = 0;
@@ -244,16 +291,9 @@ function calcWiring() {
     }
 
     if (recommendedRow) {
-        const resSizeEl = document.getElementById('wire_res_size');
         const sizePrefix = nRuns > 1 ? `${nRuns} × ` : '';
-        if (resSizeEl) resSizeEl.innerHTML = `${sizePrefix}${recommendedRow.size} <span class="text-2xl font-bold text-slate-400">mm²</span>`;
-
         const baseIzTotal = recommendedRow[lookupKey] * nRuns;
         const actualIzPrime = baseIzTotal * totalDf;
-        const resMaxIzEl = document.getElementById('wire_res_max_iz');
-        if (resMaxIzEl) resMaxIzEl.innerText = `${actualIzPrime.toFixed(1)} A`;
-        const resBaseIzEl = document.getElementById('wire_res_base_iz');
-        if (resBaseIzEl) resBaseIzEl.innerText = `Base Iz: ${baseIzTotal.toFixed(0)} A (${std} ${std === 'IEC' ? '30°C' : '40°C'})`;
 
         // Voltage Drop (accounting for parallel runs: current per run = amps / nRuns)
         const phi = Math.acos(Math.min(1, Math.max(0, pf)));
@@ -264,10 +304,8 @@ function calcWiring() {
         else vd = (2 * ampsPerRun * (recommendedRow.r * pf + recommendedRow.x * sinPhi) * length) / 1000;
 
         const vdPct = volt > 0 ? (vd / volt) * 100 : 0;
-        const resVdEl = document.getElementById('wire_res_vd');
-        if (resVdEl) resVdEl.innerHTML = `${vdPct.toFixed(2)} <span class="text-xl font-normal text-slate-500">%</span>`;
 
-        // 5. Raceway Sizing (SI mm & Imperial Parallel Comparison)
+        // 5. Raceway & Bus Duct Sizing
         const od = recommendedRow.od || (2.1 * Math.sqrt(recommendedRow.size));
         const nCondPerRun = phase === 3 ? 4 : 2; // 3P+N or 1P+N
         const totalWiresPerRun = nCondPerRun + 1; // +1 for Ground/PE
@@ -279,7 +317,7 @@ function calcWiring() {
             bundleBadge.innerText = `Cable OD: Ø${od.toFixed(1)} mm • Bundle Area: ${totalAllRunsCableArea.toFixed(0)} mm² (${nRuns * totalWiresPerRun} cores)`;
         }
 
-        // IMC Conduit Sizing (EIT 40% fill limit; 1 conduit per run if single conduit exceeds DN100)
+        // 5.1 IMC Conduit Sizing (EIT 40% fill limit)
         const imcTable = [
             { inch: '1/2"',   mm: 15,  dn: 'DN15',  area: 240 },
             { inch: '3/4"',   mm: 20,  dn: 'DN20',  area: 415 },
@@ -296,7 +334,6 @@ function calcWiring() {
         ];
         let imcConduitCount = nRuns;
         let selectedIMC = imcTable.find(c => (c.area * 0.4) >= singleRunCableArea) || imcTable[imcTable.length - 1];
-        // If nRuns == 1, single conduit; if nRuns > 1, 1 conduit per parallel run
         const imcPrefix = imcConduitCount > 1 ? `${imcConduitCount} × ` : '';
         const imcFillPct = (singleRunCableArea / selectedIMC.area) * 100;
         const imcEl = document.getElementById('wire_res_imc');
@@ -306,7 +343,7 @@ function calcWiring() {
         if (imcMmEl) imcMmEl.innerText = `${selectedIMC.dn} • ID Area: ${selectedIMC.area.toLocaleString()} mm²`;
         if (imcFillEl) imcFillEl.innerText = `Actual Fill: ${imcFillPct.toFixed(1)}% (≤ 40% Max)`;
 
-        // Wireway Sizing (EIT 20% cross-sectional fill limit, shown in SI mm×mm and in×in)
+        // 5.2 Wireway Sizing (EIT 20% cross-sectional fill limit)
         const wwSizes = [
             { mmLabel: '50 × 75 mm',   inLabel: '2"×3"',  area: 3750 },
             { mmLabel: '50 × 100 mm',  inLabel: '2"×4"',  area: 5000 },
@@ -329,7 +366,7 @@ function calcWiring() {
         if (wwMmEl) wwMmEl.innerText = `Area: ${selectedWW.area.toLocaleString()} mm² (20% Cap: ${(selectedWW.area * 0.2).toLocaleString()} mm²)`;
         if (wwFillEl) wwFillEl.innerText = `Actual Fill: ${wwFillPct.toFixed(1)}% (≤ 20% Max)`;
 
-        // Cable Tray Sizing (SI Width × Height in mm + Imperial inches)
+        // 5.3 Cable Tray Sizing (Single-Layer Spacing)
         const trayTable = [
             { w: 100, h: 50,  inW: '4"',  inH: '2"' },
             { w: 150, h: 75,  inW: '6"',  inH: '3"' },
@@ -349,9 +386,98 @@ function calcWiring() {
         if (trayMmEl) trayMmEl.innerText = `Req. Span: ${reqWidth.toFixed(0)} mm • Area: ${(selectedTray.w * selectedTray.h).toLocaleString()} mm²`;
         if (trayFillEl) trayFillEl.innerText = `Single-Layer (${((reqWidth / selectedTray.w) * 100).toFixed(0)}% Width Used)`;
 
+        // 5.4 Bus Duct Sizing (Sandwich Type per IEC 61439-6 / UL 857)
+        const selectedBD = busDuctRatings.find(bd => bd.rating >= breakerAT) || busDuctRatings[busDuctRatings.length - 1];
+        const vdBd = (Math.sqrt(3) * amps * (selectedBD.r * pf + selectedBD.x * sinPhi) * length) / 1000;
+        const vdBdPct = volt > 0 ? (vdBd / volt) * 100 : 0;
+
+        const bdEl = document.getElementById('wire_res_busduct');
+        const bdDetEl = document.getElementById('wire_res_busduct_detail');
+        const bdAdvEl = document.getElementById('wire_res_busduct_adv');
+        if (bdEl) bdEl.innerText = `${selectedBD.rating} A`;
+        if (bdDetEl) bdDetEl.innerText = `${selectedBD.width} × ${selectedBD.height} mm • ${selectedBD.weightKgM} kg/m`;
+        if (bdAdvEl) bdAdvEl.innerText = `Icw: ${selectedBD.icwKa} kA • VD: ${vdBdPct.toFixed(2)}%`;
+
+        // 5.5 Highlight Selected Raceway Card
+        const cards = [
+            { id: 'wire_card_imc', badgeId: 'wire_badge_imc', key: 'IMC' },
+            { id: 'wire_card_ww', badgeId: 'wire_badge_ww', key: 'Wireway' },
+            { id: 'wire_card_tray', badgeId: 'wire_badge_tray', key: 'Tray' },
+            { id: 'wire_card_busduct', badgeId: 'wire_badge_busduct', key: 'BusDuct' }
+        ];
+        cards.forEach(c => {
+            const el = document.getElementById(c.id);
+            const b = document.getElementById(c.badgeId);
+            const isActive = c.key === raceway;
+            if (el) {
+                if (isActive) {
+                    el.className = 'p-3.5 rounded-xl border transition-all cursor-pointer ring-2 ring-orange-500 bg-orange-50/20 dark:bg-orange-950/30 border-orange-400 dark:border-orange-500 shadow-md flex flex-col justify-between';
+                } else {
+                    el.className = 'p-3.5 rounded-xl border transition-all cursor-pointer bg-slate-50/70 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 hover:border-teal-500 hover:shadow-md flex flex-col justify-between';
+                }
+            }
+            if (b) {
+                b.classList.toggle('hidden', !isActive);
+            }
+        });
+
+        // 5.6 High Current Advisory Banner (≥ 630 A)
+        const advEl = document.getElementById('wire_busduct_advisory');
+        const advTextEl = document.getElementById('wire_busduct_advisory_text');
+        if (advEl) {
+            if (amps >= 630 && raceway !== 'BusDuct') {
+                advEl.classList.remove('hidden');
+                if (advTextEl) {
+                    advTextEl.innerText = `Design load current is ${amps.toFixed(1)} A (Breaker: ${breakerAT} A), requiring ${nRuns} × ${recommendedRow.size} mm² parallel cables in conduits/trays. In modern MEP engineering, a Compact Sandwich Bus Duct (${selectedBD.rating} A) is strongly recommended over multiple parallel cable runs for lower voltage drop, lower fire load, and compact shaft riser layout.`;
+                }
+            } else {
+                advEl.classList.add('hidden');
+            }
+        }
+
+        // 6. Recommendation Box (Switches between Cable and Bus Duct based on selected raceway)
+        const recTitleEl = document.getElementById('wire_rec_title');
+        const resSizeEl = document.getElementById('wire_res_size');
         const resDescEl = document.getElementById('wire_res_desc');
-        if (resDescEl) {
-            resDescEl.innerText = `Breaker ${breakerAT} A (AT) protected by ${sizePrefix}${recommendedRow.size} mm² Cu/${type} (${install}). Derating: Cf = ${totalDf.toFixed(3)} (Ca = ${Ca.toFixed(2)} @ ${ambTemp}°C, Cg = ${Cg.toFixed(2)} for ${nCircuits} circuit${nCircuits > 1 ? 's' : ''}). Derated Ampacity Iz' = ${actualIzPrime.toFixed(1)} A ≥ ${breakerAT} A.`;
+        const resMaxIzEl = document.getElementById('wire_res_max_iz');
+        const resBaseIzEl = document.getElementById('wire_res_base_iz');
+        const resTotalDfEl = document.getElementById('wire_res_total_df');
+        const resDfDetailEl = document.getElementById('wire_res_df_detail');
+        const resVdEl = document.getElementById('wire_res_vd');
+
+        if (raceway === 'BusDuct') {
+            if (recTitleEl) recTitleEl.innerText = 'RECOMMENDED BUS DUCT / BUSWAY SPECIFICATION';
+            if (resSizeEl) resSizeEl.innerHTML = `${selectedBD.rating} <span class="text-2xl font-bold text-slate-400">A Busway</span>`;
+            if (resMaxIzEl) resMaxIzEl.innerText = `${selectedBD.rating} A`;
+            if (resBaseIzEl) resBaseIzEl.innerText = `Continuous Feeder Rating (In)`;
+            if (resTotalDfEl) resTotalDfEl.innerText = `Sandwich`;
+            if (resDfDetailEl) resDfDetailEl.innerText = `IEC 61439-6 / UL 857`;
+            if (resVdEl) resVdEl.innerHTML = `${vdBdPct.toFixed(2)} <span class="text-xl font-normal text-slate-500">%</span>`;
+            if (resDescEl) {
+                resDescEl.innerText = `Compact Sandwich Type Busway (IEC 61439-6 / UL 857) rated at ${selectedBD.rating} A, coordinated with upstream breaker ${breakerAT} A (AT) for design current ${amps.toFixed(1)} A. Conductors: 99.99% ETP Pure Copper (3P 4W + 50% Integral Earth Housing). Cross-section: ${selectedBD.width} × ${selectedBD.height} mm (${selectedBD.weightKgM} kg/m). Short-circuit withstand Icw = ${selectedBD.icwKa} kA (1s). Low reactance voltage drop: ${vdBdPct.toFixed(2)}% (${vdBd.toFixed(2)} V @ ${length} m). Space saving: up to 65% shaft width reduction vs parallel cables.`;
+            }
+        } else {
+            const racewayNames = { IMC: 'IMC Conduit', Wireway: 'Steel Wireway', Tray: 'Cable Tray / Ladder' };
+            if (recTitleEl) recTitleEl.innerText = `RECOMMENDED CABLE SIZE (${racewayNames[raceway] || 'Cable'})`;
+            if (resSizeEl) resSizeEl.innerHTML = `${sizePrefix}${recommendedRow.size} <span class="text-2xl font-bold text-slate-400">mm²</span>`;
+            if (resMaxIzEl) resMaxIzEl.innerText = `${actualIzPrime.toFixed(1)} A`;
+            if (resBaseIzEl) resBaseIzEl.innerText = `Base Iz: ${baseIzTotal.toFixed(0)} A (${std} ${std === 'IEC' ? '30°C' : '40°C'})`;
+            if (resTotalDfEl) resTotalDfEl.innerText = totalDf.toFixed(3).replace(/0$/, '');
+            if (resDfDetailEl) resDfDetailEl.innerText = `Ca: ${Ca.toFixed(2)} (${ambTemp}°C) × Cg: ${Cg.toFixed(2)} (${nCircuits} cct)`;
+            if (resVdEl) resVdEl.innerHTML = `${vdPct.toFixed(2)} <span class="text-xl font-normal text-slate-500">%</span>`;
+
+            let racewayNote = '';
+            if (raceway === 'IMC') {
+                racewayNote = `Installed in ${imcPrefix}Ø${selectedIMC.mm} mm (${selectedIMC.inch}) IMC Conduit (${selectedIMC.dn}, ID Area: ${selectedIMC.area.toLocaleString()} mm², fill: ${imcFillPct.toFixed(1)}% ≤ 40% Max).`;
+            } else if (raceway === 'Wireway') {
+                racewayNote = `Enclosed in ${selectedWW.mmLabel} (${selectedWW.inLabel}) Steel Wireway (Area: ${selectedWW.area.toLocaleString()} mm², fill: ${wwFillPct.toFixed(1)}% ≤ 20% Max).`;
+            } else if (raceway === 'Tray') {
+                racewayNote = `Single-layer spaced on ${selectedTray.w} × ${selectedTray.h} mm (${selectedTray.inW}×${selectedTray.inH}) Cable Tray / Ladder (Span: ${reqWidth.toFixed(0)} mm, ${((reqWidth / selectedTray.w) * 100).toFixed(0)}% width used).`;
+            }
+
+            if (resDescEl) {
+                resDescEl.innerText = `Breaker ${breakerAT} A (AT) protected by ${sizePrefix}${recommendedRow.size} mm² Cu/${type} (${install}). Derating: Cf = ${totalDf.toFixed(3)} (Ca = ${Ca.toFixed(2)} @ ${ambTemp}°C, Cg = ${Cg.toFixed(2)} for ${nCircuits} circuit${nCircuits > 1 ? 's' : ''}). Derated Ampacity Iz' = ${actualIzPrime.toFixed(1)} A ≥ ${breakerAT} A. Voltage Drop: ${vdPct.toFixed(2)}% (${vd.toFixed(2)} V @ ${length} m). ${racewayNote}`;
+            }
         }
     }
 }

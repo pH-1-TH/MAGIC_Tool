@@ -4107,14 +4107,14 @@
                             </div>
                         </div>
                         <div class="pt-4 border-t border-slate-100 dark:border-slate-700">
-                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Raceway
-                                Selection</label>
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Raceway & Distribution System</label>
                             <select id="wire_raceway_type"
-                                class="w-full p-2 rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white outline-none"
-                                onchange="calcWiring()">
-                                <option value="IMC">IMC Conduit (40% fill)</option>
-                                <option value="Wireway">Wireway (20% fill)</option>
-                                <option value="Tray">Cable Tray (Ladder)</option>
+                                class="w-full p-2 rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white outline-none font-medium cursor-pointer"
+                                onchange="onRacewayDropdownChanged()">
+                                <option value="IMC" selected>⚡ IMC Conduit (40% fill • Method B)</option>
+                                <option value="Wireway">⚡ Steel Wireway (20% fill • Method B)</option>
+                                <option value="Tray">⚡ Cable Tray / Ladder (Single-Layer • Method E/F)</option>
+                                <option value="BusDuct">⚡ Bus Duct / Busway (IEC 61439-6 Sandwich Feeder)</option>
                             </select>
                         </div>
                         <div>
@@ -4155,49 +4155,104 @@
                             <span class="text-xl font-normal text-slate-500">%</span></div>
                         <div class="text-[10px] text-slate-400 mt-1">Target < 3-5%</div>
                         </div>
-                        <!-- Sized Raceway Card (Multi-Display with SI mm & Imperial in) -->
+                        <!-- Sized Raceway Card (Interactive Selection with Bus Duct Support) -->
                         <div class="stat-card border-t-4 border-t-teal-500 md:col-span-3">
                             <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-                                <div class="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
-                                    Sized Raceways (SI mm & Imperial Parallel Comparison)</div>
-                                <div id="wire_res_cable_area_badge" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
+                                <div>
+                                    <div class="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
+                                        Sized Raceways & Distribution System (Click to Select)</div>
+                                    <div class="text-[11px] text-slate-400">Click any raceway card to switch primary sizing between Conduit, Wireway, Tray, or Bus Duct.</div>
+                                </div>
+                                <div id="wire_res_cable_area_badge" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
                                     Total Cable Bundle Area: -- mm²
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div class="text-center p-2 rounded-lg bg-slate-50/60 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-700/60">
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">IMC Conduit</div>
-                                    <div id="wire_res_imc" class="text-xl font-black text-teal-600 dark:text-teal-400 mt-1">
-                                        --</div>
-                                    <div id="wire_res_imc_mm" class="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1">-- mm
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                                <!-- Card 1: IMC Conduit -->
+                                <div id="wire_card_imc" onclick="selectRaceway('IMC')"
+                                    class="p-3.5 rounded-xl border transition-all cursor-pointer bg-slate-50/70 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 hover:border-teal-500 hover:shadow-md flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                                <span>⚡ IMC Conduit</span>
+                                            </span>
+                                            <span id="wire_badge_imc" class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-teal-500 text-white hidden">SELECTED</span>
+                                        </div>
+                                        <div id="wire_res_imc" class="text-lg font-black text-slate-900 dark:text-white mt-1">--</div>
+                                        <div id="wire_res_imc_mm" class="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-0.5">-- mm</div>
                                     </div>
-                                    <div id="wire_res_imc_fill" class="text-[10px] text-slate-400 mt-0.5">≤ 40% Max Fill</div>
+                                    <div id="wire_res_imc_fill" class="text-[10px] text-slate-400 mt-2 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">≤ 40% Max Fill</div>
                                 </div>
-                                <div class="text-center p-2 rounded-lg bg-slate-50/60 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-700/60">
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Wireway (W × H)</div>
-                                    <div id="wire_res_ww" class="text-xl font-black text-teal-600 dark:text-teal-400 mt-1">--
+
+                                <!-- Card 2: Wireway -->
+                                <div id="wire_card_ww" onclick="selectRaceway('Wireway')"
+                                    class="p-3.5 rounded-xl border transition-all cursor-pointer bg-slate-50/70 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 hover:border-teal-500 hover:shadow-md flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                                <span>⚡ Wireway</span>
+                                            </span>
+                                            <span id="wire_badge_ww" class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-teal-500 text-white hidden">SELECTED</span>
+                                        </div>
+                                        <div id="wire_res_ww" class="text-lg font-black text-slate-900 dark:text-white mt-1">--</div>
+                                        <div id="wire_res_ww_mm" class="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-0.5">-- mm²</div>
                                     </div>
-                                    <div id="wire_res_ww_mm" class="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1">-- mm²
-                                    </div>
-                                    <div id="wire_res_ww_fill" class="text-[10px] text-slate-400 mt-0.5">≤ 20% Max Fill</div>
+                                    <div id="wire_res_ww_fill" class="text-[10px] text-slate-400 mt-2 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">≤ 20% Max Fill</div>
                                 </div>
-                                <div class="text-center p-2 rounded-lg bg-slate-50/60 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-700/60">
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cable Tray (W × H)</div>
-                                    <div id="wire_res_tray" class="text-xl font-black text-teal-600 dark:text-teal-400 mt-1">
-                                        --</div>
-                                    <div id="wire_res_tray_mm" class="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1">Sized Width (mm)</div>
-                                    <div id="wire_res_tray_fill" class="text-[10px] text-slate-400 mt-0.5">Single-Layer Spacing</div>
+
+                                <!-- Card 3: Cable Tray -->
+                                <div id="wire_card_tray" onclick="selectRaceway('Tray')"
+                                    class="p-3.5 rounded-xl border transition-all cursor-pointer bg-slate-50/70 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 hover:border-teal-500 hover:shadow-md flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                                <span>⚡ Cable Tray</span>
+                                            </span>
+                                            <span id="wire_badge_tray" class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-teal-500 text-white hidden">SELECTED</span>
+                                        </div>
+                                        <div id="wire_res_tray" class="text-lg font-black text-slate-900 dark:text-white mt-1">--</div>
+                                        <div id="wire_res_tray_mm" class="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-0.5">Sized Width (mm)</div>
+                                    </div>
+                                    <div id="wire_res_tray_fill" class="text-[10px] text-slate-400 mt-2 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">Single-Layer Spacing</div>
+                                </div>
+
+                                <!-- Card 4: Bus Duct -->
+                                <div id="wire_card_busduct" onclick="selectRaceway('BusDuct')"
+                                    class="p-3.5 rounded-xl border transition-all cursor-pointer bg-slate-50/70 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 hover:border-teal-500 hover:shadow-md flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                                                <span>⚡ Bus Duct (Busway)</span>
+                                            </span>
+                                            <span id="wire_badge_busduct" class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 hidden">SELECTED</span>
+                                        </div>
+                                        <div id="wire_res_busduct" class="text-lg font-black text-amber-600 dark:text-amber-400 mt-1">-- A</div>
+                                        <div id="wire_res_busduct_detail" class="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-0.5">IEC 61439-6 Sandwich</div>
+                                    </div>
+                                    <div id="wire_res_busduct_adv" class="text-[10px] text-amber-600 dark:text-amber-400 mt-2 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">Low Reactance Riser</div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Final Recommendation -->
+                    <!-- High Current Bus Duct Advisory Banner -->
+                    <div id="wire_busduct_advisory" class="hidden p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-3 shadow-xs">
+                        <span class="text-xl leading-none">💡</span>
+                        <div class="flex-1">
+                            <span class="font-bold uppercase tracking-wider block text-[11px] text-amber-700 dark:text-amber-400 mb-0.5">Heavy Current Feeder Advisory (≥ 630 A)</span>
+                            <span id="wire_busduct_advisory_text">For currents exceeding 630 A, pulling 3+ parallel cable runs incurs severe skin effect and congested tray width. A Compact Sandwich Bus Duct is strongly recommended for lower voltage drop, lower fire load, and compact shaft riser layout.</span>
+                            <button type="button" onclick="selectRaceway('BusDuct')" class="mt-2 block px-2.5 py-1 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] shadow-xs cursor-pointer">
+                                ⚡ Switch to Bus Duct Sizing →
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Final Recommendation (Dynamic for Cable or Bus Duct) -->
                     <div
                         class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
                         <div class="flex flex-col md:flex-row justify-between items-center gap-8">
                             <div class="flex-grow">
-                                <div class="text-xs font-bold text-orange-500 uppercase tracking-widest mb-1">
+                                <div class="text-xs font-bold text-orange-500 uppercase tracking-widest mb-1" id="wire_rec_title">
                                     Recommended Cable Size</div>
                                 <div class="text-5xl font-black text-slate-900 dark:text-white" id="wire_res_size">--
                                     <span class="text-2xl font-bold text-slate-400">mm²</span></div>
