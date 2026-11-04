@@ -257,6 +257,115 @@
     let activeDisciplineFilter = 'all';
     let activeSearchQuery = '';
 
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function buildDisciplineLocalControls(mod) {
+        const disc = mod.discipline;
+        const unitField = `
+            <div>
+                <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Unit System</label>
+                <select id="loc_unit_${mod.id}" class="w-full p-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white">
+                    <option value="SI">SI (Metric)</option>
+                    <option value="IP">IP (Imperial)</option>
+                </select>
+            </div>
+        `;
+        const noteField = `
+            <div>
+                <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Design / Zone Note</label>
+                <input type="text" id="loc_note_${mod.id}" placeholder="e.g. Tower A / Riser 1"
+                    class="w-full p-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white">
+            </div>
+        `;
+
+        if (disc === 'electrical') {
+            return `
+                <div>
+                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Electrical Code</label>
+                    <select id="loc_std_${mod.id}" class="w-full p-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white">
+                        <option value="EIT">EIT 2001-64 (40°C Ref)</option>
+                        <option value="IEC">IEC 60364-5-52 (30°C Ref)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">3-Phase Voltage (V)</label>
+                    <select id="loc_volt_${mod.id}" class="w-full p-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white">
+                        <option value="400">400 V (50Hz)</option>
+                        <option value="380">380 V</option>
+                        <option value="415">415 V</option>
+                        <option value="230">230 V</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Ambient Temp (°C)</label>
+                    <select id="loc_amb_${mod.id}" class="w-full p-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white">
+                        <option value="30">30°C</option>
+                        <option value="35">35°C</option>
+                        <option value="40" selected>40°C</option>
+                        <option value="45">45°C</option>
+                        <option value="50">50°C</option>
+                    </select>
+                </div>
+                ${noteField}
+            `;
+        }
+
+        if (disc === 'mechanical') {
+            return `
+                ${unitField}
+                <div>
+                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Hydronic Temp (°C)</label>
+                    <select id="loc_water_${mod.id}" class="w-full p-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white">
+                        <option value="10">10°C (Chilled Water)</option>
+                        <option value="20">20°C (Condenser / Make-up)</option>
+                        <option value="60">60°C (Hot Water)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Outdoor Design DB (°C)</label>
+                    <input type="number" step="0.5" id="loc_oadb_${mod.id}" value="35.0"
+                        class="w-full p-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white">
+                </div>
+                ${noteField}
+            `;
+        }
+
+        if (disc === 'plumbing') {
+            const provList = (window.MagicDB && window.MagicDB.provinceData) ? Object.keys(window.MagicDB.provinceData) : ['Bangkok', 'Chiang Mai', 'Chon Buri', 'Phuket', 'Nakhon Ratchasima', 'Khon Kaen', 'Songkhla'];
+            const provOptions = provList.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+            return `
+                ${unitField}
+                <div class="sm:col-span-2">
+                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Province / Location (Rainfall IDF)</label>
+                    <select id="loc_loc_${mod.id}" class="w-full p-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white">
+                        ${provOptions}
+                    </select>
+                </div>
+                ${noteField}
+            `;
+        }
+
+        // Fire Protection
+        return `
+            ${unitField}
+            <div class="sm:col-span-2">
+                <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Hydraulic Safety Margin (%)</label>
+                <select id="loc_margin_${mod.id}" class="w-full p-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white">
+                    <option value="10">10% Margin (Standard Grid/Loop)</option>
+                    <option value="15">15% Margin (Tree / High-Rise)</option>
+                    <option value="20">20% Margin (Industrial / Extra Hazard)</option>
+                </select>
+            </div>
+            ${noteField}
+        `;
+    }
+
     window.MagicRegistry = {
         getAll() {
             return modules;
@@ -276,18 +385,19 @@
         renderStdHoverIcon(moduleId, opts = {}) {
             const mod = this.getById(moduleId);
             const kb = (window.MagicDB && window.MagicDB.knowledgeBase && window.MagicDB.knowledgeBase[moduleId]) || {};
-            const stdCode = kb.standard || kb.std || (mod && mod.standard) || 'Engineering Standard';
-            const summary = kb.summary || (mod && mod.desc) || '';
+            const stdCode = escapeHtml(kb.standard || kb.std || (mod && mod.standard) || 'Engineering Standard');
+            const summary = escapeHtml(kb.summary || (mod && mod.desc) || '');
             const eqs = (kb.formulas || kb.equations || []).slice(0, 3);
             const posClass = [
                 opts.direction === 'bottom' ? 'std-hover-card--bottom' : '',
                 opts.align === 'right' ? 'std-hover-card--right' : ''
             ].filter(Boolean).join(' ');
 
+            // Use only inline/span tags so it is 100% valid HTML5 even inside <button> cards
             const eqHtml = eqs.length
-                ? `<div class="mt-2 pt-2 border-t border-slate-700/80 space-y-1">
-                    ${eqs.map(eq => `<div class="font-mono text-[10px] text-emerald-300 bg-slate-900/90 px-2 py-0.5 rounded border border-slate-700/70 truncate">${eq}</div>`).join('')}
-                   </div>`
+                ? `<span class="block mt-2 pt-2 border-t border-slate-700/80 space-y-1">
+                    ${eqs.map(eq => `<span class="block font-mono text-[10px] text-emerald-300 bg-slate-900/90 px-2 py-0.5 rounded border border-slate-700/70 truncate">${escapeHtml(eq)}</span>`).join('')}
+                   </span>`
                 : '';
 
             return `
@@ -335,9 +445,9 @@
                     const mod = this.getById(mId);
                     const textMatch = !activeSearchQuery ||
                         (mod && (mod.title.toLowerCase().includes(activeSearchQuery) ||
-                                 mod.desc.toLowerCase().includes(activeSearchQuery) ||
-                                 mod.standard.toLowerCase().includes(activeSearchQuery) ||
-                                 mod.disciplineLabel.toLowerCase().includes(activeSearchQuery)));
+                            mod.desc.toLowerCase().includes(activeSearchQuery) ||
+                            mod.standard.toLowerCase().includes(activeSearchQuery) ||
+                            mod.disciplineLabel.toLowerCase().includes(activeSearchQuery)));
                     if (textMatch) {
                         card.classList.remove('hidden');
                         visibleCount++;
@@ -351,8 +461,9 @@
         },
 
         injectModuleToolbars() {
-            // 1. Hydrate Landing Page Card Standard Icons
+            // 1. Hydrate Landing Page Card Standard Icons & raise z-index on hover
             document.querySelectorAll('[data-module-id]').forEach(card => {
+                card.classList.add('relative', 'hover:z-30');
                 const mId = card.dataset.moduleId;
                 const slot = card.querySelector('.std-card-slot');
                 if (slot && !slot.dataset.hydrated) {
@@ -388,14 +499,18 @@
                     </button>
                 `).join('');
 
-                // Action Bar + Collapsible Local Settings Override Panel
+                // Action Bar + Floating Non-Intrusive Local Settings Popover
                 const barWrapper = document.createElement('div');
-                barWrapper.className = 'no-print space-y-2 mb-3';
+                barWrapper.className = 'no-print relative mb-3';
                 barWrapper.innerHTML = `
                     <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-100/90 dark:bg-slate-800/70 px-3.5 py-2 rounded-xl border border-slate-200/80 dark:border-slate-700/80 text-xs">
                         <div class="flex flex-wrap items-center gap-2">
                             ${this.renderStdHoverIcon(mod.id, { direction: 'bottom', align: 'left' })}
-                            <span id="local_badge_${mod.id}" class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Global (SI)</span>
+                            <button type="button" onclick="window.MagicSettings.toggleLocalPanel('${mod.id}')"
+                                id="local_badge_${mod.id}"
+                                class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:border-amber-500 border border-transparent transition cursor-pointer">
+                                🔗 Global (SI)
+                            </button>
                             ${syncButtonsHtml}
                         </div>
                         <div class="flex flex-wrap items-center gap-1.5">
@@ -413,53 +528,43 @@
                             </button>
                         </div>
                     </div>
-                    <div id="local_settings_panel_${mod.id}" class="hidden bg-amber-50/90 dark:bg-slate-800/95 p-4 rounded-xl border border-amber-300 dark:border-amber-500/40 shadow-sm">
-                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-                            <div class="text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider">
-                                ⚙️ Local Module Settings Override — ${mod.title}
+                    <div id="local_settings_panel_${mod.id}" class="hidden absolute right-0 top-full mt-2 w-full max-w-2xl z-40 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl">
+                        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-100 dark:border-slate-700">
+                            <div class="flex items-center gap-2">
+                                <span class="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm">⚙️</span>
+                                <div>
+                                    <div class="text-xs font-extrabold text-slate-900 dark:text-white">
+                                        ${escapeHtml(mod.title)} — Local Module Basis
+                                    </div>
+                                    <div class="text-[10px] text-slate-500 dark:text-slate-400">${escapeHtml(mod.disciplineLabel)} • Scope-isolated parameters</div>
+                                </div>
                             </div>
-                            <span class="text-[11px] text-slate-500 dark:text-slate-400">Overrides global settings for this module only.</span>
+                            <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl text-[11px]">
+                                <button type="button" id="loc_mode_inherit_${mod.id}" onclick="window.MagicSettings.resetLocalToGlobal('${mod.id}')"
+                                    class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer">
+                                    🔗 Inherit Global
+                                </button>
+                                <button type="button" id="loc_mode_custom_${mod.id}" onclick="window.MagicSettings.applyLocalFromPanel('${mod.id}')"
+                                    class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer">
+                                    ⚡ Custom Override
+                                </button>
+                            </div>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-                            <div>
-                                <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Local Unit System</label>
-                                <select id="loc_unit_${mod.id}" class="w-full p-1.5 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                                    <option value="SI">SI (Metric)</option>
-                                    <option value="IP">IP (Imperial)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Electrical Standard</label>
-                                <select id="loc_std_${mod.id}" class="w-full p-1.5 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                                    <option value="EIT">EIT 2001-64 (40°C Ref)</option>
-                                    <option value="IEC">IEC 60364-5-52 (30°C Ref)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Local Ambient (°C)</label>
-                                <select id="loc_amb_${mod.id}" class="w-full p-1.5 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                                    <option value="30">30°C</option>
-                                    <option value="35">35°C</option>
-                                    <option value="40" selected>40°C</option>
-                                    <option value="45">45°C</option>
-                                    <option value="50">50°C</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Module Design Note</label>
-                                <input type="text" id="loc_note_${mod.id}" placeholder="e.g. Zone A Riser / Chiller Plant"
-                                    class="w-full p-1.5 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700">
-                            </div>
+                            ${buildDisciplineLocalControls(mod)}
                         </div>
-                        <div class="flex justify-end gap-2 mt-3">
-                            <button type="button" onclick="window.MagicSettings.resetLocalToGlobal('${mod.id}')"
-                                class="px-3 py-1 rounded text-xs font-semibold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300">
-                                Reset to Global
-                            </button>
-                            <button type="button" onclick="window.MagicSettings.applyLocalFromPanel('${mod.id}')"
-                                class="px-3.5 py-1 rounded text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white">
-                                Apply Local Override
-                            </button>
+                        <div class="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-700">
+                            <span id="loc_status_hint_${mod.id}" class="text-[11px] text-slate-400">Currently inheriting Global Project Settings.</span>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="window.MagicSettings.toggleLocalPanel('${mod.id}')"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 cursor-pointer">
+                                    Close
+                                </button>
+                                <button type="button" onclick="window.MagicSettings.applyLocalFromPanel('${mod.id}'); window.MagicSettings.toggleLocalPanel('${mod.id}')"
+                                    class="px-4 py-1.5 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-sm cursor-pointer">
+                                    Save Local Override
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
