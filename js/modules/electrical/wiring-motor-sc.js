@@ -705,3 +705,868 @@ calcStarter = function() {
         window.MagicStore.publish({ starterLineCurrentA: iline }, 'starterSimulatorPage');
     }
 };
+
+
+// ============================================================================
+// Motor Control Center (MCC) Cabinet & Single Line Diagram (SLD) Engine
+// Compliant with EIT Standard 2001-64 (ข้อ 6.3/6.4), NEC 430 & IEC 60947 / 61439
+// ============================================================================
+
+const MCC_STORAGE_KEY = 'magic_mcc_branches_v1';
+const standardContactors = [9, 12, 18, 25, 32, 40, 50, 65, 80, 95, 115, 150, 185, 225, 265, 330, 400, 500];
+const standardBusbars = [160, 250, 400, 630, 800, 1000, 1250, 1600, 2000, 2500, 3200];
+
+const DEFAULT_MCC_BRANCHES = [
+    { id: 'mcc_1', tag: 'CHWP-01A', description: 'Primary Chilled Water Pump (Duty)', kw: 30, hp: 40.2, volt: 400, phase: 3, pf: 0.86, eff: 0.93, starter: 'VFD', isStandby: false, cableType: 'XLPE', dist: 25, raceway: 'IMC' },
+    { id: 'mcc_2', tag: 'CHWP-01B', description: 'Primary Chilled Water Pump (Standby)', kw: 30, hp: 40.2, volt: 400, phase: 3, pf: 0.86, eff: 0.93, starter: 'VFD', isStandby: true, cableType: 'XLPE', dist: 25, raceway: 'IMC' },
+    { id: 'mcc_3', tag: 'CDWP-01A', description: 'Condenser Water Pump (Duty)', kw: 22, hp: 29.5, volt: 400, phase: 3, pf: 0.87, eff: 0.92, starter: 'SD', isStandby: false, cableType: 'XLPE', dist: 30, raceway: 'IMC' },
+    { id: 'mcc_4', tag: 'CDWP-01B', description: 'Condenser Water Pump (Standby)', kw: 22, hp: 29.5, volt: 400, phase: 3, pf: 0.87, eff: 0.92, starter: 'SD', isStandby: true, cableType: 'XLPE', dist: 30, raceway: 'IMC' },
+    { id: 'mcc_5', tag: 'CT-01', description: 'Cooling Tower Fan', kw: 11, hp: 14.7, volt: 400, phase: 3, pf: 0.85, eff: 0.90, starter: 'VFD', isStandby: false, cableType: 'XLPE', dist: 35, raceway: 'IMC' },
+    { id: 'mcc_6', tag: 'AHU-01', description: 'Lobby AHU Supply Fan', kw: 7.5, hp: 10.0, volt: 400, phase: 3, pf: 0.85, eff: 0.89, starter: 'VFD', isStandby: false, cableType: 'XLPE', dist: 40, raceway: 'IMC' },
+    { id: 'mcc_7', tag: 'EF-01', description: 'Plant Room Exhaust Fan', kw: 2.2, hp: 3.0, volt: 400, phase: 3, pf: 0.84, eff: 0.86, starter: 'DOL', isStandby: false, cableType: 'XLPE', dist: 15, raceway: 'IMC' },
+    { id: 'BP-01', tag: 'BP-01', description: 'Domestic Water Booster Pump', kw: 5.5, hp: 7.4, volt: 400, phase: 3, pf: 0.85, eff: 0.88, starter: 'VFD', isStandby: false, cableType: 'XLPE', dist: 20, raceway: 'IMC' }
+];
+
+let mccBranches = [];
+
+function loadMccBranches() {
+    try {
+        const raw = localStorage.getItem(MCC_STORAGE_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                mccBranches = parsed;
+                return;
+            }
+        }
+    } catch (e) {}
+    mccBranches = JSON.parse(JSON.stringify(DEFAULT_MCC_BRANCHES));
+    saveMccBranches();
+}
+
+function saveMccBranches() {
+    try {
+        localStorage.setItem(MCC_STORAGE_KEY, JSON.stringify(mccBranches));
+    } catch (e) {}
+}
+
+function getBreakerAf(at) {
+    if (at <= 50) return '50 AF';
+    if (at <= 100) return '100 AF';
+    if (at <= 125) return '125 AF';
+    if (at <= 250) return '250 AF';
+    if (at <= 400) return '400 AF';
+    if (at <= 630) return '630 AF';
+    if (at <= 800) return '800 AF';
+    if (at <= 1250) return '1250 AF';
+    if (at <= 1600) return '1600 AF';
+    return '2500 AF (ACB)';
+}
+
+function getGroundWireSize(phaseSize) {
+    if (phaseSize <= 16) return phaseSize;
+    if (phaseSize <= 35) return 16;
+    return Math.max(16, Math.ceil(phaseSize / 2));
+}
+
+function switchMotorMode(mode) {
+    const isMcc = mode === 'mcc';
+    const singleView = document.getElementById('motor_view_single');
+    const mccView = document.getElementById('motor_view_mcc');
+    const btnSingle = document.getElementById('motor_tab_btn_single');
+    const btnMcc = document.getElementById('motor_tab_btn_mcc');
+
+    if (singleView) singleView.classList.toggle('hidden', isMcc);
+    if (mccView) mccView.classList.toggle('hidden', !isMcc);
+
+    if (btnSingle) {
+        btnSingle.className = isMcc
+            ? 'px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 cursor-pointer'
+            : 'px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-xs bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-600 flex items-center gap-2 cursor-pointer';
+    }
+    if (btnMcc) {
+        btnMcc.className = isMcc
+            ? 'px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-xs bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-600 flex items-center gap-2 cursor-pointer'
+            : 'px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 cursor-pointer';
+    }
+
+    if (isMcc) {
+        calcMcc();
+    } else {
+        calcMotor();
+    }
+}
+
+// Master MCC Calculation
+function calcMcc() {
+    if (!mccBranches || mccBranches.length === 0) {
+        loadMccBranches();
+    }
+
+    const volt = parseFloat(document.getElementById('mcc_volt')?.value) || 400;
+    const defaultCable = document.getElementById('mcc_cable_type')?.value || 'XLPE';
+    const defaultRaceway = document.getElementById('mcc_raceway')?.value || 'IMC';
+    const is3Ph = volt > 300;
+
+    // 1. Calculate each branch parameters
+    mccBranches.forEach((b, idx) => {
+        b.kw = parseFloat(b.kw) || 0.37;
+        b.hp = +(b.kw / 0.746).toFixed(1);
+        b.volt = volt;
+        b.eff = parseFloat(b.eff) || (b.kw >= 15 ? 0.92 : (b.kw >= 5.5 ? 0.88 : 0.85));
+        b.pf = parseFloat(b.pf) || (b.kw >= 15 ? 0.86 : 0.85);
+        b.cableType = b.cableType || defaultCable;
+        b.raceway = b.raceway || defaultRaceway;
+        b.dist = parseFloat(b.dist) || 25;
+
+        // FLC Calculation
+        const denom = (is3Ph ? Math.sqrt(3) : 1) * volt * b.eff * b.pf;
+        b.flc = denom > 0 ? (b.kw * 1000) / denom : 0;
+
+        // Multiplier per Starter (EIT 2001-64 ข้อ 6.3)
+        let mult = 2.5; // DOL: 250% (EIT 6.3.2)
+        if (b.starter === 'SD') mult = 1.75; // Star-Delta: 175-200% (EIT 6.3.3)
+        if (b.starter === 'SS') mult = 1.50; // Soft Starter: 150%
+        if (b.starter === 'VFD') mult = 1.30; // VFD: 125-130%
+
+        const targetBrk = b.flc * mult;
+        b.breakerAt = standardBreakers.find(x => x >= targetBrk) || Math.ceil(targetBrk);
+        b.breakerAf = getBreakerAf(b.breakerAt);
+
+        // Contactor & Overload sizing
+        if (b.starter === 'SD') {
+            const mainDeltaFlc = b.flc * 0.58;
+            const starFlc = b.flc * 0.33;
+            const kmMain = standardContactors.find(c => c >= mainDeltaFlc) || Math.ceil(mainDeltaFlc);
+            const kmStar = standardContactors.find(c => c >= starFlc) || Math.ceil(starFlc);
+            b.contactorStr = `M/Δ: ${kmMain}A, Y: ${kmStar}A`;
+            b.overloadStr = `${(b.flc * 0.52).toFixed(1)} - ${(b.flc * 0.67).toFixed(1)} A (Set 0.58×)`;
+        } else if (b.starter === 'VFD') {
+            const vfdAmp = Math.ceil(b.flc * 1.1);
+            b.contactorStr = `Drive: ${vfdAmp}A`;
+            b.overloadStr = `Electronic (1.0× FLC)`;
+        } else if (b.starter === 'SS') {
+            const ssAmp = standardContactors.find(c => c >= b.flc) || Math.ceil(b.flc);
+            b.contactorStr = `SS/Bypass: ${ssAmp}A`;
+            b.overloadStr = `${(b.flc * 0.9).toFixed(1)} - ${(b.flc * 1.15).toFixed(1)} A`;
+        } else {
+            // DOL
+            const km = standardContactors.find(c => c >= b.flc) || Math.ceil(b.flc);
+            b.contactorStr = `KM: ${km}A (AC-3)`;
+            b.overloadStr = `${(b.flc * 0.9).toFixed(1)} - ${(b.flc * 1.15).toFixed(1)} A`;
+        }
+
+        // Branch Cable Sizing (1.25x FLC min)
+        const lookupKey = `${(b.cableType || 'XLPE').toLowerCase()}_g2`;
+        const wireRow = ampacityTable.find(r => r[lookupKey] >= b.flc * 1.25) || ampacityTable[ampacityTable.length - 1];
+        const gSize = getGroundWireSize(wireRow.size);
+        b.cableSize = wireRow.size;
+        b.groundSize = gSize;
+        b.cable = `4×${wireRow.size} mm² + G-${gSize}`;
+
+        // Voltage Drop
+        const vd = (is3Ph ? Math.sqrt(3) : 2) * b.flc * b.dist * (wireRow.r * b.pf + wireRow.x * 0.5) / 1000;
+        b.vdPct = volt > 0 ? (vd / volt) * 100 : 0;
+    });
+
+    // 2. Main Incoming Breaker Sizing (EIT Standard 2001-64 ข้อ 6.3/6.4 & NEC 430.62)
+    const activeBranches = mccBranches.filter(b => !b.isStandby);
+    const standbyBranches = mccBranches.filter(b => b.isStandby);
+
+    let largestActive = null;
+    let otherFlcSum = 0;
+    let mainCalcCurrent = 0;
+    let mainBreakerAt = 100;
+    let mainBreakerAf = '125 AF';
+    let busbarCalcCurrent = 0;
+    let mainBusbarRating = 250;
+    let busbarIcw = 35;
+
+    if (activeBranches.length > 0) {
+        // Find largest motor by branch breaker rating (and highest FLC)
+        const sortedActive = activeBranches.slice().sort((a, b) => (b.breakerAt - a.breakerAt) || (b.flc - a.flc));
+        largestActive = sortedActive[0];
+
+        // Sum FLC of all other active motors
+        otherFlcSum = sortedActive.slice(1).reduce((sum, b) => sum + b.flc, 0);
+
+        // Main Feeder Breaker Rule: I_main = I_branch(largest) + sum(I_flc of other active)
+        mainCalcCurrent = largestActive.breakerAt + otherFlcSum;
+        mainBreakerAt = standardBreakers.find(b => b >= mainCalcCurrent) || Math.ceil(mainCalcCurrent);
+        mainBreakerAf = getBreakerAf(mainBreakerAt);
+
+        // Main Busbar Rule: I_busbar = 1.25 * I_flc(largest) + sum(I_flc of other active)
+        busbarCalcCurrent = (1.25 * largestActive.flc) + otherFlcSum;
+        mainBusbarRating = standardBusbars.find(b => b >= busbarCalcCurrent) || 3200;
+        busbarIcw = mainBusbarRating <= 400 ? 35 : (mainBusbarRating <= 1000 ? 50 : 65);
+    } else if (mccBranches.length > 0) {
+        // Fallback if all are standby
+        const b = mccBranches[0];
+        mainCalcCurrent = b.breakerAt;
+        mainBreakerAt = standardBreakers.find(x => x >= mainCalcCurrent) || 100;
+        mainBreakerAf = getBreakerAf(mainBreakerAt);
+        busbarCalcCurrent = b.flc * 1.25;
+        mainBusbarRating = standardBusbars.find(x => x >= busbarCalcCurrent) || 250;
+        busbarIcw = 35;
+    }
+
+    // 3. Load & Demand Totals
+    const totalKw = mccBranches.reduce((s, b) => s + b.kw, 0);
+    const activeKw = activeBranches.reduce((s, b) => s + b.kw, 0);
+    const standbyKw = standbyBranches.reduce((s, b) => s + b.kw, 0);
+    const totalKva = totalKw / 0.85;
+    const peakOperatingFlc = activeBranches.reduce((s, b) => s + b.flc, 0);
+
+    // 4. Update KPI DOM Elements
+    const mbEl = document.getElementById('mcc_main_breaker');
+    const mbAfEl = document.getElementById('mcc_main_breaker_af');
+    const mbCalcEl = document.getElementById('mcc_main_breaker_calc');
+    const bbEl = document.getElementById('mcc_busbar_rating');
+    const bbIcwEl = document.getElementById('mcc_busbar_icw');
+    const bbCalcEl = document.getElementById('mcc_busbar_calc');
+    const kwEl = document.getElementById('mcc_total_connected_kw');
+    const kvaEl = document.getElementById('mcc_total_connected_kva');
+    const bdEl = document.getElementById('mcc_motors_breakdown');
+    const opFlcEl = document.getElementById('mcc_operating_flc');
+    const opKwEl = document.getElementById('mcc_operating_kw');
+    const sbKwEl = document.getElementById('mcc_standby_kw');
+    const badgeCount = document.getElementById('mcc_badge_count');
+    const totalCountBadge = document.getElementById('mcc_total_count_badge');
+
+    if (mbEl) mbEl.innerText = `${mainBreakerAt} A (AT)`;
+    if (mbAfEl) mbAfEl.innerText = `${mainBreakerAf} • 50 kA (Icu @ ${volt}V)`;
+    if (mbCalcEl) {
+        if (largestActive) {
+            mbCalcEl.innerText = `EIT 2001-64: ${largestActive.tag} Brk (${largestActive.breakerAt}A) + Σ Other (${otherFlcSum.toFixed(1)}A) = ${mainCalcCurrent.toFixed(1)}A`;
+        } else {
+            mbCalcEl.innerText = `No active motors defined`;
+        }
+    }
+
+    if (bbEl) bbEl.innerText = `${mainBusbarRating} A Cu Busbar`;
+    if (bbIcwEl) bbIcwEl.innerText = `Icw: ${busbarIcw} kA (1s) • Form 3b/4b`;
+    if (bbCalcEl) {
+        if (largestActive) {
+            bbCalcEl.innerText = `Busbar: 1.25 × ${largestActive.flc.toFixed(1)}A + ${otherFlcSum.toFixed(1)}A = ${busbarCalcCurrent.toFixed(1)}A`;
+        }
+    }
+
+    if (kwEl) kwEl.innerText = `${totalKw.toFixed(1)} kW`;
+    if (kvaEl) kvaEl.innerText = `${totalKva.toFixed(1)} kVA (Connected)`;
+    if (bdEl) bdEl.innerText = `${activeBranches.length} Duty • ${standbyBranches.length} Standby Feeders`;
+
+    if (opFlcEl) opFlcEl.innerText = `${peakOperatingFlc.toFixed(1)} A`;
+    if (opKwEl) opKwEl.innerText = `${activeKw.toFixed(1)} kW Active Operating Demand`;
+    if (sbKwEl) sbKwEl.innerText = `${standbyKw.toFixed(1)} kW Standby Excluded from Peak`;
+
+    if (badgeCount) badgeCount.innerText = `${mccBranches.length} Motors`;
+    if (totalCountBadge) totalCountBadge.innerText = `${mccBranches.length} Motors`;
+
+    saveMccBranches();
+    renderMccTable();
+    renderMccSld({
+        mainBreakerAt,
+        mainBreakerAf,
+        mainBusbarRating,
+        busbarIcw,
+        volt,
+        largestActiveTag: largestActive ? largestActive.tag : ''
+    });
+
+    // Publish to MagicStore SSOT Hub
+    if (window.MagicStore) {
+        window.MagicStore.publish({
+            mccMainBreakerAt: mainBreakerAt,
+            mccBusbarAmp: mainBusbarRating,
+            mccTotalKw: totalKw,
+            mccActiveFlc: peakOperatingFlc,
+            mccMotorCount: mccBranches.length
+        }, 'mccPage');
+    }
+}
+
+// Render Branches Table
+function renderMccTable() {
+    const tbody = document.getElementById('mcc_table_body');
+    if (!tbody) return;
+
+    if (mccBranches.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="13" class="p-8 text-center text-slate-400">No connected motor branches. Click "+ Add Motor Branch" or "Import from Schedule".</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = mccBranches.map((b, idx) => {
+        const isStandby = !!b.isStandby;
+        const roleBtn = isStandby
+            ? `<button onclick="toggleMccStandby('${b.id}')" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition cursor-pointer" title="Click to toggle Duty / Standby">STANDBY</button>`
+            : `<button onclick="toggleMccStandby('${b.id}')" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition cursor-pointer" title="Click to toggle Duty / Standby">DUTY</button>`;
+
+        const starterOpts = ['DOL', 'SD', 'VFD', 'SS'].map(s => `<option value="${s}" ${b.starter === s ? 'selected' : ''}>${s}</option>`).join('');
+
+        return `
+        <tr id="mcc_row_${b.id}" class="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
+            <td class="p-3 text-center text-slate-400 font-mono">${idx + 1}</td>
+            <td class="p-3 font-bold text-slate-900 dark:text-white">
+                <input type="text" value="${b.tag}" onchange="updateMccBranch('${b.id}', 'tag', this.value)"
+                    class="bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-blue-500 outline-none w-28 text-xs font-bold text-slate-900 dark:text-white">
+            </td>
+            <td class="p-3">
+                <input type="text" value="${b.description || ''}" onchange="updateMccBranch('${b.id}', 'description', this.value)"
+                    class="bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-blue-500 outline-none w-44 text-xs text-slate-600 dark:text-slate-300">
+            </td>
+            <td class="p-3 text-right font-mono font-bold">
+                <input type="number" step="0.1" value="${b.kw}" onchange="updateMccBranch('${b.id}', 'kw', this.value)"
+                    class="bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-blue-500 outline-none w-16 text-right font-mono text-xs font-bold">
+            </td>
+            <td class="p-3">
+                <select onchange="updateMccBranch('${b.id}', 'starter', this.value)"
+                    class="bg-transparent border border-slate-200 dark:border-slate-600 rounded px-1.5 py-0.5 text-xs font-semibold dark:bg-slate-800 cursor-pointer">
+                    ${starterOpts}
+                </select>
+            </td>
+            <td class="p-3 text-center">${roleBtn}</td>
+            <td class="p-3 text-right font-mono font-bold text-slate-900 dark:text-white">${b.flc.toFixed(1)}</td>
+            <td class="p-3 text-right font-mono font-bold text-yellow-600 dark:text-yellow-400">${b.breakerAt}A <span class="text-[10px] text-slate-400 font-normal">(${b.breakerAf})</span></td>
+            <td class="p-3 text-right text-[11px] font-semibold text-slate-700 dark:text-slate-300">${b.contactorStr}</td>
+            <td class="p-3 text-right text-[11px] font-mono text-slate-600 dark:text-slate-300">${b.overloadStr}</td>
+            <td class="p-3 font-mono text-[11px] text-blue-600 dark:text-blue-400">${b.cable}</td>
+            <td class="p-3 text-right font-mono font-bold ${b.vdPct > 3 ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400'}">${b.vdPct.toFixed(1)}%</td>
+            <td class="p-3 text-center">
+                <div class="flex items-center justify-center gap-1.5">
+                    <button onclick="duplicateMccBranch('${b.id}')" title="Duplicate branch"
+                        class="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    </button>
+                    <button onclick="deleteMccBranch('${b.id}')" title="Delete branch"
+                        class="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/40 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// Render Graphical Single Line Diagram (SLD) in SVG
+function renderMccSld(meta) {
+    const container = document.getElementById('mcc_sld_container');
+    if (!container) return;
+
+    if (!mccBranches || mccBranches.length === 0) {
+        container.innerHTML = '<div class="p-12 text-center text-slate-500 font-mono">No motors in MCC cabinet.</div>';
+        return;
+    }
+
+    const branchW = 145;
+    const incomerW = 230;
+    const rightMargin = 70;
+    const totalW = Math.max(960, incomerW + mccBranches.length * branchW + rightMargin);
+    const totalH = 550;
+
+    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalW} ${totalH}" width="${totalW}" height="${totalH}" class="w-full h-auto select-none font-sans">
+    <defs>
+        <!-- Background Grid Pattern -->
+        <pattern id="mcc_grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1e293b" stroke-width="0.7" opacity="0.4"/>
+        </pattern>
+        <!-- Gradients -->
+        <linearGradient id="busbar_cu" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#fbbf24"/>
+            <stop offset="50%" stop-color="#d97706"/>
+            <stop offset="100%" stop-color="#b45309"/>
+        </linearGradient>
+        <linearGradient id="breaker_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1e293b"/>
+            <stop offset="100%" stop-color="#0f172a"/>
+        </linearGradient>
+    </defs>
+
+    <!-- Canvas Background -->
+    <rect width="${totalW}" height="${totalH}" fill="#0b1120" rx="10"/>
+    <rect width="${totalW}" height="${totalH}" fill="url(#mcc_grid)" rx="10"/>
+
+    <!-- ================= INCOMER SECTION ================= -->
+    <!-- Incoming Power Feeder Line from MDB / Transformer -->
+    <path d="M 90 20 L 90 70" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="90" cy="20" r="4" fill="#f59e0b"/>
+    <text x="105" y="32" fill="#94a3b8" font-size="10" font-weight="bold" font-family="monospace">INCOMING SUPPLY</text>
+    <text x="105" y="46" fill="#f8fafc" font-size="12" font-weight="black">${meta.volt}V 3φ 4W 50Hz</text>
+    <text x="105" y="60" fill="#64748b" font-size="9">From Main Distribution Board (MDB)</text>
+
+    <!-- Multi-Function Meter (MFM) Symbol -->
+    <rect x="72" y="72" width="36" height="28" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="90" y="89" fill="#38bdf8" font-size="9" font-weight="black" text-anchor="middle">MFM</text>
+    <path d="M 90 100 L 90 115" stroke="#f59e0b" stroke-width="3"/>
+
+    <!-- Main Incoming Breaker (MCCB) Symbol -->
+    <g transform="translate(68, 115)">
+        <rect width="44" height="42" rx="4" fill="url(#breaker_grad)" stroke="#eab308" stroke-width="2"/>
+        <!-- Breaker Trip Contacts Schematic -->
+        <line x1="14" y1="8" x2="14" y2="34" stroke="#eab308" stroke-width="2"/>
+        <line x1="22" y1="8" x2="22" y2="34" stroke="#eab308" stroke-width="2"/>
+        <line x1="30" y1="8" x2="30" y2="34" stroke="#eab308" stroke-width="2"/>
+        <line x1="10" y1="21" x2="34" y2="21" stroke="#ef4444" stroke-width="2.5"/>
+    </g>
+    <!-- Main Breaker Labels -->
+    <rect x="122" y="112" width="125" height="48" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="130" y="126" fill="#eab308" font-size="11" font-weight="black">MAIN MCCB: ${meta.mainBreakerAt}A AT</text>
+    <text x="130" y="140" fill="#94a3b8" font-size="9" font-weight="bold">${meta.mainBreakerAf} • Icu 50kA</text>
+    <text x="130" y="152" fill="#38bdf8" font-size="8">EIT 2001-64 Coordinated</text>
+
+    <!-- Line from Breaker to Horizontal Main Busbar -->
+    <path d="M 90 157 L 90 195" stroke="#f59e0b" stroke-width="3.5"/>
+
+    <!-- ================= HORIZONTAL COPPER BUSBAR SYSTEM ================= -->
+    <g transform="translate(0, 0)">
+        <!-- L1 Phase -->
+        <line x1="70" y1="184" x2="${totalW - 30}" y2="184" stroke="url(#busbar_cu)" stroke-width="3.5" stroke-linecap="round"/>
+        <!-- L2 Phase -->
+        <line x1="70" y1="190" x2="${totalW - 30}" y2="190" stroke="url(#busbar_cu)" stroke-width="3.5" stroke-linecap="round"/>
+        <!-- L3 Phase -->
+        <line x1="70" y1="196" x2="${totalW - 30}" y2="196" stroke="url(#busbar_cu)" stroke-width="3.5" stroke-linecap="round"/>
+        <!-- Neutral Bar (Sky Blue) -->
+        <line x1="70" y1="206" x2="${totalW - 30}" y2="206" stroke="#38bdf8" stroke-width="2" stroke-dasharray="8,4" stroke-linecap="round"/>
+        <!-- PE Earth Bar (Emerald Green) -->
+        <line x1="70" y1="214" x2="${totalW - 30}" y2="214" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- Busbar Details Badge -->
+        <rect x="${totalW - 275}" y="155" width="235" height="24" rx="4" fill="#1e293b" stroke="#d97706" stroke-width="1"/>
+        <text x="${totalW - 265}" y="171" fill="#fbbf24" font-size="10" font-weight="black">MAIN Cu BUSBAR: ${meta.mainBusbarRating}A (Icw ${meta.busbarIcw}kA 1s)</text>
+
+        <!-- Busbar Labels on Left -->
+        <text x="35" y="193" fill="#fbbf24" font-size="9" font-weight="bold">L1,L2,L3</text>
+        <text x="50" y="209" fill="#38bdf8" font-size="8" font-weight="bold">N</text>
+        <text x="45" y="217" fill="#10b981" font-size="8" font-weight="bold">PE</text>
+    </g>
+
+    <!-- ================= VERTICAL BRANCH FEEDERS ================= -->`;
+
+    mccBranches.forEach((b, i) => {
+        const x = incomerW + i * branchW + branchW / 2;
+        const isStandby = !!b.isStandby;
+
+        // Colors per status
+        const motorColor = isStandby ? '#f59e0b' : '#3b82f6';
+        const badgeBg = isStandby ? '#78350f' : '#065f46';
+        const badgeText = isStandby ? '#fde68a' : '#6ee7b7';
+        const roleLabel = isStandby ? 'STANDBY' : 'DUTY';
+
+        // Starter Graphic Layout inside Cubicle (y = 295 to 395)
+        let starterSvg = '';
+        if (b.starter === 'DOL') {
+            starterSvg = `
+                <!-- DOL: Contactor + Overload -->
+                <rect x="${x - 48}" y="295" width="96" height="96" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1.2"/>
+                <text x="${x}" y="310" fill="#94a3b8" font-size="9" font-weight="bold" text-anchor="middle">DOL STARTER</text>
+                <!-- KM Contactor Contacts -->
+                <line x1="${x - 16}" y1="318" x2="${x - 16}" y2="338" stroke="#38bdf8" stroke-width="2"/>
+                <line x1="${x}" y1="318" x2="${x}" y2="338" stroke="#38bdf8" stroke-width="2"/>
+                <line x1="${x + 16}" y1="318" x2="${x + 16}" y2="338" stroke="#38bdf8" stroke-width="2"/>
+                <circle cx="${x - 16}" cy="318" r="2.5" fill="#38bdf8"/>
+                <circle cx="${x}" cy="318" r="2.5" fill="#38bdf8"/>
+                <circle cx="${x + 16}" cy="318" r="2.5" fill="#38bdf8"/>
+                <text x="${x}" y="348" fill="#38bdf8" font-size="8" text-anchor="middle">Contactor KM</text>
+                <!-- TOR Bimetal Heater -->
+                <path d="M ${x - 12} 356 Q ${x - 6} 364 ${x} 356 Q ${x + 6} 348 ${x + 12} 356" fill="none" stroke="#f97316" stroke-width="2"/>
+                <text x="${x}" y="372" fill="#f97316" font-size="8" text-anchor="middle">TOR Overload</text>
+                <text x="${x}" y="384" fill="#cbd5e1" font-size="7.5" text-anchor="middle">${b.flc.toFixed(1)}A FLC</text>
+            `;
+        } else if (b.starter === 'SD') {
+            starterSvg = `
+                <!-- Star-Delta (Y-Δ) -->
+                <rect x="${x - 48}" y="295" width="96" height="96" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1.2"/>
+                <text x="${x}" y="310" fill="#eab308" font-size="9" font-weight="bold" text-anchor="middle">STAR-DELTA (Y-Δ)</text>
+                <!-- 3 Contactors Block -->
+                <rect x="${x - 38}" y="318" width="76" height="30" rx="3" fill="#1e293b" stroke="#eab308" stroke-width="1"/>
+                <text x="${x}" y="331" fill="#eab308" font-size="8" font-weight="bold" text-anchor="middle">KM1 (Main) • KM2 (Δ)</text>
+                <text x="${x}" y="342" fill="#94a3b8" font-size="7.5" text-anchor="middle">KM3 (Star) + Timer</text>
+                <!-- TOR -->
+                <path d="M ${x - 12} 358 Q ${x - 6} 366 ${x} 358 Q ${x + 6} 350 ${x + 12} 358" fill="none" stroke="#f97316" stroke-width="2"/>
+                <text x="${x}" y="373" fill="#f97316" font-size="8" text-anchor="middle">TOR (0.58× FLC)</text>
+                <text x="${x}" y="384" fill="#cbd5e1" font-size="7.5" text-anchor="middle">${(b.flc * 0.58).toFixed(1)}A In-Delta</text>
+            `;
+        } else if (b.starter === 'VFD') {
+            starterSvg = `
+                <!-- Variable Frequency Drive -->
+                <rect x="${x - 48}" y="295" width="96" height="96" rx="6" fill="#0f172a" stroke="#0ea5e9" stroke-width="1.5"/>
+                <rect x="${x - 44}" y="299" width="88" height="15" rx="3" fill="#0369a1"/>
+                <text x="${x}" y="310" fill="#ffffff" font-size="8.5" font-weight="black" text-anchor="middle">VFD INVERTER</text>
+                <!-- Converter AC-DC-AC Symbol -->
+                <rect x="${x - 30}" y="322" width="60" height="34" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1"/>
+                <text x="${x - 14}" y="342" fill="#38bdf8" font-size="12" font-weight="bold">~</text>
+                <text x="${x - 3}" y="342" fill="#94a3b8" font-size="11">═</text>
+                <text x="${x + 9}" y="342" fill="#38bdf8" font-size="12" font-weight="bold">~</text>
+                <text x="${x}" y="371" fill="#38bdf8" font-size="8" font-weight="bold" text-anchor="middle">0 - 50 Hz PWM</text>
+                <text x="${x}" y="384" fill="#cbd5e1" font-size="7.5" text-anchor="middle">Soft Acceleration</text>
+            `;
+        } else {
+            // Soft Starter
+            starterSvg = `
+                <!-- Electronic Soft Starter -->
+                <rect x="${x - 48}" y="295" width="96" height="96" rx="6" fill="#0f172a" stroke="#a855f7" stroke-width="1.3"/>
+                <text x="${x}" y="310" fill="#c084fc" font-size="9" font-weight="bold" text-anchor="middle">SOFT STARTER</text>
+                <!-- Thyristors SCR Symbol -->
+                <polygon points="${x - 12},324 ${x},336 ${x - 12},348" fill="#a855f7"/>
+                <polygon points="${x + 12},348 ${x},336 ${x + 12},324" fill="#a855f7"/>
+                <line x1="${x - 18}" y1="336" x2="${x + 18}" y2="336" stroke="#c084fc" stroke-width="1.5"/>
+                <text x="${x}" y="362" fill="#c084fc" font-size="8" text-anchor="middle">SCR Voltage Ramp</text>
+                <text x="${x}" y="374" fill="#94a3b8" font-size="7.5" text-anchor="middle">Internal Bypass</text>
+                <text x="${x}" y="385" fill="#cbd5e1" font-size="7.5" text-anchor="middle">Istart ≤ 3× FLC</text>
+            `;
+        }
+
+        svg += `
+        <!-- Branch #${i + 1}: ${b.tag} -->
+        <g class="mcc-branch-group cursor-pointer" onclick="highlightMccRow('${b.id}')">
+            <!-- Vertical Cubicle Boundary Outline -->
+            <rect x="${x - 64}" y="222" width="128" height="315" rx="8" fill="#131d31" stroke="#1e293b" stroke-width="1" opacity="0.6"/>
+
+            <!-- Dropper Line from Busbar -->
+            <line x1="${x}" y1="196" x2="${x}" y2="232" stroke="#f59e0b" stroke-width="2.5"/>
+            <circle cx="${x}" cy="196" r="3" fill="#f59e0b"/>
+
+            <!-- Branch Circuit Breaker (MCCB) -->
+            <rect x="${x - 18}" y="232" width="36" height="28" rx="3" fill="#1e293b" stroke="#eab308" stroke-width="1.5"/>
+            <line x1="${x - 6}" y1="237" x2="${x - 6}" y2="255" stroke="#eab308" stroke-width="1.5"/>
+            <line x1="${x + 6}" y1="237" x2="${x + 6}" y2="255" stroke="#eab308" stroke-width="1.5"/>
+            <line x1="${x - 10}" y1="246" x2="${x + 10}" y2="246" stroke="#ef4444" stroke-width="2"/>
+            
+            <!-- Breaker Rating Callout -->
+            <rect x="${x - 36}" y="263" width="72" height="16" rx="3" fill="#0f172a" stroke="#334155" stroke-width="0.8"/>
+            <text x="${x}" y="274" fill="#fde047" font-size="8.5" font-weight="black" text-anchor="middle">${b.breakerAt}A AT</text>
+
+            <!-- Line to Starter Module -->
+            <line x1="${x}" y1="279" x2="${x}" y2="295" stroke="#f59e0b" stroke-width="2"/>
+
+            <!-- Starter Module Box -->
+            ${starterSvg}
+
+            <!-- Feeder Cable Line to Motor -->
+            <line x1="${x}" y1="391" x2="${x}" y2="445" stroke="#38bdf8" stroke-width="2.5"/>
+            
+            <!-- Feeder Cable Label -->
+            <rect x="${x - 56}" y="407" width="112" height="15" rx="3" fill="#0b1120" stroke="#1e293b" stroke-width="0.8"/>
+            <text x="${x}" y="418" fill="#38bdf8" font-size="7.5" font-weight="bold" font-family="monospace" text-anchor="middle">${b.cable}</text>
+
+            <!-- Motor Symbol (Circle with M 3~) -->
+            <circle cx="${x}" cy="460" r="18" fill="#1e293b" stroke="${motorColor}" stroke-width="2.5"/>
+            <text x="${x}" y="465" fill="#ffffff" font-size="13" font-weight="black" text-anchor="middle">M</text>
+            <text x="${x + 11}" y="456" fill="#fbbf24" font-size="7" font-weight="bold">3~</text>
+
+            <!-- Motor Tag -->
+            <text x="${x}" y="493" fill="#ffffff" font-size="10.5" font-weight="black" text-anchor="middle">${b.tag}</text>
+
+            <!-- Motor Power & FLC -->
+            <text x="${x}" y="506" fill="#cbd5e1" font-size="8.5" font-weight="bold" text-anchor="middle">${b.kw} kW • ${b.flc.toFixed(1)}A</text>
+
+            <!-- Duty / Standby Badge -->
+            <rect x="${x - 28}" y="513" width="56" height="14" rx="7" fill="${badgeBg}"/>
+            <text x="${x}" y="523" fill="${badgeText}" font-size="7.5" font-weight="black" text-anchor="middle">${roleLabel}</text>
+        </g>`;
+    });
+
+    svg += '</svg>';
+    container.innerHTML = svg;
+}
+
+// Highlight branch in table when clicking diagram
+function highlightMccRow(id) {
+    const row = document.getElementById('mcc_row_' + id);
+    if (!row) return;
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    row.classList.add('bg-blue-100', 'dark:bg-blue-900/40');
+    setTimeout(() => {
+        row.classList.remove('bg-blue-100', 'dark:bg-blue-900/40');
+    }, 1800);
+}
+
+// Add branch via Quick Add row
+function addMccBranchFromInputs() {
+    const tag = (document.getElementById('mcc_new_tag')?.value || '').trim() || 'M-' + (mccBranches.length + 1);
+    const desc = (document.getElementById('mcc_new_desc')?.value || '').trim() || 'Motor Feeder';
+    const kw = parseFloat(document.getElementById('mcc_new_kw')?.value) || 15;
+    const starter = document.getElementById('mcc_new_starter')?.value || 'SD';
+    const isStandby = document.getElementById('mcc_new_standby')?.value === 'true';
+    const dist = parseFloat(document.getElementById('mcc_new_dist')?.value) || 30;
+
+    mccBranches.push({
+        id: 'mcc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        tag,
+        description: desc,
+        kw,
+        starter,
+        isStandby,
+        dist,
+        cableType: 'XLPE',
+        raceway: 'IMC'
+    });
+
+    // Reset inputs
+    document.getElementById('mcc_new_tag').value = '';
+    document.getElementById('mcc_new_desc').value = '';
+    calcMcc();
+    if (typeof toast === 'function') toast(`Added ${tag} to MCC Cabinet`);
+}
+
+function addMccBranchPrompt() {
+    const tag = prompt('Enter Motor Equipment Tag:', 'PUMP-' + (mccBranches.length + 1));
+    if (!tag) return;
+    const kwStr = prompt('Enter Motor Power (kW):', '15');
+    if (!kwStr) return;
+    const kw = parseFloat(kwStr) || 15;
+
+    mccBranches.push({
+        id: 'mcc_' + Date.now().toString(36),
+        tag,
+        description: 'Auxiliary Motor Feeder',
+        kw,
+        starter: kw > 11 ? 'SD' : 'DOL',
+        isStandby: false,
+        dist: 30,
+        cableType: 'XLPE',
+        raceway: 'IMC'
+    });
+    calcMcc();
+}
+
+function deleteMccBranch(id) {
+    const b = mccBranches.find(x => x.id === id);
+    if (!b) return;
+    if (!confirm(`Delete branch ${b.tag} from MCC?`)) return;
+    mccBranches = mccBranches.filter(x => x.id !== id);
+    calcMcc();
+}
+
+function duplicateMccBranch(id) {
+    const b = mccBranches.find(x => x.id === id);
+    if (!b) return;
+    const copy = JSON.parse(JSON.stringify(b));
+    copy.id = 'mcc_' + Date.now().toString(36);
+    copy.tag = copy.tag + '-B';
+    copy.isStandby = true;
+    mccBranches.push(copy);
+    calcMcc();
+}
+
+function toggleMccStandby(id) {
+    const b = mccBranches.find(x => x.id === id);
+    if (!b) return;
+    b.isStandby = !b.isStandby;
+    calcMcc();
+}
+
+function updateMccBranch(id, field, val) {
+    const b = mccBranches.find(x => x.id === id);
+    if (!b) return;
+    b[field] = (field === 'kw' || field === 'dist') ? (parseFloat(val) || 0) : val;
+    calcMcc();
+}
+
+function clearAllMccBranches() {
+    if (!confirm('Clear all motor branches from this MCC cabinet?')) return;
+    mccBranches = [];
+    calcMcc();
+}
+
+// Import all motorized equipment from MagicEquipment Global Schedule
+function importAllMotorsFromSchedule() {
+    if (!window.MagicEquipment) {
+        alert('Equipment schedule module not loaded.');
+        return;
+    }
+    const allEq = window.MagicEquipment.getAll();
+    if (!allEq || allEq.length === 0) {
+        alert('Global Equipment Schedule is currently empty. Add equipment first.');
+        return;
+    }
+
+    // Filter motorized equipment
+    const motorEq = allEq.filter(eq => {
+        const kw = Number(eq.powerKw) || 0;
+        const disc = eq.discipline;
+        const type = (eq.type || '').toLowerCase();
+        return kw > 0 || type.includes('pump') || type.includes('fan') || type.includes('ahu') || type.includes('chiller');
+    });
+
+    if (motorEq.length === 0) {
+        alert('No motorized equipment (kW > 0) found in Global Equipment Schedule.');
+        return;
+    }
+
+    const imported = [];
+    motorEq.forEach(eq => {
+        const qty = Math.max(1, Number(eq.qty) || 1);
+        const unitKw = Number(eq.powerKw) || 5.5;
+        const notes = ((eq.notes || '') + ' ' + (eq.description || '')).toLowerCase();
+        const hasStandbyMention = notes.includes('standby') || notes.includes('spare') || notes.includes('duty');
+
+        let starter = eq.starter && eq.starter !== '-' ? eq.starter : (unitKw > 15 ? 'SD' : (unitKw > 5.5 ? 'SD' : 'DOL'));
+
+        if (qty === 2 && hasStandbyMention) {
+            // Duty Branch
+            imported.push({
+                id: 'mcc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                tag: eq.tag + 'A',
+                description: (eq.description || eq.type) + ' (Duty)',
+                kw: unitKw,
+                volt: eq.voltage || 400,
+                pf: eq.pf || 0.85,
+                eff: eq.eff || 0.90,
+                starter: starter,
+                isStandby: false,
+                dist: 30,
+                cableType: 'XLPE',
+                raceway: 'IMC',
+                eqRef: eq.id
+            });
+            // Standby Branch
+            imported.push({
+                id: 'mcc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                tag: eq.tag + 'B',
+                description: (eq.description || eq.type) + ' (Standby)',
+                kw: unitKw,
+                volt: eq.voltage || 400,
+                pf: eq.pf || 0.85,
+                eff: eq.eff || 0.90,
+                starter: starter,
+                isStandby: true,
+                dist: 30,
+                cableType: 'XLPE',
+                raceway: 'IMC',
+                eqRef: eq.id
+            });
+        } else {
+            for (let q = 1; q <= qty; q++) {
+                imported.push({
+                    id: 'mcc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                    tag: qty > 1 ? `${eq.tag}-${q}` : eq.tag,
+                    description: eq.description || eq.type,
+                    kw: unitKw,
+                    volt: eq.voltage || 400,
+                    pf: eq.pf || 0.85,
+                    eff: eq.eff || 0.90,
+                    starter: starter,
+                    isStandby: false,
+                    dist: 30,
+                    cableType: 'XLPE',
+                    raceway: 'IMC',
+                    eqRef: eq.id
+                });
+            }
+        }
+    });
+
+    mccBranches = imported;
+    calcMcc();
+    switchMotorMode('mcc');
+    if (typeof toast === 'function') toast(`Imported ${imported.length} motor branches from Global Schedule!`);
+}
+
+// Add single equipment into MCC from picker
+function addMccBranchFromEquipment(eq) {
+    if (!eq) return;
+    const qty = Math.max(1, Number(eq.qty) || 1);
+    const unitKw = Number(eq.powerKw) || 5.5;
+    const notes = ((eq.notes || '') + ' ' + (eq.description || '')).toLowerCase();
+    const hasStandbyMention = notes.includes('standby') || notes.includes('spare') || notes.includes('duty');
+    let starter = eq.starter && eq.starter !== '-' ? eq.starter : (unitKw > 15 ? 'SD' : (unitKw > 5.5 ? 'SD' : 'DOL'));
+
+    if (qty === 2 && hasStandbyMention) {
+        mccBranches.push({
+            id: 'mcc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            tag: eq.tag + 'A',
+            description: (eq.description || eq.type) + ' (Duty)',
+            kw: unitKw,
+            volt: eq.voltage || 400,
+            pf: eq.pf || 0.85,
+            eff: eq.eff || 0.90,
+            starter: starter,
+            isStandby: false,
+            dist: 30,
+            cableType: 'XLPE',
+            raceway: 'IMC',
+            eqRef: eq.id
+        });
+        mccBranches.push({
+            id: 'mcc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            tag: eq.tag + 'B',
+            description: (eq.description || eq.type) + ' (Standby)',
+            kw: unitKw,
+            volt: eq.voltage || 400,
+            pf: eq.pf || 0.85,
+            eff: eq.eff || 0.90,
+            starter: starter,
+            isStandby: true,
+            dist: 30,
+            cableType: 'XLPE',
+            raceway: 'IMC',
+            eqRef: eq.id
+        });
+    } else {
+        mccBranches.push({
+            id: 'mcc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            tag: eq.tag,
+            description: eq.description || eq.type,
+            kw: unitKw,
+            volt: eq.voltage || 400,
+            pf: eq.pf || 0.85,
+            eff: eq.eff || 0.90,
+            starter: starter,
+            isStandby: false,
+            dist: 30,
+            cableType: 'XLPE',
+            raceway: 'IMC',
+            eqRef: eq.id
+        });
+    }
+
+    calcMcc();
+    switchMotorMode('mcc');
+}
+
+// Export SLD as SVG file
+function exportMccSldSvg() {
+    const container = document.getElementById('mcc_sld_container');
+    if (!container) return;
+    const svgEl = container.querySelector('svg');
+    if (!svgEl) return;
+
+    const svgData = new XMLSerializer().serializeToString(svgEl);
+    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const mccName = (document.getElementById('mcc_name')?.value || 'MCC').replace(/[^a-zA-Z0-9_-]/g, '_');
+    a.href = url;
+    a.download = `${mccName}_Single_Line_Diagram.svg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    if (typeof toast === 'function') toast('MCC Single Line Diagram SVG downloaded!');
+}
+
+// Auto-initialize MCC on script load
+if (typeof window !== 'undefined') {
+    window.switchMotorMode = switchMotorMode;
+    window.calcMcc = calcMcc;
+    window.renderMccTable = renderMccTable;
+    window.renderMccSld = renderMccSld;
+    window.highlightMccRow = highlightMccRow;
+    window.addMccBranchFromInputs = addMccBranchFromInputs;
+    window.addMccBranchPrompt = addMccBranchPrompt;
+    window.deleteMccBranch = deleteMccBranch;
+    window.duplicateMccBranch = duplicateMccBranch;
+    window.toggleMccStandby = toggleMccStandby;
+    window.updateMccBranch = updateMccBranch;
+    window.clearAllMccBranches = clearAllMccBranches;
+    window.importAllMotorsFromSchedule = importAllMotorsFromSchedule;
+    window.addMccBranchFromEquipment = addMccBranchFromEquipment;
+    window.exportMccSldSvg = exportMccSldSvg;
+
+    setTimeout(() => {
+        loadMccBranches();
+        if (document.getElementById('mcc_table_body')) {
+            calcMcc();
+        }
+    }, 250);
+}

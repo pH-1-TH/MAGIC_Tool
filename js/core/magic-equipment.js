@@ -81,6 +81,7 @@
         ['eff', 'Eff.', 'number', 'w-12'],
         ['starter', 'Starter', 'starter', 'w-16'],
         ['airflowLps', 'Air (L/s)', 'number', 'w-16'],
+        ['espPa', 'ESP (Pa)', 'number', 'w-16'],
         ['waterFlowLps', 'Water (L/s)', 'number', 'w-16'],
         ['headKpa', 'Head (kPa)', 'number', 'w-16'],
         ['notes', 'Notes', 'text', 'w-32']
@@ -88,15 +89,17 @@
 
     const CAP_UNITS = ['kW', 'TR', 'kVA', 'HP', 'L/s', 'm³/h', 'GPM', 'm³', 'L', '-'];
     const STARTERS = ['-', 'DOL', 'SD', 'VFD', 'SS'];
-    const NUMERIC_KEYS = ['qty', 'capacity', 'powerKw', 'voltage', 'phase', 'pf', 'eff', 'airflowLps', 'waterFlowLps', 'headKpa', 'demandFactor'];
+    const NUMERIC_KEYS = ['qty', 'capacity', 'powerKw', 'voltage', 'phase', 'pf', 'eff', 'airflowLps', 'espPa', 'waterFlowLps', 'headKpa', 'demandFactor'];
 
     const SAMPLE_EQUIPMENT = [
-        { tag: 'CH-01', description: 'Water-Cooled Centrifugal Chiller', discipline: 'mechanical', type: 'Chiller', loadType: 'HVAC', demandFactor: 1.00, building: 'A', floor: 'RF', zone: 'Chiller Plant', qty: 1, capacity: 500, capUnit: 'TR', powerKw: 310, voltage: 400, phase: 3, pf: 0.90, eff: 0.96, starter: 'VFD', airflowLps: 0, waterFlowLps: 75.7, headKpa: 0, notes: '0.62 kW/TR' },
-        { tag: 'CHWP-01', description: 'Primary Chilled Water Pump', discipline: 'mechanical', type: 'CHW Pump', loadType: 'Motor', demandFactor: 0.80, building: 'A', floor: 'RF', zone: 'Chiller Plant', qty: 2, capacity: 75.7, capUnit: 'L/s', powerKw: 30, voltage: 400, phase: 3, pf: 0.86, eff: 0.93, starter: 'VFD', airflowLps: 0, waterFlowLps: 75.7, headKpa: 250, notes: '1 Duty + 1 Standby' },
-        { tag: 'AHU-01', description: 'Air Handling Unit — Lobby', discipline: 'mechanical', type: 'AHU', loadType: 'HVAC', demandFactor: 0.85, building: 'A', floor: 'GF', zone: 'Lobby', qty: 1, capacity: 70, capUnit: 'kW', powerKw: 7.5, voltage: 400, phase: 3, pf: 0.85, eff: 0.90, starter: 'VFD', airflowLps: 3500, waterFlowLps: 3.3, headKpa: 0, notes: '' },
-        { tag: 'BP-01', description: 'Domestic Water Booster Pump Set', discipline: 'plumbing', type: 'Booster Pump', loadType: 'PlumbingPump', demandFactor: 0.80, building: 'A', floor: 'B1', zone: 'Pump Room', qty: 2, capacity: 5, capUnit: 'L/s', powerKw: 5.5, voltage: 400, phase: 3, pf: 0.85, eff: 0.89, starter: 'VFD', airflowLps: 0, waterFlowLps: 5, headKpa: 450, notes: '1 Duty + 1 Standby' },
-        { tag: 'FP-01', description: 'Electric Fire Pump (NFPA 20)', discipline: 'fire', type: 'Fire Pump (Electric)', loadType: 'FirePump', demandFactor: 0.00, building: 'A', floor: 'B1', zone: 'Fire Pump Room', qty: 1, capacity: 1000, capUnit: 'GPM', powerKw: 75, voltage: 400, phase: 3, pf: 0.88, eff: 0.95, starter: 'SD', airflowLps: 0, waterFlowLps: 63.1, headKpa: 690, notes: 'NFPA 20 Emergency' },
-        { tag: 'TR-01', description: 'Main Distribution Transformer', discipline: 'electrical', type: 'Transformer', loadType: 'Other', demandFactor: 1.00, building: 'A', floor: 'GF', zone: 'Substation', qty: 1, capacity: 1000, capUnit: 'kVA', powerKw: 0, voltage: 400, phase: 3, pf: 0.90, eff: 0.98, starter: '-', airflowLps: 0, waterFlowLps: 0, headKpa: 0, notes: '22kV / 400-230V, Z = 6%' }
+        { tag: 'CH-01', description: 'Water-Cooled Centrifugal Chiller', discipline: 'mechanical', type: 'Chiller', loadType: 'HVAC', demandFactor: 1.00, building: 'A', floor: 'RF', zone: 'Chiller Plant', qty: 1, capacity: 500, capUnit: 'TR', powerKw: 310, voltage: 400, phase: 3, pf: 0.90, eff: 0.96, starter: 'VFD', airflowLps: 0, espPa: 0, waterFlowLps: 75.7, headKpa: 0, notes: '0.62 kW/TR' },
+        { tag: 'CHWP-01', description: 'Primary Chilled Water Pump', discipline: 'mechanical', type: 'CHW Pump', loadType: 'Motor', demandFactor: 0.80, building: 'A', floor: 'RF', zone: 'Chiller Plant', qty: 2, capacity: 75.7, capUnit: 'L/s', powerKw: 30, voltage: 400, phase: 3, pf: 0.86, eff: 0.93, starter: 'VFD', airflowLps: 0, espPa: 0, waterFlowLps: 75.7, headKpa: 250, notes: '1 Duty + 1 Standby' },
+        { tag: 'AHU-01', description: 'Air Handling Unit — Lobby', discipline: 'mechanical', type: 'AHU', loadType: 'HVAC', demandFactor: 0.85, building: 'A', floor: 'GF', zone: 'Lobby', qty: 1, capacity: 70, capUnit: 'kW', powerKw: 7.5, voltage: 400, phase: 3, pf: 0.85, eff: 0.90, starter: 'VFD', airflowLps: 3500, espPa: 350, waterFlowLps: 3.3, headKpa: 0, notes: 'ESP: 350 Pa' },
+        { tag: 'FCU-01', description: 'Fan Coil Unit — Meeting Room', discipline: 'mechanical', type: 'FCU', loadType: 'HVAC', demandFactor: 0.85, building: 'A', floor: '2F', zone: 'Meeting Room', qty: 1, capacity: 5, capUnit: 'kW', powerKw: 0.35, voltage: 230, phase: 1, pf: 0.90, eff: 0.82, starter: 'DOL', airflowLps: 280, espPa: 50, waterFlowLps: 0.24, headKpa: 0, notes: 'Ceiling Concealed, ESP: 50 Pa' },
+        { tag: 'EF-01', description: 'Toilet Exhaust Fan', discipline: 'mechanical', type: 'Exhaust Fan', loadType: 'Motor', demandFactor: 0.80, building: 'A', floor: 'RF', zone: 'Roof Exhaust', qty: 1, capacity: 850, capUnit: 'L/s', powerKw: 1.5, voltage: 400, phase: 3, pf: 0.85, eff: 0.88, starter: 'DOL', airflowLps: 850, espPa: 200, waterFlowLps: 0, headKpa: 0, notes: 'Centrifugal Inline, ESP: 200 Pa' },
+        { tag: 'BP-01', description: 'Domestic Water Booster Pump Set', discipline: 'plumbing', type: 'Booster Pump', loadType: 'PlumbingPump', demandFactor: 0.80, building: 'A', floor: 'B1', zone: 'Pump Room', qty: 2, capacity: 5, capUnit: 'L/s', powerKw: 5.5, voltage: 400, phase: 3, pf: 0.85, eff: 0.89, starter: 'VFD', airflowLps: 0, espPa: 0, waterFlowLps: 5, headKpa: 450, notes: '1 Duty + 1 Standby' },
+        { tag: 'FP-01', description: 'Electric Fire Pump (NFPA 20)', discipline: 'fire', type: 'Fire Pump (Electric)', loadType: 'FirePump', demandFactor: 0.00, building: 'A', floor: 'B1', zone: 'Fire Pump Room', qty: 1, capacity: 1000, capUnit: 'GPM', powerKw: 75, voltage: 400, phase: 3, pf: 0.88, eff: 0.95, starter: 'SD', airflowLps: 0, espPa: 0, waterFlowLps: 63.1, headKpa: 690, notes: 'NFPA 20 Emergency' },
+        { tag: 'TR-01', description: 'Main Distribution Transformer', discipline: 'electrical', type: 'Transformer', loadType: 'Other', demandFactor: 1.00, building: 'A', floor: 'GF', zone: 'Substation', qty: 1, capacity: 1000, capUnit: 'kVA', powerKw: 0, voltage: 400, phase: 3, pf: 0.90, eff: 0.98, starter: '-', airflowLps: 0, espPa: 0, waterFlowLps: 0, headKpa: 0, notes: '22kV / 400-230V, Z = 6%' }
     ];
 
     // ------------------------------------------------------------------------
@@ -140,8 +143,14 @@
             }
         },
         motorSizerPage: {
-            label: 'Motor kW, Voltage, PF, Efficiency & Starter',
+            label: 'Motor kW, Voltage, Starter & MCC Branch',
+            multi: true,
             apply(eq) {
+                // If MCC cabinet module is present, add as an MCC branch
+                if (typeof addMccBranchFromEquipment === 'function') {
+                    addMccBranchFromEquipment(eq);
+                }
+                // Also update single motor inputs for instant analysis
                 setVal('motor_power_unit', 'kW');
                 setVal('motor_power', Number(eq.powerKw) || 0);
                 setVal('motor_volt', eq.voltage);
@@ -258,7 +267,7 @@
             loadType: '', demandFactor: 0.80,
             building: '', floor: '', zone: '', qty: 1, capacity: 0, capUnit: 'kW',
             powerKw: 0, voltage: 400, phase: 3, pf: 0.85, eff: 0.90, starter: '-',
-            airflowLps: 0, waterFlowLps: 0, headKpa: 0, notes: ''
+            airflowLps: 0, espPa: 0, waterFlowLps: 0, headKpa: 0, notes: ''
         }, raw || {});
         NUMERIC_KEYS.forEach(k => { eq[k] = parseFloat(eq[k]) || 0; });
         if (!DISCIPLINES[eq.discipline]) eq.discipline = 'mechanical';
