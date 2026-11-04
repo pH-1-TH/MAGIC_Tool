@@ -218,6 +218,15 @@
                         </div>
                     </button>
 
+                    <button type="button" onclick="switchView('equipmentSchedulePage')"
+                        class="w-full flex items-center gap-3 p-3 rounded-xl text-left bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/25 transition cursor-pointer">
+                        <span class="w-9 h-9 rounded-lg bg-violet-500/20 flex items-center justify-center text-base">📋</span>
+                        <div>
+                            <div class="text-xs font-bold text-violet-600 dark:text-violet-300">Global Equipment Schedule</div>
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400">Project equipment list referenced by all modules</div>
+                        </div>
+                    </button>
+
                     <button type="button" onclick="toggleHamburgerMenu(false); window.MagicIO.openSSOTModal()"
                         class="w-full flex items-center gap-3 p-3 rounded-xl text-left bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/25 transition cursor-pointer">
                         <span class="w-9 h-9 rounded-lg bg-indigo-500/20 flex items-center justify-center text-base">🔗</span>
@@ -661,6 +670,65 @@
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- ================= GLOBAL EQUIPMENT SCHEDULE PAGE (SSOT EQUIPMENT REGISTER) ================= -->
+    <div id="equipmentSchedulePage" class="hidden max-w-7xl mx-auto space-y-5 py-4 page-container no-print">
+        <!-- Sticky Header -->
+        <div class="sticky top-2 z-30 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="switchView('mainMenuPage')"
+                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition cursor-pointer">
+                    <span>←</span><span>Back to Main Menu</span>
+                </button>
+                <div class="h-6 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-xl bg-violet-600/15 dark:bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-lg">📋</div>
+                    <div>
+                        <h1 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-tight">Global Equipment Schedule</h1>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Single Source of Truth equipment register — use <strong>📋 From Equipment</strong> inside any module to reference an item.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <label class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition cursor-pointer">
+                    📂 Import .XLSX
+                    <input type="file" accept=".xlsx,.xls,.csv" class="hidden" onchange="window.MagicEquipment.importXlsx(this)">
+                </label>
+                <button type="button" onclick="window.MagicEquipment.exportXlsx()"
+                    class="px-3 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-500 text-white shadow-sm transition cursor-pointer">📊 Export .XLSX</button>
+                <button type="button" onclick="window.MagicEquipment.add()"
+                    class="px-4 py-2 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-500/25 transition cursor-pointer">＋ Add Equipment</button>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div id="eqs_summary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+
+        <!-- Filters + Table -->
+        <section class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div id="eqs_filter_bar" class="flex flex-wrap items-center gap-2"></div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <input type="search" placeholder="Search tag, description, location..." oninput="window.MagicEquipment.setSearch(this.value)"
+                        class="w-64 max-w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-xs text-slate-900 dark:text-white">
+                    <button type="button" onclick="window.MagicEquipment.loadSamples()"
+                        class="px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer">＋ Samples</button>
+                    <button type="button" onclick="window.MagicEquipment.clearAll()"
+                        class="px-3 py-2 rounded-lg text-xs font-bold bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/25 cursor-pointer">Clear All</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+                <table class="min-w-full text-xs">
+                    <thead id="eqs_table_head" class="bg-slate-50 dark:bg-slate-900/60"></thead>
+                    <tbody id="eqs_table_body" class="text-slate-700 dark:text-slate-300"></tbody>
+                </table>
+            </div>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                Edits save automatically (browser storage) and are included in <code>.magic.json</code> project exports.
+                Linked modules: Wiring &amp; Breaker, Motor Sizer, Starter Simulator, Short Circuit, Duct Sizer, Pipe Sizer, Transformer Load List, Electrical Load Estimator.
+            </p>
+        </section>
     </div>
 
     <!-- ================= MAIN MENU PAGE (MULTI-DISCIPLINE HUB) ================= -->
@@ -4326,15 +4394,22 @@
 
                     <div
                         class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl border border-blue-100 dark:border-blue-800/50 transition-colors">
-                        <h3 class="text-sm font-bold text-blue-800 dark:text-blue-300 uppercase mb-3">Load Check</h3>
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-blue-600/70 dark:text-blue-400/70">Connected Load (kW)</span>
-                                <span class="font-bold text-blue-800 dark:text-blue-200" id="trans_load_kw">--</span>
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wide">Load & Demand Check</h3>
+                            <span id="trans_load_badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">No Loads</span>
+                        </div>
+                        <div class="space-y-2.5">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-blue-600/70 dark:text-blue-400/70">Connected Load</span>
+                                <span class="font-bold text-blue-800 dark:text-blue-200"><span id="trans_load_kw">--</span> kW (<span id="trans_load_conn_kva">--</span> kVA)</span>
                             </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-blue-600/70 dark:text-blue-400/70">Demand Factor</span>
-                                <span class="font-bold text-blue-800 dark:text-blue-200">0.80</span>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-blue-600/70 dark:text-blue-400/70">Overall Demand Factor</span>
+                                <span class="font-bold text-blue-800 dark:text-blue-200 font-mono" id="trans_load_df_val">0.80</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm border-t border-blue-200/50 dark:border-blue-800/50 pt-2">
+                                <span class="text-blue-700 dark:text-blue-300 font-semibold">Maximum Demand</span>
+                                <span class="font-black text-blue-900 dark:text-white"><span id="trans_demand_kw">--</span> kW (<span id="trans_demand_kva_check">--</span> kVA)</span>
                             </div>
                         </div>
                     </div>
@@ -4367,59 +4442,122 @@
                     </div>
 
                     <div
-                        class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
-                        <div class="flex flex-col md:flex-row justify-between items-start gap-8">
+                        class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
+                        <div class="flex flex-col lg:flex-row justify-between items-start gap-8">
                             <div class="flex-grow w-full">
-                                <h2 class="text-xl font-bold text-slate-800 dark:text-white mb-4">Load Aggregation</h2>
-                                <div class="flex gap-2 mb-4">
-                                    <input type="text" id="trans_load_name" placeholder="Load Name"
-                                        class="w-1/2 p-2 border border-slate-300 dark:border-slate-600 rounded focus:ring-2 focus:ring-blue-500 outline-none dark:bg-slate-700">
-                                    <input type="number" id="trans_load_val" placeholder="kVA" step="1"
-                                        class="w-1/4 p-2 border border-slate-300 dark:border-slate-600 rounded focus:ring-2 focus:ring-blue-500 outline-none dark:bg-slate-700">
-                                    <button onclick="addTransLoad()"
-                                        class="w-1/4 bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 rounded transition-colors shadow-sm">Add
-                                        Load</button>
+                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                                    <div>
+                                        <h2 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                            Load Aggregation
+                                            <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium">EIT Standard 2001-64 / วสท.</span>
+                                        </h2>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" onclick="applyEitStandardDemand()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+                                            ⚡ Auto EIT Demand
+                                        </button>
+                                        <button type="button" onclick="openEquipmentPickerForTransformer()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+                                            📋 From Equipment Schedule
+                                        </button>
+                                        <button type="button" onclick="clearAllTransLoads()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 hover:bg-red-500/10 hover:text-red-500 text-slate-600 dark:text-slate-300 transition-all cursor-pointer" title="Clear all loads">
+                                            🗑
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+
+                                <div class="grid grid-cols-1 md:grid-cols-12 gap-2 mb-4 bg-slate-50 dark:bg-slate-900/40 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                                    <div class="md:col-span-5">
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Load Name / Tag</label>
+                                        <input type="text" id="trans_load_name" placeholder="e.g. AHU-01 or Pump Set"
+                                            class="w-full p-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-slate-700 dark:text-white">
+                                    </div>
+                                    <div class="md:col-span-3">
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">EIT Load Type</label>
+                                        <select id="trans_load_type" onchange="onTransLoadTypeChanged()"
+                                            class="w-full p-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-slate-700 dark:text-white cursor-pointer">
+                                            <option value="HVAC">❄️ HVAC / Air-Con</option>
+                                            <option value="Motor">⚙️ Motor / Pump</option>
+                                            <option value="PlumbingPump">💧 Plumbing Pump</option>
+                                            <option value="Lighting">💡 Lighting</option>
+                                            <option value="Receptacle">🔌 Receptacle / Socket</option>
+                                            <option value="Kitchen">🍳 Kitchen / Cooking</option>
+                                            <option value="WaterHeater">♨️ Water Heater</option>
+                                            <option value="Elevator">🛗 Elevator / Lift</option>
+                                            <option value="FirePump">🔥 Fire Pump (0% Normal)</option>
+                                            <option value="Standby">🛡️ Standby Unit (0%)</option>
+                                            <option value="Other">📦 Other Load</option>
+                                        </select>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Conn. kVA</label>
+                                        <input type="number" id="trans_load_val" placeholder="kVA" step="any" min="0"
+                                            class="w-full p-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-slate-700 dark:text-white text-right font-mono">
+                                    </div>
+                                    <div class="md:col-span-1">
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">DF</label>
+                                        <input type="number" id="trans_load_df" value="0.85" step="0.05" min="0" max="1"
+                                            class="w-full p-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-slate-700 dark:text-white text-center font-mono">
+                                    </div>
+                                    <div class="md:col-span-1 flex items-end">
+                                        <button type="button" onclick="addTransLoad()"
+                                            class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg transition-colors shadow-sm text-sm cursor-pointer">
+                                            ＋ Add
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-xl">
                                     <table class="w-full text-left border-collapse">
                                         <thead>
                                             <tr
-                                                class="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 text-xs uppercase border-b border-slate-200 dark:border-slate-700">
-                                                <th class="p-2">Load Name</th>
-                                                <th class="p-2 text-right">kVA</th>
-                                                <th class="p-2 text-center w-16">Action</th>
+                                                class="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 text-[11px] font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+                                                <th class="p-2.5">Load Name</th>
+                                                <th class="p-2.5">Load Type</th>
+                                                <th class="p-2.5 text-right">Conn. kVA</th>
+                                                <th class="p-2.5 text-center w-24">DF</th>
+                                                <th class="p-2.5 text-right">Demand kVA</th>
+                                                <th class="p-2.5 text-center w-16">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody id="trans_load_body"
-                                            class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                            class="text-sm font-medium text-slate-700 dark:text-slate-300 divide-y divide-slate-100 dark:divide-slate-800">
                                             <tr>
-                                                <td colspan="3"
-                                                    class="p-3 text-center text-slate-500 font-normal italic">No loads
-                                                    added.</td>
+                                                <td colspan="6"
+                                                    class="p-6 text-center text-slate-500 font-normal italic">No loads
+                                                    added. Use the input row above or click <strong>📋 From Equipment Schedule</strong> to import loads.</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
                                 <div
-                                    class="mt-4 flex justify-between items-center bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg border border-blue-100 dark:border-blue-800/50">
-                                    <span class="font-bold text-blue-800 dark:text-blue-300">Total Sum kVA: <span
-                                            id="trans_sum_kva"
-                                            class="text-lg text-blue-600 dark:text-blue-400 ml-1">0.0</span></span>
-                                    <button onclick="recommendTransformer()"
-                                        class="bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-bold py-1.5 px-3 rounded shadow transition-colors">Recommend
-                                        Size (1.25x)</button>
+                                    class="mt-4 flex flex-wrap justify-between items-center gap-3 bg-blue-50 dark:bg-blue-900/30 p-3.5 rounded-xl border border-blue-100 dark:border-blue-800/50">
+                                    <div class="flex flex-wrap items-center gap-4 text-xs font-semibold text-blue-900 dark:text-blue-200">
+                                        <div>Connected: <span id="trans_sum_conn_kva" class="text-sm font-black text-blue-700 dark:text-blue-300 ml-1">0.0</span> kVA</div>
+                                        <div class="text-slate-300 dark:text-slate-600">|</div>
+                                        <div>Weighted DF: <span id="trans_sum_df" class="text-sm font-black text-blue-700 dark:text-blue-300 ml-1">0.00</span></div>
+                                        <div class="text-slate-300 dark:text-slate-600">|</div>
+                                        <div class="text-sm">Total Demand: <span id="trans_sum_kva" class="text-lg font-black text-blue-600 dark:text-blue-400 ml-1">0.0</span> kVA</div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" onclick="recommendTransformer()"
+                                            class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2 px-3.5 rounded-lg shadow-sm transition-all cursor-pointer flex items-center gap-1.5">
+                                            <span>⚡ Recommend Size (1.25x)</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="w-full md:w-64 space-y-4">
-                                <div class="stat-card bg-slate-50 dark:bg-slate-900/50">
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase">Est. Load (80%)</div>
-                                    <div class="text-xl font-bold text-slate-700 dark:text-slate-300"
+                            <div class="w-full lg:w-64 space-y-4">
+                                <div class="stat-card bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Calculated Peak Demand</div>
+                                    <div class="text-2xl font-black text-slate-700 dark:text-slate-200 mt-1"
                                         id="trans_load_kva">-- kVA</div>
+                                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="trans_load_pct">--% of Transformer Rating</div>
                                 </div>
-                                <div class="stat-card bg-blue-50 dark:bg-blue-900/20">
-                                    <div class="text-[10px] font-bold text-blue-400 uppercase">Available Capacity</div>
-                                    <div class="text-xl font-bold text-blue-600 dark:text-blue-400"
+                                <div class="stat-card bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800/50">
+                                    <div class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Available Capacity</div>
+                                    <div class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1"
                                         id="trans_res_avail">-- kVA</div>
+                                    <div class="text-xs text-blue-500/80 dark:text-blue-300/80 mt-1" id="trans_avail_pct">--% Headroom Margin</div>
                                 </div>
                             </div>
                         </div>
@@ -6447,6 +6585,7 @@
     <script src="js/core/magic-db.js"></script>
     <script src="js/core/magic-store.js"></script>
     <script src="js/core/magic-settings.js"></script>
+    <script src="js/core/magic-equipment.js"></script>
     <script src="js/core/magic-ui.js"></script>
     <script src="js/core/magic-charts.js"></script>
     <script src="js/core/magic-registry.js"></script>

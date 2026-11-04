@@ -171,6 +171,7 @@
                 version: "3.0.0",
                 exportedAt: new Date().toISOString(),
                 settings: window.MagicSettings ? window.MagicSettings.exportSettings() : {},
+                equipmentSchedule: window.MagicEquipment ? window.MagicEquipment.exportData() : [],
                 ssotStore: window.MagicStore ? window.MagicStore.exportState() : {},
                 domInputs,
                 eqRecords: typeof eqRecords !== 'undefined' ? eqRecords : [],

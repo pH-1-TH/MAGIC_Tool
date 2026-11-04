@@ -517,6 +517,7 @@
                             ${syncButtonsHtml}
                         </div>
                         <div class="flex flex-wrap items-center gap-1.5">
+                            ${window.MagicEquipment ? window.MagicEquipment.renderToolbarButton(mod.id) : ''}
                             <button type="button" onclick="window.MagicSettings.toggleLocalPanel('${mod.id}')"
                                 class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-semibold bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 hover:border-amber-500 transition cursor-pointer">
                                 <span>⚙️ Local Settings</span>

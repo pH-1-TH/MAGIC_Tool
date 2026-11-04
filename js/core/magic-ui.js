@@ -62,7 +62,7 @@ function updateThemeIcon() {
 function switchView(viewId) {
     toggleHamburgerMenu(false);
     const views = [
-        'mainMenuPage', 'globalSettingsPage', 'analyzerPage', 'loadAnalyzerPage', 'multiStagePage',
+        'mainMenuPage', 'globalSettingsPage', 'equipmentSchedulePage', 'analyzerPage', 'loadAnalyzerPage', 'multiStagePage',
         'ductSizerPage', 'pipeSizerPage', 'ctPage', 'roiPage', 'eqListPage',
         'wiringPage', 'transformerPage', 'motorSizerPage', 'shortCircuitPage',
         'waterDemandPage', 'stormPage', 'pondPage', 'sprinklerPage',
@@ -84,6 +84,9 @@ function switchView(viewId) {
 
     if (viewId === 'globalSettingsPage' && window.MagicSettings && typeof window.MagicSettings.loadGlobalPageUI === 'function') {
         window.MagicSettings.loadGlobalPageUI();
+    }
+    if (viewId === 'equipmentSchedulePage' && window.MagicEquipment) {
+        window.MagicEquipment.render();
     }
 
     refreshActiveCharts();
