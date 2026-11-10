@@ -41,8 +41,35 @@ function toggleHamburgerMenu(forceState) {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         toggleHamburgerMenu(false);
+        document.querySelectorAll('[id^="local_settings_panel_"]').forEach(el => el.classList.add('hidden'));
     }
 });
+
+// Close open local settings popovers when clicking/tapping outside
+document.addEventListener('click', (e) => {
+    const t = e.target;
+    if (!t || !t.closest) return;
+    if (t.closest('[id^="local_settings_panel_"]') || t.closest('[onclick*="toggleLocalPanel"]')) return;
+    document.querySelectorAll('[id^="local_settings_panel_"]:not(.hidden)').forEach(el => el.classList.add('hidden'));
+});
+
+function updateMobileNavActiveState(viewId) {
+    const btnMap = {
+        mainMenuPage: 'mob_nav_hub',
+        equipmentSchedulePage: 'mob_nav_equip',
+        globalSettingsPage: 'mob_nav_settings'
+    };
+    const activeId = btnMap[viewId] || 'mob_nav_hub';
+    document.querySelectorAll('#mobileBottomNav .mob-nav-btn').forEach(btn => {
+        if (btn.id === activeId) {
+            btn.classList.add('text-blue-600', 'dark:text-blue-400', 'bg-blue-50/80', 'dark:bg-blue-900/30');
+            btn.classList.remove('text-slate-600', 'dark:text-slate-400');
+        } else {
+            btn.classList.remove('text-blue-600', 'dark:text-blue-400', 'bg-blue-50/80', 'dark:bg-blue-900/30');
+            btn.classList.add('text-slate-600', 'dark:text-slate-400');
+        }
+    });
+}
 
 function toggleDarkMode() {
     document.documentElement.classList.toggle('dark');
@@ -61,6 +88,8 @@ function updateThemeIcon() {
 
 function switchView(viewId) {
     toggleHamburgerMenu(false);
+    document.querySelectorAll('[id^="local_settings_panel_"]').forEach(el => el.classList.add('hidden'));
+    if (typeof updateMobileNavActiveState === 'function') updateMobileNavActiveState(viewId);
     const views = [
         'mainMenuPage', 'globalSettingsPage', 'equipmentSchedulePage', 'analyzerPage', 'loadAnalyzerPage', 'multiStagePage',
         'ductSizerPage', 'pipeSizerPage', 'ctPage', 'roiPage', 'puePage', 'eqListPage',

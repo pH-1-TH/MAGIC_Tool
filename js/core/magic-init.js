@@ -60,8 +60,22 @@ window.addEventListener('load', () => {
         }
 
         if (typeof initHoverSounds === 'function') initHoverSounds();
-        window.addEventListener('resize', () => {
-            if (typeof refreshActiveCharts === 'function') refreshActiveCharts();
+        if (typeof window.bindAllCanvasesTouchBridge === 'function') {
+            window.bindAllCanvasesTouchBridge();
+        }
+
+        let resizeTimer = null;
+        const handleViewportChange = () => {
+            if (resizeTimer) clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (typeof refreshActiveCharts === 'function') refreshActiveCharts();
+            }, 60);
+        };
+        window.addEventListener('resize', handleViewportChange);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                if (typeof refreshActiveCharts === 'function') refreshActiveCharts();
+            }, 180);
         });
     } catch (err) {
         console.error('M.A.G.I.C. initialization error:', err);

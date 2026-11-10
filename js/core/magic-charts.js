@@ -2,8 +2,75 @@
 // M.A.G.I.C. Unified Interactive Canvas Chart Engine
 // File: js/core/magic-charts.js
 // Includes: Psychrometric Chart, Log-Log Nomograms, NFPA 13 Graph,
-//           Fire Water Consumption, Hunter's Curve, COC Curve, Chiller ROI
+//           Fire Water Consumption, Hunter's Curve, COC Curve, Chiller ROI,
+//           Data Center PUE Curve + Multi-Device Touch/Pointer Bridge
 // ============================================================================
+
+/**
+ * Universal Touch-to-Mouse Event Bridge for Interactive Engineering Canvases
+ * Enables finger tap, scrub, and drag-and-drop on iPhone 16 Pro, Samsung Galaxy Ultra,
+ * and iPad/tablets across all 9 interactive canvas charts without breaking page scroll.
+ */
+function bindCanvasTouchBridge(canvas) {
+    if (!canvas || canvas.dataset.touchBridgeBound === 'true') return;
+    canvas.dataset.touchBridgeBound = 'true';
+
+    const dispatchSynthMouse = (type, touch, target) => {
+        if (!touch) return;
+        const evt = new MouseEvent(type, {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            clientX: touch.clientX,
+            clientY: touch.clientY,
+            screenX: touch.screenX,
+            screenY: touch.screenY,
+            button: 0,
+            buttons: type === 'mouseup' ? 0 : 1
+        });
+        (target || canvas).dispatchEvent(evt);
+    };
+
+    canvas.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length !== 1) return;
+        const touch = e.touches[0];
+        dispatchSynthMouse('mousemove', touch, canvas);
+        dispatchSynthMouse('mousedown', touch, canvas);
+    }, { passive: true });
+
+    canvas.addEventListener('touchmove', (e) => {
+        if (!e.touches || e.touches.length !== 1) return;
+        const touch = e.touches[0];
+        const r = canvas.getBoundingClientRect();
+        const relX = touch.clientX - r.left;
+        const relY = touch.clientY - r.top;
+        // Prevent vertical page scroll while actively dragging/scrubbing inside the plot area
+        if (relX >= 36 && relX <= r.width - 24 && relY >= 16 && relY <= r.height - 24) {
+            if (e.cancelable) e.preventDefault();
+        }
+        dispatchSynthMouse('mousemove', touch, canvas);
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', (e) => {
+        const touch = (e.changedTouches && e.changedTouches[0]) || null;
+        if (touch) {
+            dispatchSynthMouse('mouseup', touch, window);
+            dispatchSynthMouse('click', touch, canvas);
+        }
+    }, { passive: true });
+
+    canvas.addEventListener('touchcancel', (e) => {
+        const touch = (e.changedTouches && e.changedTouches[0]) || null;
+        if (touch) dispatchSynthMouse('mouseup', touch, window);
+        canvas.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+    }, { passive: true });
+}
+
+function bindAllCanvasesTouchBridge() {
+    document.querySelectorAll('canvas').forEach(bindCanvasTouchBridge);
+}
+window.bindCanvasTouchBridge = bindCanvasTouchBridge;
+window.bindAllCanvasesTouchBridge = bindAllCanvasesTouchBridge;
 
 function setNfpaPoint(density, area) {
     const areaEl = document.getElementById('fire_area');
@@ -16,6 +83,7 @@ function setNfpaPoint(density, area) {
 function drawNfpaChart(area, density) {
     const canvas = document.getElementById('nfpaChart');
     if (!canvas) return;
+    bindCanvasTouchBridge(canvas);
 
     // High-DPI responsive canvas setup
     const rect = canvas.getBoundingClientRect();
@@ -2358,11 +2426,22 @@ function drawFireWaterChart(duration, volSprM3, volHoseM3, volSpM3, volMarginM3,
 function drawPueChart(canvasId, curvePoints, activePoint) {
     const canvas = document.getElementById(canvasId);
     if (!canvas || !Array.isArray(curvePoints) || curvePoints.length === 0) return;
+    bindCanvasTouchBridge(canvas);
 
-    const { ctx, w: logicalW, h: logicalH } = setupHiDPICanvas(canvas, 1000, 380);
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const logicalW = rect.width > 100 ? rect.width : 1000;
+    const logicalH = rect.height > 100 ? rect.height : 380;
+    if (canvas.width !== Math.round(logicalW * dpr) || canvas.height !== Math.round(logicalH * dpr)) {
+        canvas.width = Math.round(logicalW * dpr);
+        canvas.height = Math.round(logicalH * dpr);
+    }
+
+    const ctx = canvas.getContext('2d');
     const isDark = document.documentElement.classList.contains('dark');
 
     ctx.save();
+    ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, logicalW, logicalH);
 
     const margins = { top: 34, right: 64, bottom: 48, left: 68 };

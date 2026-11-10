@@ -503,6 +503,18 @@
                 const navEl = pageEl.querySelector('nav');
                 if (!navEl) return;
 
+                // Ensure every module's "Switch Tool" dropdown includes Data Center PUE Estimator
+                const navSelect = navEl.querySelector('select');
+                if (navSelect && !navSelect.querySelector('option[value="puePage"]')) {
+                    const mechGroup = navSelect.querySelector('optgroup[label*="Mechanical"]');
+                    const opt = document.createElement('option');
+                    opt.value = 'puePage';
+                    opt.textContent = 'Data Center PUE Estimator';
+                    if (mod.id === 'puePage') opt.selected = true;
+                    if (mechGroup) mechGroup.appendChild(opt);
+                    else navSelect.appendChild(opt);
+                }
+
                 // Build SSOT Cross-Module Sync buttons if defined
                 const syncDefs = (window.MagicStore && window.MagicStore.syncDefinitions[mod.id]) || [];
                 const syncButtonsHtml = syncDefs.map((sd, idx) => `

@@ -3,7 +3,9 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>M.A.G.I.C. Engineering Tools</title>
     <!-- Dark Mode Pre-render: Default to dark mode unless user previously chose light -->
     <script>
@@ -779,31 +781,31 @@
 
         <!-- Discipline Filter Tabs & Instant Search Bar -->
         <div class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-            <div class="flex flex-wrap items-center gap-1.5">
+            <div class="flex flex-nowrap sm:flex-wrap items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
                 <button type="button" data-disc="all" onclick="window.MagicRegistry.filterLanding('all')"
-                    class="landing-disc-tab disc-tab-active px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200">
+                    class="landing-disc-tab disc-tab-active shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200">
                     All Disciplines (21)
                 </button>
                 <button type="button" data-disc="mechanical" onclick="window.MagicRegistry.filterLanding('mechanical')"
-                    class="landing-disc-tab px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200">
+                    class="landing-disc-tab shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200">
                     ⚙️ Mechanical & HVAC (9)
                 </button>
                 <button type="button" data-disc="electrical" onclick="window.MagicRegistry.filterLanding('electrical')"
-                    class="landing-disc-tab px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200">
+                    class="landing-disc-tab shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200">
                     ⚡ Electrical (6)
                 </button>
                 <button type="button" data-disc="plumbing" onclick="window.MagicRegistry.filterLanding('plumbing')"
-                    class="landing-disc-tab px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200">
+                    class="landing-disc-tab shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200">
                     💧 Plumbing & Sanitary (3)
                 </button>
                 <button type="button" data-disc="fire" onclick="window.MagicRegistry.filterLanding('fire')"
-                    class="landing-disc-tab px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200">
+                    class="landing-disc-tab shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200">
                     🔥 Fire Protection (3)
                 </button>
             </div>
-            <div class="relative min-w-[240px]">
+            <div class="relative min-w-[200px] sm:min-w-[240px]">
                 <input type="text" id="landingSearchInput" oninput="window.MagicRegistry.filterLanding(null, this.value)"
-                    placeholder="Search 20 engineering modules..."
+                    placeholder="Search 21 engineering modules..."
                     class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/80 text-slate-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
                 <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <circle cx="11" cy="11" r="8"></circle>
@@ -7589,6 +7591,57 @@
             <canvas id="pueChart" width="1000" height="380" class="w-full h-auto block mt-2 border-none"></canvas>
         </div>
     </div>
+
+        <!-- ================= MOBILE BOTTOM NAVIGATION DOCK (iPhone 16 Pro / Galaxy Ultra) ================= -->
+        <nav id="mobileBottomNav" aria-label="Mobile Quick Navigation"
+            class="fixed bottom-0 left-0 right-0 z-[110] sm:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-2 pt-1.5 pb-[max(0.45rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(0,0,0,0.18)]">
+            <div class="grid grid-cols-5 gap-1 max-w-md mx-auto">
+                <button type="button" id="mob_nav_hub" onclick="switchView('mainMenuPage')"
+                    class="mob-nav-btn flex flex-col items-center justify-center py-1 px-1 rounded-xl text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-900/30 font-bold transition cursor-pointer">
+                    <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span class="text-[10px] leading-tight">Hub</span>
+                </button>
+                <button type="button" id="mob_nav_equip" onclick="switchView('equipmentSchedulePage')"
+                    class="mob-nav-btn flex flex-col items-center justify-center py-1 px-1 rounded-xl text-slate-600 dark:text-slate-400 hover:text-blue-500 font-bold transition cursor-pointer">
+                    <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+                        <rect width="6" height="4" x="9" y="3" rx="1" />
+                        <path d="M9 12h6M9 16h6" />
+                    </svg>
+                    <span class="text-[10px] leading-tight">Schedule</span>
+                </button>
+                <button type="button" id="mob_nav_ssot" onclick="window.MagicIO && window.MagicIO.openSSOTModal()"
+                    class="mob-nav-btn flex flex-col items-center justify-center py-1 px-1 rounded-xl text-slate-600 dark:text-slate-400 hover:text-indigo-500 font-bold transition cursor-pointer">
+                    <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
+                    <span class="text-[10px] leading-tight">SSOT</span>
+                </button>
+                <button type="button" id="mob_nav_settings" onclick="window.MagicSettings && window.MagicSettings.openGlobalPage()"
+                    class="mob-nav-btn flex flex-col items-center justify-center py-1 px-1 rounded-xl text-slate-600 dark:text-slate-400 hover:text-emerald-500 font-bold transition cursor-pointer">
+                    <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="3" />
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
+                    <span class="text-[10px] leading-tight">Settings</span>
+                </button>
+                <button type="button" id="mob_nav_menu" onclick="toggleHamburgerMenu()"
+                    class="mob-nav-btn flex flex-col items-center justify-center py-1 px-1 rounded-xl text-slate-600 dark:text-slate-400 hover:text-amber-500 font-bold transition cursor-pointer">
+                    <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="4" x2="20" y1="12" y2="12" />
+                        <line x1="4" x2="20" y1="6" y2="6" />
+                        <line x1="4" x2="20" y1="18" y2="18" />
+                    </svg>
+                    <span class="text-[10px] leading-tight">Control</span>
+                </button>
+            </div>
+        </nav>
 
         <!-- ================= MARQUEE FOOTER ================= -->
         <div class="marquee-container">

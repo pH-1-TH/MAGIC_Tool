@@ -1,22 +1,74 @@
 /* ============================================================================
  * M.A.G.I.C. Engineering Tools Suite - Core Stylesheet & Print/Report Rules
+ * Adaptive UX/UI Engine: iPhone 16 Pro, Samsung Galaxy Ultra, Laptop & 4K PC
  * ============================================================================ */
+
+:root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow-x: hidden;
+}
 
 body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    padding-top: max(1rem, calc(var(--safe-top) + 0.5rem));
+    padding-left: max(0.75rem, calc(var(--safe-left) + 0.5rem));
+    padding-right: max(0.75rem, calc(var(--safe-right) + 0.5rem));
+    padding-bottom: calc(5.5rem + var(--safe-bottom));
 }
 
 .stat-card {
     padding: 1rem;
-    border-radius: 0.75rem;
+    border-radius: 0.875rem;
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
-    transition: background-color 0.25s, border-color 0.25s, box-shadow 0.25s;
+    transition: background-color 0.25s, border-color 0.25s, box-shadow 0.25s, transform 0.2s ease;
+}
+
+.stat-card:hover {
+    box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.08);
 }
 
 .dark .stat-card {
     background-color: #1e293b;
     border-color: #334155;
+}
+
+.dark .stat-card:hover {
+    box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.35);
+}
+
+/* Interactive Card & Button Micro-Interactions */
+button,
+select,
+input[type="range"] {
+    touch-action: manipulation;
+}
+
+button:active:not(:disabled) {
+    transform: scale(0.985);
+}
+
+#mainMenuPage button[data-module-id] {
+    transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+#mainMenuPage button[data-module-id]:hover {
+    transform: translateY(-3px);
+}
+
+#mainMenuPage button[data-module-id]:active {
+    transform: translateY(0) scale(0.985);
 }
 
 .hover-sound:hover {
@@ -162,10 +214,168 @@ body {
 }
 
 .std-hover-wrap:hover .std-hover-card,
-.std-hover-wrap:focus-within .std-hover-card {
+.std-hover-wrap:focus-within .std-hover-card,
+.std-hover-wrap.std-open .std-hover-card {
     opacity: 1;
     visibility: visible;
     transform: translateY(0) scale(1);
+}
+
+/* ============================================================================
+ * Adaptive Device Breakpoints & Responsive Layout Rules
+ * - iPhone 16 Pro / Pro Max (393px – 440px)
+ * - Samsung Galaxy S24/S25 Ultra (384px – 412px, tall 19.5:9)
+ * - Tablet / Foldable (768px – 1024px)
+ * - Laptop (1280px – 1536px) & Widescreen PC (1920px+)
+ * ============================================================================ */
+
+/* Smooth horizontal scrolling for wide engineering schedules on mobile */
+.overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+/* Responsive Canvas Aspect Ratios & Touch Prevention during Drag */
+canvas {
+    max-width: 100%;
+    height: auto !important;
+    touch-action: pan-y;
+}
+
+/* Mobile Dock Bar (iPhone 16 Pro & Samsung Galaxy Ultra) */
+#mobileBottomNav {
+    padding-bottom: max(0.45rem, var(--safe-bottom));
+}
+
+/* Smartphones & Phablets (<= 640px: iPhone 16 Pro 393px, Galaxy Ultra 412px) */
+@media (max-width: 640px) {
+    body {
+        padding-top: max(3.6rem, calc(var(--safe-top) + 3.25rem)) !important;
+        padding-left: max(0.625rem, var(--safe-left)) !important;
+        padding-right: max(0.625rem, var(--safe-right)) !important;
+        padding-bottom: calc(5.25rem + var(--safe-bottom)) !important;
+    }
+
+    /* Prevent iOS Safari & Samsung Internet auto-zoom on form focus (requires >=16px) */
+    input[type="number"],
+    input[type="text"],
+    select,
+    textarea {
+        font-size: 16px !important;
+        min-height: 2.65rem;
+    }
+
+    /* Compact floating top-left / top-right buttons on mobile */
+    #hamburgerMenuBtn {
+        top: max(0.6rem, var(--safe-top)) !important;
+        left: max(0.6rem, var(--safe-left)) !important;
+        padding: 0.55rem !important;
+    }
+
+    #darkModeToggle {
+        top: max(0.6rem, var(--safe-top)) !important;
+        right: max(0.6rem, var(--safe-right)) !important;
+        padding: 0.55rem !important;
+    }
+
+    /* Adaptive Header Typography & Padding */
+    header {
+        padding: 1rem !important;
+        border-radius: 0.875rem !important;
+    }
+
+    header h1 {
+        font-size: 1.35rem !important;
+        line-height: 1.25 !important;
+    }
+
+    #mainMenuPage h1 {
+        font-size: 1.85rem !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Swipeable Pill Tabs on Landing Page */
+    #mainMenuPage .landing-disc-tab {
+        white-space: nowrap;
+        flex-shrink: 0;
+        padding: 0.45rem 0.8rem;
+    }
+
+    /* Keep module navigation bar compact and touch-friendly */
+    .page-container > nav {
+        padding: 0.55rem 0.75rem !important;
+        gap: 0.5rem !important;
+    }
+
+    .page-container > nav select {
+        width: 100%;
+        max-width: 190px;
+        font-size: 0.78rem !important;
+        min-height: 2.15rem !important;
+    }
+
+    /* Local Settings Popover full-width sheet on phones */
+    [id^="local_settings_panel_"] {
+        position: fixed !important;
+        left: 0.65rem !important;
+        right: 0.65rem !important;
+        top: auto !important;
+        bottom: calc(4.5rem + var(--safe-bottom)) !important;
+        width: auto !important;
+        max-width: none !important;
+        max-height: 75vh;
+        overflow-y: auto;
+        z-index: 95 !important;
+    }
+
+    /* Center Standard Info Popover on narrow mobile viewports so it never clips off-screen */
+    .std-hover-card {
+        position: fixed !important;
+        left: 0.75rem !important;
+        right: 0.75rem !important;
+        bottom: calc(4.75rem + var(--safe-bottom)) !important;
+        top: auto !important;
+        width: auto !important;
+        max-width: none !important;
+        z-index: 105 !important;
+    }
+
+    /* Hide desktop marquee when mobile bottom quick-navigation dock is active */
+    .marquee-container {
+        display: none !important;
+    }
+
+    /* Slightly taller minimum height on mobile canvases for finger readability */
+    canvas {
+        min-height: 240px;
+    }
+}
+
+/* Tablets & Foldables (641px – 1024px: iPad, Galaxy Z Fold) */
+@media (min-width: 641px) and (max-width: 1024px) {
+    body {
+        padding-top: 3.75rem !important;
+        padding-left: 1.25rem !important;
+        padding-right: 1.25rem !important;
+    }
+
+    .page-container {
+        max-width: 96vw !important;
+    }
+}
+
+/* Large Desktops & Ultrawide Monitors (>= 1536px: PC 1440p / 4K) */
+@media (min-width: 1536px) {
+    #mainMenuPage,
+    #globalSettingsPage,
+    #equipmentSchedulePage,
+    .page-container.max-w-6xl {
+        max-width: 88rem !important; /* 1408px comfortable engineering workspace */
+    }
+
+    .page-container.max-w-5xl {
+        max-width: 80rem !important; /* 1280px */
+    }
 }
 
 /* Print & Separation / Master Report Styling */
