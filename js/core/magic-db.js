@@ -294,11 +294,13 @@ const magicKnowledgeBase = {
         ]
     },
     pipeSizerPage: {
-        title: "Hydraulic Pipe Sizer & Log-Log Nomogram",
-        standard: "ASHRAE Hydronics / Darcy-Weisbach",
-        summary: "Hydronic pipe sizing with temperature-corrected water density and viscosity, dual SI (DN / mm / Pa/m) and IP (in / GPM / ft/100ft) units, and commercial DN schedule curves.",
+        title: "Multi-Fluid Hydraulic Pipe Sizer, DN Evaluator & Fittings Loss Calculator",
+        standard: "ASHRAE Hydronics / Crane TP-410 / Darcy-Weisbach",
+        summary: "Multi-fluid pipe sizer supporting Auto-Size or manual commercial DN selection (DN15–DN600), 13 working fluids (Water, PG25, EG30, Diesel No. 2, Biodiesel B5/B20, ISO VG 32/46 Oils, Thermal Oil, Custom), Laminar/Transitional/Haaland friction solver, and a K-factor & Equivalent Length (Leq) fittings/valves loss calculator.",
         formulas: [
-            "m = Q_kW / (c_p · ΔT), ΔP / L = f · (ρ·V²) / (2·D)"
+            "ṁ = Q_kW / (c_p · ΔT), Re = ρ·V·D / μ",
+            "f = 64/Re (Laminar Re ≤ 2000) or Haaland (Turbulent Re ≥ 4000)",
+            "ΔP_total = (f·L/D + ΣK) · (ρ·V²/2) + ΔP_equip, Leq = K·D / f"
         ]
     },
     ctPage: {

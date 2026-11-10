@@ -2596,7 +2596,7 @@
     </div>
 
     <!-- ================= PAGE 5: PIPE SIZER ================= -->
-    <div id="pipeSizerPage" class="max-w-5xl mx-auto space-y-4 hidden py-4 page-container">
+    <div id="pipeSizerPage" class="max-w-6xl mx-auto space-y-4 hidden py-4 page-container">
         <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
             <div class="flex flex-wrap items-center gap-3">
                 <button onclick="switchView('mainMenuPage')"
@@ -2660,8 +2660,7 @@
             <div>
                 <h1 class="text-3xl font-bold text-slate-900 dark:text-white transition-colors">Hydraulic Pipe Sizer
                 </h1>
-                <p class="text-slate-500 dark:text-slate-400 mt-1 transition-colors">Water pressure drop and pipe
-                    diameter solver.</p>
+                <p class="text-slate-500 dark:text-slate-400 mt-1 transition-colors">Multi-fluid pipe sizing, manual DN velocity &amp; friction evaluator, and system fittings loss calculator.</p>
             </div>
             <div class="flex items-center gap-4">
                 <div
@@ -2682,10 +2681,10 @@
         <div
             class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-t-4 border-t-blue-500 transition-colors mb-6">
             <div class="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">
-                <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Flow Rate Estimator</h2>
+                <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Thermal Flow Rate Estimator</h2>
                 <span
                     class="text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded hidden sm:inline-block">Q
-                    = m × Cp × ΔT</span>
+                    = ṁ × Cp(fluid) × ΔT</span>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                 <div>
@@ -2707,13 +2706,13 @@
                 <div>
                     <label id="label_pipe_calc_res"
                         class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Estimated Flow Rate
-                        (L/s)</label>
+                        (LPM)</label>
                     <input type="text" id="pipe_calc_res" readonly
                         class="w-full p-2 rounded border border-slate-200 bg-slate-50 font-bold text-slate-800 shadow-inner outline-none dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100">
                 </div>
                 <div>
                     <button onclick="applyPipeCalcFlow()"
-                        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 px-4 rounded-lg shadow transition-colors flex items-center justify-center gap-2">
+                        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 px-4 rounded-lg shadow transition-colors flex items-center justify-center gap-2 cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M5 12h14"></path>
@@ -2725,24 +2724,25 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Inputs -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Inputs (5 cols) -->
             <div
-                class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-t-4 border-t-cyan-500 space-y-5 transition-colors">
-                <h2
-                    class="text-lg font-bold text-slate-800 dark:text-slate-100 border-b border-slate-200 dark:border-slate-700 pb-2">
-                    Design Constraints</h2>
+                class="lg:col-span-5 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-t-4 border-t-cyan-500 space-y-4 transition-colors">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
+                    <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Design Constraints &amp; Fluid</h2>
+                    <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">Darcy-Weisbach</span>
+                </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="col-span-2">
-                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Water Flow
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Fluid Flow
                             Rate</label>
                         <div class="flex gap-2">
                             <input type="number" id="pipe_flow" value="10" step="1"
-                                class="flex-grow p-2 rounded focus:ring-2 focus:ring-cyan-500 focus:outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                class="flex-grow p-2 rounded border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none dark:bg-slate-700 dark:text-white font-semibold"
                                 oninput="updatePipeSizer()">
                             <select id="pipe_unit"
-                                class="w-1/3 p-2 rounded dark:bg-slate-700 dark:border-slate-600 dark:text-white outline-none"
+                                class="w-1/3 p-2 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none font-semibold"
                                 onchange="updatePipeSizer()">
                                 <option value="LPS">L/s</option>
                                 <option value="LPM">LPM</option>
@@ -2752,12 +2752,53 @@
                         </div>
                     </div>
 
+                    <!-- Pipe Size Mode / Manual DN Selector -->
+                    <div class="col-span-2 bg-cyan-50/60 dark:bg-cyan-950/30 p-3 rounded-lg border border-cyan-200/80 dark:border-cyan-800/60">
+                        <div class="flex items-center justify-between mb-1">
+                            <label for="pipe_selected_dn" class="text-xs font-extrabold uppercase tracking-wider text-cyan-800 dark:text-cyan-300">
+                                Pipe Size Selection (Auto or Manual DN)
+                            </label>
+                            <button type="button" id="btn_pipe_reset_auto" onclick="selectPipeSizeDN('AUTO')"
+                                class="hidden text-[11px] font-bold px-2 py-0.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white transition cursor-pointer">
+                                ↺ Reset to Auto-Size
+                            </button>
+                        </div>
+                        <select id="pipe_selected_dn" onchange="updatePipeSizer()"
+                            class="w-full p-2 rounded border border-cyan-300 dark:border-cyan-700 bg-white dark:bg-slate-800 text-sm font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer">
+                            <option value="AUTO">⚡ Auto-Size Pipe (By Max Friction &amp; Velocity Constraints)</option>
+                            <optgroup label="Standard Commercial Pipe Sizes (ASME B36.10 Sch 40)">
+                                <option value="15">DN15 (1/2") — ID 15.8 mm</option>
+                                <option value="20">DN20 (3/4") — ID 20.9 mm</option>
+                                <option value="25">DN25 (1") — ID 26.6 mm</option>
+                                <option value="32">DN32 (1-1/4") — ID 35.1 mm</option>
+                                <option value="40">DN40 (1-1/2") — ID 40.9 mm</option>
+                                <option value="50">DN50 (2") — ID 52.5 mm</option>
+                                <option value="65">DN65 (2-1/2") — ID 62.7 mm</option>
+                                <option value="80">DN80 (3") — ID 77.9 mm</option>
+                                <option value="100">DN100 (4") — ID 102.3 mm</option>
+                                <option value="125">DN125 (5") — ID 128.2 mm</option>
+                                <option value="150">DN150 (6") — ID 154.1 mm</option>
+                                <option value="200">DN200 (8") — ID 202.7 mm</option>
+                                <option value="250">DN250 (10") — ID 254.5 mm</option>
+                                <option value="300">DN300 (12") — ID 304.8 mm</option>
+                                <option value="350">DN350 (14") — ID 336.6 mm</option>
+                                <option value="400">DN400 (16") — ID 387.4 mm</option>
+                                <option value="450">DN450 (18") — ID 438.2 mm</option>
+                                <option value="500">DN500 (20") — ID 489.0 mm</option>
+                                <option value="600">DN600 (24") — ID 590.6 mm</option>
+                            </optgroup>
+                        </select>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                            Select any pipe size above (or click a row in the comparison table) to immediately evaluate its velocity, friction drop, and system head loss.
+                        </p>
+                    </div>
+
                     <div>
                         <label id="label_pipe_maxFric"
                             class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Max Friction
                             (Pa/m)</label>
                         <input type="number" id="pipe_maxFric" value="300" step="10"
-                            class="w-full p-2 rounded focus:ring-2 focus:ring-cyan-500 focus:outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                            class="w-full p-2 rounded border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none dark:bg-slate-700 dark:text-white"
                             oninput="updatePipeSizer()">
                     </div>
                     <div>
@@ -2766,110 +2807,372 @@
                             (m/s) <span class="text-xs font-normal text-slate-400 italic">Min - Max</span></label>
                         <div class="flex items-center gap-2">
                             <input type="number" id="pipe_minVel" placeholder="Min" step="0.1"
-                                class="w-1/2 p-2 rounded focus:ring-2 focus:ring-cyan-500 focus:outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                class="w-1/2 p-2 rounded border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none dark:bg-slate-700 dark:text-white"
                                 oninput="updatePipeSizer()">
                             <span class="text-slate-400 font-bold">-</span>
                             <input type="number" id="pipe_maxVel" value="1.5" step="0.1"
-                                class="w-1/2 p-2 rounded focus:ring-2 focus:ring-cyan-500 focus:outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                class="w-1/2 p-2 rounded border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none dark:bg-slate-700 dark:text-white"
                                 oninput="updatePipeSizer()">
                         </div>
                     </div>
+
+                    <!-- Fluid Type & Temperature -->
                     <div class="col-span-2">
+                        <label for="pipe_temp" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            Working Fluid &amp; Temperature
+                        </label>
+                        <select id="pipe_temp"
+                            class="w-full p-2 rounded border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-cyan-500 outline-none text-sm font-semibold dark:bg-slate-700 dark:text-white cursor-pointer"
+                            onchange="updatePipeSizer()">
+                            <optgroup label="Hydronic Water">
+                                <option value="10">Chilled Water (~10 °C)</option>
+                                <option value="20">Condenser / Make-up Water (~20 °C)</option>
+                                <option value="60">Heating Hot Water (~60 °C)</option>
+                            </optgroup>
+                            <optgroup label="Glycol / Brine Solutions">
+                                <option value="PG25">Propylene Glycol 25% — PG25 (@ 5 °C Chilled)</option>
+                                <option value="PG25_20">Propylene Glycol 25% — PG25 (@ 20 °C Cool)</option>
+                                <option value="EG30">Ethylene Glycol 30% — EG30 (@ 5 °C Chilled)</option>
+                            </optgroup>
+                            <optgroup label="Fuels &amp; Biofuels">
+                                <option value="DIESEL_NO2">Diesel No. 2 Fuel Oil (@ 25 °C)</option>
+                                <option value="BIODIESEL_B5">Biodiesel B5 Blend (@ 25 °C)</option>
+                                <option value="BIODIESEL_B20">Biodiesel B20 Blend (@ 25 °C)</option>
+                            </optgroup>
+                            <optgroup label="Industrial &amp; Heat Transfer Oils">
+                                <option value="OIL_VG32">Hydraulic / Lube Oil ISO VG 32 (@ 40 °C)</option>
+                                <option value="OIL_VG46">Hydraulic / Lube Oil ISO VG 46 (@ 40 °C)</option>
+                                <option value="OIL_THERMAL">Thermal Heat Transfer Oil (@ 80 °C)</option>
+                            </optgroup>
+                            <optgroup label="User-Defined Fluid">
+                                <option value="CUSTOM">Custom Fluid (Define ρ, μ, Cp)</option>
+                            </optgroup>
+                        </select>
+
+                        <!-- Live Fluid Property Badges -->
+                        <div class="grid grid-cols-4 gap-1.5 mt-2">
+                            <div class="bg-slate-50 dark:bg-slate-900/70 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 text-center">
+                                <div class="text-[9px] uppercase text-slate-400 font-bold">Density (ρ)</div>
+                                <div id="pipe_fluid_badge_rho" class="text-[11px] font-mono font-bold text-slate-700 dark:text-slate-200">999.7 kg/m³</div>
+                            </div>
+                            <div class="bg-slate-50 dark:bg-slate-900/70 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 text-center">
+                                <div class="text-[9px] uppercase text-slate-400 font-bold">Dyn. Visc (μ)</div>
+                                <div id="pipe_fluid_badge_mu" class="text-[11px] font-mono font-bold text-slate-700 dark:text-slate-200">1.31 mPa·s</div>
+                            </div>
+                            <div class="bg-slate-50 dark:bg-slate-900/70 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 text-center">
+                                <div class="text-[9px] uppercase text-slate-400 font-bold">Kin. Visc (ν)</div>
+                                <div id="pipe_fluid_badge_nu" class="text-[11px] font-mono font-bold text-cyan-600 dark:text-cyan-400">1.31 cSt</div>
+                            </div>
+                            <div class="bg-slate-50 dark:bg-slate-900/70 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 text-center">
+                                <div class="text-[9px] uppercase text-slate-400 font-bold">Spec. Heat</div>
+                                <div id="pipe_fluid_badge_cp" class="text-[11px] font-mono font-bold text-slate-700 dark:text-slate-200">4.19 kJ/kg·K</div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Fluid Inputs -->
+                        <div id="pipe_custom_fluid_inputs" class="hidden grid grid-cols-3 gap-2 mt-2 p-2.5 rounded-lg bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60">
+                            <div>
+                                <label class="block text-[10px] font-bold text-amber-800 dark:text-amber-300 mb-0.5">Density ρ (kg/m³)</label>
+                                <input type="number" id="pipe_custom_rho" value="950" step="5" oninput="updatePipeSizer()"
+                                    class="w-full p-1.5 text-xs font-mono font-bold rounded border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-800 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-amber-800 dark:text-amber-300 mb-0.5">Viscosity μ (mPa·s)</label>
+                                <input type="number" id="pipe_custom_mu" value="2.5" step="0.1" oninput="updatePipeSizer()"
+                                    class="w-full p-1.5 text-xs font-mono font-bold rounded border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-800 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-amber-800 dark:text-amber-300 mb-0.5">Cp (kJ/kg·K)</label>
+                                <input type="number" id="pipe_custom_cp" value="3.50" step="0.05" oninput="updatePipeSizer()"
+                                    class="w-full p-1.5 text-xs font-mono font-bold rounded border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-800 dark:text-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-span-1">
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Pipe Material
                             (Roughness)</label>
                         <select id="pipe_roughness"
-                            class="w-full p-2 rounded focus:ring-2 focus:ring-cyan-500 outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                            class="w-full p-2 rounded border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-cyan-500 outline-none text-xs font-semibold dark:bg-slate-700 dark:text-white"
                             onchange="updatePipeSizer()">
-                            <option value="0.045">Commercial Steel / Black Iron (0.045 mm)</option>
-                            <option value="0.0015">Copper / PVC / Plastic (0.0015 mm)</option>
-                            <option value="0.25">Cast Iron - New (0.25 mm)</option>
+                            <option value="0.045">Commercial Steel / Sch 40 (0.045 mm)</option>
+                            <option value="0.0015">Copper / PVC / HDPE / PPR (0.0015 mm)</option>
+                            <option value="0.015">Stainless Steel — Drawn (0.015 mm)</option>
+                            <option value="0.15">Galvanized Iron Pipe (0.15 mm)</option>
+                            <option value="0.25">Cast Iron — New (0.25 mm)</option>
                             <option value="1.0">Old Steel / Scaled (1.0 mm)</option>
                         </select>
                     </div>
                     <div class="col-span-1">
-                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Water
-                            Temperature</label>
-                        <select id="pipe_temp"
-                            class="w-full p-2 rounded focus:ring-2 focus:ring-cyan-500 outline-none text-sm dark:bg-slate-700 dark:border-slate-600 dark:text-white"
-                            onchange="updatePipeSizer()">
-                            <option value="10">Chilled Water (~10 °C)</option>
-                            <option value="20">Condenser Water (~20 °C)</option>
-                            <option value="60">Hot Water (~60 °C)</option>
-                        </select>
-                    </div>
-                    <div class="col-span-1">
                         <label id="label_pipe_length"
-                            class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Length (m) <span
-                                class="text-xs font-normal text-slate-400 italic">Opt.</span></label>
-                        <input type="number" id="pipe_length" placeholder="e.g. 50" step="1"
-                            class="w-full p-2 rounded focus:ring-2 focus:ring-cyan-500 focus:outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-white text-sm"
+                            class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Straight Length (m)</label>
+                        <input type="number" id="pipe_length" value="50" placeholder="e.g. 50" step="5"
+                            class="w-full p-2 rounded border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none dark:bg-slate-700 dark:text-white text-sm font-semibold"
                             oninput="updatePipeSizer()">
                     </div>
                 </div>
             </div>
 
-            <!-- Outputs -->
-            <div class="space-y-6">
+            <!-- Outputs & Commercial Pipe Comparison (7 cols) -->
+            <div class="lg:col-span-7 space-y-5">
                 <div
                     class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-t-4 border-t-slate-700 transition-colors">
-                    <h2
-                        class="text-lg font-bold text-slate-800 dark:text-slate-100 border-b border-slate-200 dark:border-slate-700 pb-2 mb-4">
-                        Calculated Result</h2>
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-2 mb-4">
+                        <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Calculated Pipe &amp; Hydraulic Parameters</h2>
+                        <span class="text-xs text-slate-400">Laminar / Transitional / Haaland Turbulent Solver</span>
+                    </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="stat-card">
-                            <div class="text-sm text-slate-500 dark:text-slate-400">Exact Inner Diameter</div>
+                            <div class="text-sm text-slate-500 dark:text-slate-400">Active / Exact Inner Diameter</div>
                             <div class="text-3xl font-bold text-slate-900 dark:text-white mt-1 flex flex-col">
                                 <span id="pipe_res_D_main">0.0 <span
                                         class="text-lg text-slate-500 dark:text-slate-400">mm</span></span>
-                                <span id="pipe_res_D_sub" class="text-sm font-normal text-slate-400 mt-1">0.00 in</span>
+                                <span id="pipe_res_D_sub" class="text-xs font-normal text-slate-400 mt-1">0.00 in</span>
                             </div>
                         </div>
                         <div class="stat-card">
-                            <div class="text-sm text-slate-500 dark:text-slate-400">Limiting Factor</div>
-                            <div class="text-xl font-bold text-cyan-600 dark:text-cyan-400 mt-1 pt-1"
+                            <div class="text-sm text-slate-500 dark:text-slate-400">Limiting Factor / Status</div>
+                            <div class="text-lg font-bold text-cyan-600 dark:text-cyan-400 mt-1 pt-1"
                                 id="pipe_res_limit">-</div>
                         </div>
                     </div>
 
                     <div
-                        class="mt-4 bg-cyan-50 dark:bg-cyan-900/30 border border-cyan-100 dark:border-cyan-800/50 p-4 rounded-lg flex justify-between items-center transition-colors">
+                        class="mt-4 bg-cyan-50 dark:bg-cyan-900/30 border border-cyan-100 dark:border-cyan-800/50 p-4 rounded-lg flex flex-wrap justify-between items-center gap-3 transition-colors">
                         <div>
-                            <div class="text-sm text-cyan-700 dark:text-cyan-400 font-semibold mb-1">Recommended Nominal
-                                Size</div>
-                            <div class="text-xs text-cyan-600 dark:text-cyan-500">Closest standard commercial pipe size
-                            </div>
+                            <div class="text-sm text-cyan-700 dark:text-cyan-400 font-semibold mb-0.5">Active Commercial Pipe Size</div>
+                            <div id="pipe_res_dn_sub" class="text-xs text-cyan-600 dark:text-cyan-500">Closest standard commercial pipe size</div>
                         </div>
                         <div class="text-3xl font-black text-cyan-800 dark:text-cyan-300" id="pipe_res_DN">DN--</div>
                     </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4">
+                        <div
+                            class="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-center flex flex-col justify-center">
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Actual Velocity</div>
+                            <div class="text-base font-bold text-slate-800 dark:text-slate-100 mt-1" id="pipe_res_V">0.00
+                                <span class="text-xs text-slate-500 dark:text-slate-400">m/s</span></div>
+                            <div class="text-[11px] text-slate-400 mt-0.5" id="pipe_res_V_sub">0.00 ft/s</div>
+                        </div>
+                        <div
+                            class="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-center flex flex-col justify-center">
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Unit Friction Drop</div>
+                            <div class="text-base font-bold text-slate-800 dark:text-slate-100 mt-1" id="pipe_res_F">0.00
+                                <span class="text-xs text-slate-500 dark:text-slate-400">Pa/m</span></div>
+                            <div class="text-[11px] text-slate-400 mt-0.5" id="pipe_res_F_sub">0.00 ft/100ft</div>
+                        </div>
+                        <div
+                            class="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-center flex flex-col justify-center">
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Reynolds &amp; Regime</div>
+                            <div class="text-sm font-bold text-slate-800 dark:text-slate-100 mt-1" id="pipe_res_Re">-</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5" id="pipe_res_Re_sub">Darcy f = -</div>
+                        </div>
+                        <div
+                            class="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-center flex flex-col justify-center">
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Outer Surface Area</div>
+                            <div class="text-base font-bold text-slate-800 dark:text-slate-100 mt-1" id="pipe_res_area">-
+                            </div>
+                            <div class="text-[11px] text-slate-400 mt-0.5" id="pipe_res_area_sub"></div>
+                        </div>
+                        <div
+                            class="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-center flex flex-col justify-center">
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Overall Pressure Drop</div>
+                            <div class="text-base font-bold text-cyan-600 dark:text-cyan-400 mt-1" id="pipe_res_dp">-</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5" id="pipe_res_dp_sub"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div
-                        class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 text-center transition-colors flex flex-col justify-center">
-                        <div class="text-xs text-slate-500 dark:text-slate-400 font-semibold">Actual Velocity</div>
-                        <div class="text-lg font-bold text-slate-800 dark:text-slate-100 mt-1" id="pipe_res_V">0.00
-                            <span class="text-xs text-slate-500 dark:text-slate-400">m/s</span></div>
-                        <div class="text-xs text-slate-400 mt-1" id="pipe_res_V_sub">0.00 ft/s</div>
-                    </div>
-                    <div
-                        class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 text-center transition-colors flex flex-col justify-center">
-                        <div class="text-xs text-slate-500 dark:text-slate-400 font-semibold">Actual Friction</div>
-                        <div class="text-lg font-bold text-slate-800 dark:text-slate-100 mt-1" id="pipe_res_F">0.00
-                            <span class="text-xs text-slate-500 dark:text-slate-400">Pa/m</span></div>
-                        <div class="text-xs text-slate-400 mt-1" id="pipe_res_F_sub">0.00 ft/100ft</div>
-                    </div>
-                    <div
-                        class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center transition-colors flex flex-col justify-center">
-                        <div class="text-xs text-slate-500 dark:text-slate-400 font-semibold">Outer Surface Area</div>
-                        <div class="text-lg font-bold text-slate-800 dark:text-slate-100 mt-1" id="pipe_res_area">-
+                <!-- Interactive Commercial Pipe Size Comparison Table -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div>
+                            <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+                                Commercial Pipe Schedule Comparison (Click Any Row to Select Size)
+                            </h3>
+                            <p class="text-xs text-slate-400">Compare velocity, unit friction drop, and flow regime across standard commercial pipe sizes</p>
                         </div>
-                        <div class="text-xs text-slate-400 mt-1" id="pipe_res_area_sub"></div>
+                        <button type="button" id="btn_pipe_toggle_all_sizes" onclick="togglePipeShowAllSizes()"
+                            class="text-xs font-bold px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-200 hover:border-cyan-500 transition cursor-pointer">
+                            Show All 19 Sizes (DN15–DN600)
+                        </button>
                     </div>
-                    <div
-                        class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center transition-colors flex flex-col justify-center">
-                        <div class="text-xs text-slate-500 dark:text-slate-400 font-semibold">Total Pressure Drop</div>
-                        <div class="text-lg font-bold text-slate-800 dark:text-slate-100 mt-1" id="pipe_res_dp">-</div>
-                        <div class="text-xs text-slate-400 mt-1" id="pipe_res_dp_sub"></div>
+                    <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 dark:bg-slate-900/80 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                                    <th class="px-3 py-2">Nominal Size</th>
+                                    <th class="px-3 py-2 text-right">Inner Dia.</th>
+                                    <th class="px-3 py-2 text-right">Velocity (V)</th>
+                                    <th class="px-3 py-2 text-right">Friction (ΔP/L)</th>
+                                    <th class="px-3 py-2 text-right">Re (Regime)</th>
+                                    <th class="px-3 py-2 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pipe_size_comparison_body" class="divide-y divide-slate-200/70 dark:divide-slate-700/60">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pipe Fittings, Valves & Overall System Friction Loss Panel -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-t-4 border-t-indigo-500 transition-colors mt-6 space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700 pb-3">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Pipe Fittings, Valves &amp; Overall System Friction Loss</h2>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                            K-Factor &amp; Equivalent Length
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Add elbows, tees, valves, strainers, and equipment drops to estimate total system pressure loss and required pump head:
+                        <span class="font-mono">ΔP_total = (f·L/D + ΣK) · (ρ·V²/2) + ΔP_equip</span>
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-400">Load Preset:</span>
+                    <button type="button" onclick="loadPipeFittingPreset('HVAC')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700/60 hover:bg-indigo-600 hover:text-white transition cursor-pointer">
+                        ❄ HVAC Hydronic Loop
+                    </button>
+                    <button type="button" onclick="loadPipeFittingPreset('FUEL')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700/60 hover:bg-amber-600 hover:text-white transition cursor-pointer">
+                        ⛽ Fuel / Oil Line
+                    </button>
+                    <button type="button" onclick="loadPipeFittingPreset('CLEAR')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-red-600 hover:text-white transition cursor-pointer">
+                        ✕ Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick-Add Fitting Chips -->
+            <div>
+                <div class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">
+                    Quick-Add Standard Fittings &amp; Valves (+1 per click)
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                    <button type="button" onclick="addQuickPipeFitting('elbow_90_std', 1)" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-200 transition cursor-pointer">+ 90° Std Elbow (K=0.75)</button>
+                    <button type="button" onclick="addQuickPipeFitting('elbow_90_lr', 1)" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-200 transition cursor-pointer">+ 90° LR Elbow (K=0.45)</button>
+                    <button type="button" onclick="addQuickPipeFitting('elbow_45', 1)" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-200 transition cursor-pointer">+ 45° Elbow (K=0.35)</button>
+                    <button type="button" onclick="addQuickPipeFitting('tee_run', 1)" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-200 transition cursor-pointer">+ Tee Run (K=0.40)</button>
+                    <button type="button" onclick="addQuickPipeFitting('tee_branch', 1)" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-200 transition cursor-pointer">+ Tee Branch (K=1.50)</button>
+                    <button type="button" onclick="addQuickPipeFitting('valve_gate', 1)" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-200 transition cursor-pointer">+ Gate Valve (K=0.15)</button>
+                    <button type="button" onclick="addQuickPipeFitting('valve_bfly', 1)" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-200 transition cursor-pointer">+ Butterfly Valve (K=0.60)</button>
+                    <button type="button" onclick="addQuickPipeFitting('valve_ball', 1)" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-200 transition cursor-pointer">+ Ball Valve (K=0.10)</button>
+                    <button type="button" onclick="addQuickPipeFitting('valve_globe', 1)" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-200 transition cursor-pointer">+ Globe / Balancing Valve (K=6.0)</button>
+                    <button type="button" onclick="addQuickPipeFitting('check_swing', 1)" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-200 transition cursor-pointer">+ Swing Check Valve (K=2.0)</button>
+                    <button type="button" onclick="addQuickPipeFitting('strainer_y', 1)" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-200 transition cursor-pointer">+ Y-Strainer (K=2.5)</button>
+                    <button type="button" onclick="addQuickPipeFitting('flex_joint', 1)" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-200 transition cursor-pointer">+ Flexible Joint (K=0.50)</button>
+                    <button type="button" onclick="addQuickPipeFitting('reducer', 1)" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-200 transition cursor-pointer">+ Reducer / Contraction (K=0.30)</button>
+                </div>
+            </div>
+
+            <!-- 4 System Summary KPI Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+                    <div class="text-xs font-bold uppercase text-slate-400">1. Straight Pipe Friction Loss</div>
+                    <div id="pipe_sys_dp_straight" class="text-2xl font-black text-slate-800 dark:text-white mt-1">0.00 kPa</div>
+                    <div id="pipe_sys_dp_straight_sub" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">0.00 m hd • L = 50.0 m</div>
+                </div>
+                <div class="p-4 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60">
+                    <div class="text-xs font-bold uppercase text-indigo-600 dark:text-indigo-400">2. Fittings &amp; Valves Minor Loss</div>
+                    <div id="pipe_sys_dp_fittings" class="text-2xl font-black text-indigo-700 dark:text-indigo-300 mt-1">0.00 kPa</div>
+                    <div id="pipe_sys_dp_fittings_sub" class="text-xs text-indigo-600/80 dark:text-indigo-400/80 mt-0.5">ΣK = 0.00 • Leq = 0.0 m</div>
+                </div>
+                <div class="p-4 rounded-xl bg-cyan-50/70 dark:bg-cyan-950/40 border border-cyan-300 dark:border-cyan-700/70">
+                    <div class="text-xs font-bold uppercase text-cyan-700 dark:text-cyan-300">3. Overall System Friction Loss</div>
+                    <div id="pipe_sys_dp_total" class="text-2xl font-black text-cyan-800 dark:text-cyan-200 mt-1">0.00 kPa</div>
+                    <div id="pipe_sys_dp_total_sub" class="text-xs text-cyan-700 dark:text-cyan-400 mt-0.5">0.00 m hd • 0.0 ft hd • 0.00 psi</div>
+                </div>
+                <div class="p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60">
+                    <div class="text-xs font-bold uppercase text-emerald-700 dark:text-emerald-400">4. Hydraulic &amp; Est. Pump Power</div>
+                    <div id="pipe_sys_pump_power" class="text-2xl font-black text-emerald-800 dark:text-emerald-300 mt-1">0.00 kW (Hyd)</div>
+                    <div id="pipe_sys_pump_power_sub" class="text-xs text-emerald-700/80 dark:text-emerald-400/80 mt-0.5">Est. Shaft (@75% η): 0.00 kW</div>
+                </div>
+            </div>
+
+            <!-- Fittings Table & Additional Equipment Drop Controls -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                <div class="lg:col-span-8 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 dark:bg-slate-900/80 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                                <th class="p-2.5 text-center w-8">#</th>
+                                <th class="p-2.5">Fitting / Valve Type</th>
+                                <th class="p-2.5 text-right">K-Factor</th>
+                                <th class="p-2.5 text-center">Qty</th>
+                                <th class="p-2.5 text-right">Total K</th>
+                                <th class="p-2.5 text-right">Eq. Length (Leq)</th>
+                                <th class="p-2.5 text-right">Loss (ΔP)</th>
+                                <th class="p-2.5 text-center w-10">Del</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pipe_fittings_tbody" class="divide-y divide-slate-200/70 dark:divide-slate-700/60">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Right Column: Add Custom Row + Coil/Equipment Drop + Safety Factor -->
+                <div class="lg:col-span-4 space-y-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <div>
+                        <div class="text-xs font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-2">
+                            Add Fitting from Catalog
+                        </div>
+                        <div class="flex gap-2">
+                            <select id="pipe_new_fitting_key"
+                                class="flex-grow p-2 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-white outline-none">
+                                <option value="elbow_90_std">90° Standard Elbow (K=0.75)</option>
+                                <option value="elbow_90_lr">90° Long Radius Elbow (K=0.45)</option>
+                                <option value="elbow_45">45° Standard Elbow (K=0.35)</option>
+                                <option value="elbow_miter">90° Miter Bend (K=1.10)</option>
+                                <option value="tee_run">Tee — Flow Through Run (K=0.40)</option>
+                                <option value="tee_branch">Tee — Flow Through Branch (K=1.50)</option>
+                                <option value="valve_gate">Gate Valve — Fully Open (K=0.15)</option>
+                                <option value="valve_bfly">Butterfly Valve — Open (K=0.60)</option>
+                                <option value="valve_ball">Ball Valve — Fully Open (K=0.10)</option>
+                                <option value="valve_globe">Globe / Balancing Valve (K=6.00)</option>
+                                <option value="check_swing">Swing Check Valve (K=2.00)</option>
+                                <option value="check_lift">Lift / Spring Check Valve (K=4.00)</option>
+                                <option value="strainer_y">Y-Strainer / Basket Strainer (K=2.50)</option>
+                                <option value="flex_joint">Flexible Connector / Joint (K=0.50)</option>
+                                <option value="reducer">Reducer / Contraction (K=0.30)</option>
+                                <option value="increaser">Increaser / Enlargement (K=0.50)</option>
+                                <option value="entrance">Pipe Entrance — Tank Suction (K=0.50)</option>
+                                <option value="exit">Pipe Exit — Tank Discharge (K=1.00)</option>
+                            </select>
+                            <input type="number" id="pipe_new_fitting_qty" value="1" min="1" step="1"
+                                class="w-16 p-2 text-center rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-white">
+                            <button type="button" onclick="addPipeFittingFromSelect()"
+                                class="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition cursor-pointer">
+                                + Add
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-200 dark:border-slate-700 pt-3 space-y-3">
+                        <div class="text-xs font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                            Equipment Drop &amp; Safety Margin
+                        </div>
+                        <div>
+                            <label for="pipe_equip_dp" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                Equipment / Coil / Chiller / Filter ΔP (kPa)
+                            </label>
+                            <input type="number" id="pipe_equip_dp" value="0" min="0" step="5" oninput="updatePipeSizer()"
+                                placeholder="e.g. 45 kPa for AHU coil + chiller"
+                                class="w-full p-2 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                            <span class="text-[10px] text-slate-400">Add fixed pressure drops across heat exchangers, coils, or fuel filters.</span>
+                        </div>
+                        <div>
+                            <label for="pipe_safety_pct" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                Design Safety Margin (%)
+                            </label>
+                            <input type="number" id="pipe_safety_pct" value="10" min="0" max="100" step="5" oninput="updatePipeSizer()"
+                                class="w-full p-2 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2879,9 +3182,9 @@
         <div
             class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mt-6 p-4 overflow-hidden transition-colors">
             <div class="flex flex-wrap items-center justify-between gap-2 px-2 pb-2 border-b border-slate-100 dark:border-slate-700/60">
-                <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Hydraulic Nomogram & Operating Point</h2>
+                <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Hydraulic Nomogram &amp; Operating Point</h2>
                 <div class="flex flex-wrap items-center gap-3 text-xs">
-                    <span class="flex items-center gap-1.5 text-blue-500 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>Exact Dia.</span>
+                    <span class="flex items-center gap-1.5 text-blue-500 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>Active Dia.</span>
                     <span class="flex items-center gap-1.5 text-emerald-500 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>Standard DN</span>
                     <span class="text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/30 px-2.5 py-0.5 rounded-full border border-cyan-200 dark:border-cyan-800/60 font-medium">
                         Drag OP to adjust Flow/Friction • Hover to inspect
