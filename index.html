@@ -782,11 +782,11 @@
             <div class="flex flex-wrap items-center gap-1.5">
                 <button type="button" data-disc="all" onclick="window.MagicRegistry.filterLanding('all')"
                     class="landing-disc-tab disc-tab-active px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200">
-                    All Disciplines (20)
+                    All Disciplines (21)
                 </button>
                 <button type="button" data-disc="mechanical" onclick="window.MagicRegistry.filterLanding('mechanical')"
                     class="landing-disc-tab px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200">
-                    ⚙️ Mechanical & HVAC (8)
+                    ⚙️ Mechanical & HVAC (9)
                 </button>
                 <button type="button" data-disc="electrical" onclick="window.MagicRegistry.filterLanding('electrical')"
                     class="landing-disc-tab px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200">
@@ -1002,6 +1002,28 @@
                 <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/70 flex items-center justify-between gap-2 text-[11px]">
                     <span class="std-card-slot"></span>
                     <span id="landing_badge_fuelTankPage" class="font-mono font-bold text-blue-600 dark:text-blue-400 truncate">Ready</span>
+                </div>
+            </button>
+
+            <!-- App 9: Data Center PUE Estimator -->
+            <button data-module-id="puePage" onclick="switchView('puePage')" class="group text-left bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-violet-300 dark:hover:border-violet-500 transition-all duration-200 flex flex-col justify-between">
+                <div>
+                <div
+                    class="w-12 h-12 bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+                        <line x1="6" y1="6" x2="6.01" y2="6" />
+                        <line x1="6" y1="18" x2="6.01" y2="18" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 transition-colors">Data Center PUE Estimator</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 transition-colors">Estimate Data Center PUE, DCiE, cooling pPUE, and annual energy from Chiller COP, IT load factor, and UPS/PDU losses.</p>
+            </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/70 flex items-center justify-between gap-2 text-[11px]">
+                    <span class="std-card-slot"></span>
+                    <span id="landing_badge_puePage" class="font-mono font-bold text-blue-600 dark:text-blue-400 truncate">Ready</span>
                 </div>
             </button>
         </div>
@@ -7188,6 +7210,385 @@
                 </div>
             </div>
         </div>
+
+    <!-- ================= PAGE 9 (MECHANICAL): DATA CENTER PUE ESTIMATOR ================= -->
+    <div id="puePage" class="max-w-6xl mx-auto space-y-4 hidden py-4 page-container">
+        <nav class="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="switchView('mainMenuPage')"
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-slate-700/80 dark:hover:bg-blue-600 text-slate-700 hover:text-white dark:text-slate-100 dark:hover:text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1" />
+                        <rect width="7" height="5" x="14" y="3" rx="1" />
+                        <rect width="7" height="9" x="14" y="12" rx="1" />
+                        <rect width="7" height="5" x="3" y="16" rx="1" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">/</span>
+                <span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20 hidden sm:inline-block">Mechanical &amp; HVAC</span>
+                <span class="text-slate-300 dark:text-slate-600 hidden md:inline">›</span>
+                <span class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:inline">Data Center PUE Estimator</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Switch Tool:</span>
+                <select onchange="if(this.value) switchView(this.value)"
+                    class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <optgroup label="Mechanical &amp; HVAC">
+                        <option value="analyzerPage">System Analyzer</option>
+                        <option value="loadAnalyzerPage">Room Load Analyzer</option>
+                        <option value="multiStagePage">Multi-Stage Analyzer</option>
+                        <option value="ductSizerPage">Duct Sizer</option>
+                        <option value="pipeSizerPage">Hydraulic Pipe Sizer</option>
+                        <option value="ctPage">Cooling Tower Make-up</option>
+                        <option value="roiPage">Chiller ROI Calculator</option>
+                        <option value="fuelTankPage">Generator Fuel Tank Sizer</option>
+                        <option value="puePage" selected>Data Center PUE Estimator</option>
+                    </optgroup>
+                    <optgroup label="Electrical Engineering">
+                        <option value="eqListPage">Electrical Load Estimator</option>
+                        <option value="wiringPage">Wiring &amp; Breaker Sizer</option>
+                        <option value="transformerPage">Transformer Sizer</option>
+                        <option value="motorSizerPage">Motor &amp; Starter Selector</option>
+                        <option value="shortCircuitPage">Short Circuit Calculator</option>
+                        <option value="starterSimulatorPage">Starter Type Simulator</option>
+                    </optgroup>
+                    <optgroup label="Plumbing &amp; Sanitary">
+                        <option value="waterDemandPage">Water Demand &amp; Tank Sizer</option>
+                        <option value="stormPage">Storm Drainage Sizer</option>
+                        <option value="pondPage">Retention Pond Volume</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="sprinklerPage">Sprinkler Hydraulic Calculator</option>
+                        <option value="warehouseSprinklerPage">Warehouse Sprinkler (ESFR)</option>
+                        <option value="fireWaterPage">Fire Water Consumption</option>
+                    </optgroup>
+                </select>
+            </div>
+        </nav>
+
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 gap-4 transition-colors">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900 dark:text-white transition-colors">Data Center PUE Estimator</h1>
+                <p class="text-slate-500 dark:text-slate-400 mt-1 transition-colors">
+                    Estimate Power Usage Effectiveness (PUE), DCiE, cooling pPUE, and annual energy from Chiller COP, IT load factor, and UPS/PDU losses.
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" onclick="applyPuePreset('AIR_STD')"
+                    class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-violet-600 hover:text-white transition cursor-pointer">
+                    🌬️ Air-Cooled (COP 3.2)
+                </button>
+                <button type="button" onclick="applyPuePreset('WATER_CENT')"
+                    class="px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-500/15 text-violet-600 dark:text-violet-300 border border-violet-500/30 hover:bg-violet-600 hover:text-white transition cursor-pointer">
+                    💧 Water-Cooled (COP 5.8)
+                </button>
+                <button type="button" onclick="applyPuePreset('MAG_ECON')"
+                    class="px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 border border-cyan-500/30 hover:bg-cyan-600 hover:text-white transition cursor-pointer">
+                    ❄️ Mag-Bearing + Econ (COP 6.8)
+                </button>
+                <button type="button" onclick="applyPuePreset('DLC_HYBRID')"
+                    class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-600 hover:text-white transition cursor-pointer">
+                    🚀 Direct Liquid Cooling (COP 9.5)
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Grid: Left Inputs (5 cols) + Right KPIs & Breakdown (7 cols) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left Column: Simple & Detailed Inputs -->
+            <div class="lg:col-span-5 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-t-4 border-t-violet-500 space-y-4 transition-colors">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
+                    <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">IT Load &amp; Cooling Inputs</h2>
+                    <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-violet-500/10 text-violet-600 dark:text-violet-400">ISO/IEC 30134-2</span>
+                </div>
+
+                <!-- Cooling Architecture Preset Dropdown -->
+                <div>
+                    <label for="pue_arch_preset" class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                        Cooling Plant Architecture Preset
+                    </label>
+                    <select id="pue_arch_preset" onchange="applyPuePreset(this.value)"
+                        class="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-xs font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer">
+                        <option value="AIR_STD">Air-Cooled Chiller + CRAC / CRAH (Typical Legacy/Small DC)</option>
+                        <option value="WATER_CENT" selected>Water-Cooled Centrifugal Chiller + CRAH VFD (Standard Tier III)</option>
+                        <option value="MAG_ECON">Magnetic Bearing Chiller + Waterside Economizer (High-Efficiency)</option>
+                        <option value="DLC_HYBRID">Direct-to-Chip Liquid Cooling (DLC) + Rear-Door Hx (AI / Hyperscale)</option>
+                        <option value="CUSTOM">Custom Cooling &amp; Electrical Parameters</option>
+                    </select>
+                </div>
+
+                <!-- Rated IT Capacity & IT Load Factor -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            Rated IT Critical Load Capacity
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="number" id="pue_it_cap" value="1000" min="10" step="50" oninput="updatePUE()"
+                                class="flex-grow p-2 rounded border border-slate-300 dark:border-slate-600 font-bold text-slate-800 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none">
+                            <select id="pue_it_unit" onchange="updatePUE()"
+                                class="w-24 p-2 rounded border border-slate-300 dark:border-slate-600 font-bold dark:bg-slate-700 dark:text-white outline-none">
+                                <option value="kW" selected>kW</option>
+                                <option value="MW">MW</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-span-2 bg-violet-50/60 dark:bg-violet-950/30 p-3 rounded-xl border border-violet-200/80 dark:border-violet-800/60">
+                        <div class="flex items-center justify-between mb-1">
+                            <label for="pue_load_factor" class="text-xs font-extrabold uppercase tracking-wider text-violet-800 dark:text-violet-300">
+                                IT Load Factor (%)
+                            </label>
+                            <div class="flex items-center gap-1">
+                                <button type="button" onclick="setPueLoadFactor(25)" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-violet-500 cursor-pointer">25%</button>
+                                <button type="button" onclick="setPueLoadFactor(50)" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-violet-500 cursor-pointer">50%</button>
+                                <button type="button" onclick="setPueLoadFactor(75)" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-violet-500 cursor-pointer">75%</button>
+                                <button type="button" onclick="setPueLoadFactor(100)" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-violet-500 cursor-pointer">100%</button>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input type="range" id="pue_load_slider" min="10" max="100" step="1" value="75"
+                                oninput="syncPueLoadInput('slider')"
+                                class="flex-grow accent-violet-600 cursor-pointer">
+                            <input type="number" id="pue_load_factor" min="10" max="100" step="1" value="75"
+                                oninput="syncPueLoadInput('number')"
+                                class="w-20 p-1.5 text-center font-mono font-bold text-sm rounded border border-violet-300 dark:border-violet-700 bg-white dark:bg-slate-800 dark:text-white">
+                        </div>
+                    </div>
+
+                    <!-- Chiller COP & Equivalent kW/TR -->
+                    <div>
+                        <label for="pue_cop" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            Chiller Design COP (W/W)
+                        </label>
+                        <input type="number" id="pue_cop" value="5.80" min="1.0" max="20.0" step="0.1"
+                            oninput="syncPueCopAndKwTr('cop')"
+                            class="w-full p-2 rounded border border-slate-300 dark:border-slate-600 font-mono font-bold text-slate-800 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none">
+                        <span class="text-[10px] text-slate-400">Chiller compressor efficiency</span>
+                    </div>
+                    <div>
+                        <label for="pue_kw_tr" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            Chiller Efficiency (kW/TR)
+                        </label>
+                        <input type="number" id="pue_kw_tr" value="0.606" min="0.18" max="3.50" step="0.01"
+                            oninput="syncPueCopAndKwTr('kwtr')"
+                            class="w-full p-2 rounded border border-slate-300 dark:border-slate-600 font-mono font-bold text-cyan-600 dark:text-cyan-400 dark:bg-slate-700 focus:ring-2 focus:ring-violet-500 outline-none">
+                        <span class="text-[10px] text-slate-400">kW/TR = 3.517 / COP</span>
+                    </div>
+
+                    <!-- Pumps, CT & CRAH Fans (%) + Free-Cooling Economizer (%) -->
+                    <div>
+                        <label for="pue_pump_fan_pct" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            Pumps, CT &amp; CRAH Fans (% IT)
+                        </label>
+                        <input type="number" id="pue_pump_fan_pct" value="8.5" min="0" max="40" step="0.5"
+                            oninput="updatePUE()"
+                            class="w-full p-2 rounded border border-slate-300 dark:border-slate-600 font-mono text-sm font-semibold dark:bg-slate-700 dark:text-white">
+                    </div>
+                    <div>
+                        <label for="pue_econ_pct" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            Economizer Free-Cool (% Hrs)
+                        </label>
+                        <input type="number" id="pue_econ_pct" value="10" min="0" max="95" step="5"
+                            oninput="updatePUE()"
+                            class="w-full p-2 rounded border border-slate-300 dark:border-slate-600 font-mono text-sm font-semibold dark:bg-slate-700 dark:text-white">
+                    </div>
+                </div>
+
+                <!-- Electrical & Auxiliary Overhead Inputs -->
+                <div class="pt-3 border-t border-slate-200 dark:border-slate-700 space-y-3">
+                    <div class="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        Electrical Losses &amp; Utility Tariff
+                    </div>
+                    <div class="grid grid-cols-3 gap-2.5">
+                        <div>
+                            <label for="pue_ups_loss_pct" class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">UPS Loss (%)</label>
+                            <input type="number" id="pue_ups_loss_pct" value="4.5" min="0" max="20" step="0.5" oninput="updatePUE()"
+                                class="w-full p-1.5 rounded border border-slate-300 dark:border-slate-600 font-mono text-xs font-bold dark:bg-slate-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label for="pue_pdu_loss_pct" class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">PDU / Xfmr (%)</label>
+                            <input type="number" id="pue_pdu_loss_pct" value="2.0" min="0" max="15" step="0.2" oninput="updatePUE()"
+                                class="w-full p-1.5 rounded border border-slate-300 dark:border-slate-600 font-mono text-xs font-bold dark:bg-slate-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label for="pue_aux_pct" class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">Lighting/Aux (%)</label>
+                            <input type="number" id="pue_aux_pct" value="1.0" min="0" max="10" step="0.2" oninput="updatePUE()"
+                                class="w-full p-1.5 rounded border border-slate-300 dark:border-slate-600 font-mono text-xs font-bold dark:bg-slate-700 dark:text-white">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <div>
+                            <label for="pue_elec_rate" class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">Electricity Tariff (/kWh)</label>
+                            <input type="number" id="pue_elec_rate" value="4.20" min="0" step="0.1" oninput="updatePUE()"
+                                class="w-full p-1.5 rounded border border-slate-300 dark:border-slate-600 font-mono text-xs font-bold dark:bg-slate-700 dark:text-white">
+                        </div>
+                        <div>
+                            <label for="pue_currency" class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">Currency Symbol</label>
+                            <select id="pue_currency" onchange="updatePUE()"
+                                class="w-full p-1.5 rounded border border-slate-300 dark:border-slate-600 text-xs font-bold dark:bg-slate-700 dark:text-white">
+                                <option value="฿" selected>฿ (THB)</option>
+                                <option value="$">$ (USD)</option>
+                                <option value="€">€ (EUR)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: KPIs, Power Breakdown & Annual Energy Summary -->
+            <div class="lg:col-span-7 space-y-5">
+                <!-- 4 Primary KPI Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-l-4 border-l-violet-600 flex flex-col justify-between">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Estimated Total PUE</span>
+                            <div id="pue_res_grade_badge"></div>
+                        </div>
+                        <div id="pue_res_total" class="text-4xl font-black text-violet-600 dark:text-violet-400 my-1.5">1.33</div>
+                        <div id="pue_res_dcie" class="text-xs font-semibold text-slate-500 dark:text-slate-400">DCiE: 75.2% (IT Share of Total Power)</div>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-l-4 border-l-cyan-500 flex flex-col justify-between">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Cooling Partial PUE (pPUE)</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">1 + MLC</span>
+                        </div>
+                        <div id="pue_res_ppue" class="text-3xl font-black text-cyan-600 dark:text-cyan-400 my-1.5">1.25</div>
+                        <div id="pue_res_mlc_sub" class="text-xs text-slate-500 dark:text-slate-400">MLC: 0.250 kW_cool/kW_IT • Sys COP: 4.00</div>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-l-4 border-l-amber-500">
+                        <div class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Electrical Loss Component (ELC)</div>
+                        <div id="pue_res_elc" class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">0.080</div>
+                        <div id="pue_res_elc_sub" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">UPS + PDU/Xfmr + Aux Losses</div>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-l-4 border-l-emerald-500">
+                        <div class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Total Facility Power Demand</div>
+                        <div id="pue_res_facility_kw" class="text-2xl font-black text-slate-900 dark:text-white mt-1">997.5 kW</div>
+                        <div id="pue_res_facility_sub" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">IT: 750.0 kW + Overhead: 247.5 kW</div>
+                    </div>
+                </div>
+
+                <!-- Facility Power Distribution Bar & Component Breakdown -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+                            Facility Power Distribution Breakdown
+                        </h3>
+                        <span class="text-xs text-slate-400">Total Heat Rejection: <strong id="pue_bk_heat_rej" class="text-slate-700 dark:text-slate-200">800 kW</strong></span>
+                    </div>
+
+                    <!-- Stacked Progress Bar -->
+                    <div class="w-full h-4 rounded-full overflow-hidden flex bg-slate-100 dark:bg-slate-900 p-0.5 gap-0.5 border border-slate-200 dark:border-slate-700">
+                        <div id="pue_bar_it" class="h-full bg-emerald-500 rounded-l-full transition-all" style="width: 75%"></div>
+                        <div id="pue_bar_chiller" class="h-full bg-cyan-500 transition-all" style="width: 12%"></div>
+                        <div id="pue_bar_pump" class="h-full bg-blue-500 transition-all" style="width: 6%"></div>
+                        <div id="pue_bar_elec" class="h-full bg-amber-500 rounded-r-full transition-all" style="width: 7%"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                        <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700">
+                            <div class="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>IT Equipment
+                            </div>
+                            <div id="pue_bk_it_kw" class="font-mono font-bold text-slate-800 dark:text-white mt-1">750.0 kW (75.2%)</div>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700">
+                            <div class="flex items-center gap-1.5 font-bold text-cyan-600 dark:text-cyan-400">
+                                <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 inline-block"></span>Chiller Plant
+                            </div>
+                            <div id="pue_bk_chiller_kw" class="font-mono font-bold text-slate-800 dark:text-white mt-1">120.0 kW (12.0%)</div>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700">
+                            <div class="flex items-center gap-1.5 font-bold text-blue-600 dark:text-blue-400">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>Pumps &amp; Fans
+                            </div>
+                            <div id="pue_bk_pump_kw" class="font-mono font-bold text-slate-800 dark:text-white mt-1">64.5 kW (6.5%)</div>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700">
+                            <div class="flex items-center gap-1.5 font-bold text-amber-600 dark:text-amber-400">
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>UPS / PDU / Aux
+                            </div>
+                            <div id="pue_bk_elec_kw" class="font-mono font-bold text-slate-800 dark:text-white mt-1">63.0 kW (6.3%)</div>
+                        </div>
+                    </div>
+
+                    <!-- Annual Energy, Cost & Carbon Strip -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100 dark:border-slate-700/70">
+                        <div class="p-3 rounded-xl bg-violet-50/50 dark:bg-violet-950/25 border border-violet-200/60 dark:border-violet-800/50">
+                            <div class="text-[10px] font-extrabold uppercase text-violet-600 dark:text-violet-400">Annual Energy (8,760 hrs)</div>
+                            <div id="pue_ann_total_mwh" class="text-base font-black text-slate-900 dark:text-white mt-0.5">8,738 MWh/yr</div>
+                            <div id="pue_ann_it_vs_ovh" class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">IT: 6,570 MWh • Overhead: 2,168 MWh</div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/25 border border-emerald-200/60 dark:border-emerald-800/50">
+                            <div class="text-[10px] font-extrabold uppercase text-emerald-600 dark:text-emerald-400">Annual Electricity OPEX</div>
+                            <div id="pue_ann_cost" class="text-base font-black text-emerald-700 dark:text-emerald-300 mt-0.5">฿36,700,000/yr</div>
+                            <div id="pue_ann_ovh_cost" class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Overhead Cost: ฿9,105,600/yr</div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+                            <div class="text-[10px] font-extrabold uppercase text-slate-400">Carbon Footprint (Scope 2)</div>
+                            <div id="pue_ann_co2" class="text-base font-black text-slate-800 dark:text-slate-100 mt-0.5">3,670 tCO₂/yr</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Grid Factor: 0.42 tCO₂ / MWh</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Part-Load Sensitivity Table (25%, 50%, 75%, 100%) -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div>
+                            <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+                                Part-Load PUE Sensitivity Schedule (Click Row to Select Load Factor)
+                            </h3>
+                            <p class="text-xs text-slate-400">Evaluates how fixed UPS/PDU losses and VFD pump/fan laws shift PUE across 25%–100% IT load</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 dark:bg-slate-900/80 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                                    <th class="px-3 py-2">IT Load Factor</th>
+                                    <th class="px-3 py-2 text-right">Actual IT</th>
+                                    <th class="px-3 py-2 text-right">Cooling Power</th>
+                                    <th class="px-3 py-2 text-right">Elec. Loss</th>
+                                    <th class="px-3 py-2 text-right">Total Facility</th>
+                                    <th class="px-3 py-2 text-right">Cooling pPUE</th>
+                                    <th class="px-3 py-2 text-right">Total PUE</th>
+                                    <th class="px-3 py-2 text-right">DCiE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pue_load_table_body" class="divide-y divide-slate-200/70 dark:divide-slate-700/60">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive PUE vs. IT Load Factor Curve -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mt-6 p-4 overflow-hidden transition-colors">
+            <div class="flex flex-wrap items-center justify-between gap-2 px-2 pb-2 border-b border-slate-100 dark:border-slate-700/60">
+                <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">PUE &amp; Cooling pPUE vs. IT Load Factor Curve</h2>
+                <div class="flex flex-wrap items-center gap-3 text-xs">
+                    <span class="flex items-center gap-1.5 text-violet-500 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-violet-500 inline-block"></span>Total Facility PUE</span>
+                    <span class="flex items-center gap-1.5 text-cyan-500 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-cyan-500 inline-block"></span>Cooling pPUE (Dashed)</span>
+                    <span class="text-violet-600 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/30 px-2.5 py-0.5 rounded-full border border-violet-200 dark:border-violet-800/60 font-medium">
+                        Hover to inspect • Click curve to set IT Load Factor
+                    </span>
+                </div>
+            </div>
+            <canvas id="pueChart" width="1000" height="380" class="w-full h-auto block mt-2 border-none"></canvas>
+        </div>
+    </div>
 
         <!-- ================= MARQUEE FOOTER ================= -->
         <div class="marquee-container">

@@ -2355,3 +2355,293 @@ function drawFireWaterChart(duration, volSprM3, volHoseM3, volSpM3, volMarginM3,
     ctx.restore();
 }
 
+function drawPueChart(canvasId, curvePoints, activePoint) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || !Array.isArray(curvePoints) || curvePoints.length === 0) return;
+
+    const { ctx, w: logicalW, h: logicalH } = setupHiDPICanvas(canvas, 1000, 380);
+    const isDark = document.documentElement.classList.contains('dark');
+
+    ctx.save();
+    ctx.clearRect(0, 0, logicalW, logicalH);
+
+    const margins = { top: 34, right: 64, bottom: 48, left: 68 };
+    const w = logicalW - margins.left - margins.right;
+    const h = logicalH - margins.top - margins.bottom;
+
+    const minX = 10, maxX = 100;
+    const rawMaxPue = Math.max(...curvePoints.map(p => p.pue), 1.85);
+    const minY = 1.00;
+    const maxY = Math.max(1.80, Math.ceil(rawMaxPue * 10) / 10 + 0.10);
+
+    const getX = (lf) => margins.left + ((lf - minX) / (maxX - minX)) * w;
+    const getY = (val) => margins.top + h - ((val - minY) / (maxY - minY)) * h;
+
+    // 1. Background Efficiency Tier Bands
+    const tiers = [
+        { from: 1.00, to: 1.20, label: 'World-Class / Hyperscale (≤ 1.20)', fill: isDark ? 'rgba(16, 185, 129, 0.08)' : 'rgba(16, 185, 129, 0.07)', text: '#10b981' },
+        { from: 1.20, to: 1.40, label: 'High-Efficiency Modern DC (1.21–1.40)', fill: isDark ? 'rgba(20, 184, 166, 0.07)' : 'rgba(20, 184, 166, 0.06)', text: '#14b8a6' },
+        { from: 1.40, to: 1.65, label: 'Standard Enterprise DC (1.41–1.65)', fill: isDark ? 'rgba(245, 158, 11, 0.07)' : 'rgba(245, 158, 11, 0.06)', text: '#f59e0b' },
+        { from: 1.65, to: maxY, label: 'Legacy Facility (> 1.65)', fill: isDark ? 'rgba(244, 63, 94, 0.07)' : 'rgba(244, 63, 94, 0.05)', text: '#f43f5e' }
+    ];
+
+    tiers.forEach(t => {
+        if (t.from >= maxY) return;
+        const yTop = getY(Math.min(maxY, t.to));
+        const yBot = getY(Math.max(minY, t.from));
+        ctx.fillStyle = t.fill;
+        ctx.fillRect(margins.left, yTop, w, Math.max(0, yBot - yTop));
+
+        if (yBot - yTop >= 18) {
+            ctx.font = '600 10px Inter, sans-serif';
+            ctx.fillStyle = t.text;
+            ctx.textAlign = 'right';
+            ctx.fillText(t.label, margins.left + w - 8, yTop + 13);
+        }
+    });
+
+    // 2. Gridlines & Axes
+    ctx.strokeStyle = isDark ? 'rgba(148, 163, 184, 0.16)' : 'rgba(148, 163, 184, 0.28)';
+    ctx.lineWidth = 1;
+    ctx.font = '600 11px Inter, sans-serif';
+    ctx.fillStyle = isDark ? '#94a3b8' : '#475569';
+
+    const yStep = (maxY - minY) > 1.2 ? 0.20 : 0.10;
+    for (let yVal = minY; yVal <= maxY + 0.001; yVal += yStep) {
+        const py = getY(yVal);
+        ctx.beginPath();
+        ctx.moveTo(margins.left, py);
+        ctx.lineTo(margins.left + w, py);
+        ctx.stroke();
+
+        ctx.textAlign = 'right';
+        ctx.fillText(yVal.toFixed(2), margins.left - 8, py + 4);
+
+        // Right axis: DCiE (%)
+        const dcie = (100 / yVal).toFixed(0) + '%';
+        ctx.textAlign = 'left';
+        ctx.fillText(dcie, margins.left + w + 8, py + 4);
+    }
+
+    for (let xVal = 10; xVal <= 100; xVal += 10) {
+        const px = getX(xVal);
+        ctx.beginPath();
+        ctx.moveTo(px, margins.top);
+        ctx.lineTo(px, margins.top + h);
+        ctx.stroke();
+
+        ctx.textAlign = 'center';
+        ctx.fillText(`${xVal}%`, px, margins.top + h + 18);
+    }
+
+    // Axis Titles
+    ctx.font = 'bold 12px Inter, sans-serif';
+    ctx.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
+    ctx.textAlign = 'center';
+    ctx.fillText('IT Equipment Load Factor (%)', margins.left + w / 2, margins.top + h + 38);
+
+    ctx.save();
+    ctx.translate(18, margins.top + h / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Power Usage Effectiveness (PUE)', 0, 0);
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(logicalW - 14, margins.top + h / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('DCiE Efficiency (%)', 0, 0);
+    ctx.restore();
+
+    // 3. Draw Partial Cooling PUE (pPUE) Dashed Curve
+    ctx.beginPath();
+    ctx.strokeStyle = '#06b6d4';
+    ctx.lineWidth = 2.2;
+    ctx.setLineDash([6, 4]);
+    curvePoints.forEach((pt, idx) => {
+        const px = getX(pt.lfPct);
+        const py = getY(Math.min(maxY, pt.pPUE));
+        if (idx === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 4. Draw Total Facility PUE Solid Curve + Area Fill
+    const grad = ctx.createLinearGradient(0, margins.top, 0, margins.top + h);
+    grad.addColorStop(0, 'rgba(139, 92, 246, 0.26)');
+    grad.addColorStop(1, 'rgba(139, 92, 246, 0.02)');
+
+    ctx.beginPath();
+    curvePoints.forEach((pt, idx) => {
+        const px = getX(pt.lfPct);
+        const py = getY(Math.min(maxY, pt.pue));
+        if (idx === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    });
+    ctx.lineTo(getX(curvePoints[curvePoints.length - 1].lfPct), margins.top + h);
+    ctx.lineTo(getX(curvePoints[0].lfPct), margins.top + h);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.strokeStyle = '#8b5cf6';
+    ctx.lineWidth = 3.2;
+    curvePoints.forEach((pt, idx) => {
+        const px = getX(pt.lfPct);
+        const py = getY(Math.min(maxY, pt.pue));
+        if (idx === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+
+    // 5. Active Operating Point Marker
+    if (activePoint) {
+        const ax = getX(activePoint.lfPct);
+        const ay = getY(Math.min(maxY, activePoint.pue));
+
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = isDark ? '#f8fafc' : '#0f172a';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(ax, margins.top + h);
+        ctx.lineTo(ax, ay);
+        ctx.lineTo(margins.left, ay);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.beginPath();
+        ctx.arc(ax, ay, 9, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(139, 92, 246, 0.25)';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(ax, ay, 5.5, 0, 2 * Math.PI);
+        ctx.fillStyle = '#8b5cf6';
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+        ctx.stroke();
+
+        const callout = `Operating Point: ${activePoint.lfPct.toFixed(0)}% Load → PUE ${activePoint.pue.toFixed(2)} (pPUE ${activePoint.pPUE.toFixed(2)})`;
+        ctx.font = 'bold 11px Inter, sans-serif';
+        const cw = ctx.measureText(callout).width + 16;
+        let cx = ax + 12;
+        if (cx + cw > margins.left + w) cx = ax - cw - 12;
+        const cy = Math.max(margins.top + 8, ay - 28);
+
+        ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.96)';
+        ctx.strokeStyle = '#8b5cf6';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.roundRect(cx, cy, cw, 22, 5);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+        ctx.textAlign = 'left';
+        ctx.fillText(callout, cx + 8, cy + 15);
+    }
+
+    // 6. Interactive Hover & Click-to-Select Load Factor
+    window._pueChartState = {
+        curvePoints,
+        activePoint,
+        hoverLf: window._pueChartState?.hoverLf ?? null
+    };
+
+    if (!canvas.dataset.pueBound) {
+        canvas.dataset.pueBound = 'true';
+        canvas.style.cursor = 'pointer';
+
+        canvas.addEventListener('mousemove', (e) => {
+            const r = canvas.getBoundingClientRect();
+            const mx = e.clientX - r.left;
+            const my = e.clientY - r.top;
+            const cw = r.width - margins.left - margins.right;
+            if (mx < margins.left || mx > r.width - margins.right || my < margins.top || my > r.height - margins.bottom) {
+                if (window._pueChartState?.hoverLf !== null) {
+                    window._pueChartState.hoverLf = null;
+                    drawPueChart(canvasId, window._pueChartState.curvePoints, window._pueChartState.activePoint);
+                }
+                return;
+            }
+            const rawLf = minX + ((mx - margins.left) / cw) * (maxX - minX);
+            const snappedLf = Math.max(10, Math.min(100, Math.round(rawLf / 2) * 2));
+            if (window._pueChartState.hoverLf !== snappedLf) {
+                window._pueChartState.hoverLf = snappedLf;
+                drawPueChart(canvasId, window._pueChartState.curvePoints, window._pueChartState.activePoint);
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            if (window._pueChartState && window._pueChartState.hoverLf !== null) {
+                window._pueChartState.hoverLf = null;
+                drawPueChart(canvasId, window._pueChartState.curvePoints, window._pueChartState.activePoint);
+            }
+        });
+
+        canvas.addEventListener('click', () => {
+            const hLf = window._pueChartState?.hoverLf;
+            if (hLf && typeof setPueLoadFactor === 'function') {
+                setPueLoadFactor(hLf);
+            }
+        });
+    }
+
+    const hLf = window._pueChartState?.hoverLf;
+    if (hLf !== null && hLf !== undefined) {
+        const hPt = curvePoints.find(p => Math.abs(p.lfPct - hLf) < 1.1);
+        if (hPt) {
+            const hx = getX(hPt.lfPct);
+            const hy = getY(Math.min(maxY, hPt.pue));
+
+            ctx.save();
+            ctx.setLineDash([3, 3]);
+            ctx.strokeStyle = isDark ? '#38bdf8' : '#0284c7';
+            ctx.beginPath();
+            ctx.moveTo(hx, margins.top);
+            ctx.lineTo(hx, margins.top + h);
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.beginPath();
+            ctx.arc(hx, hy, 4.5, 0, 2 * Math.PI);
+            ctx.fillStyle = '#38bdf8';
+            ctx.fill();
+
+            const t1 = `IT Load Factor: ${hPt.lfPct.toFixed(0)}% (${hPt.pItActualKw.toFixed(0)} kW IT)`;
+            const t2 = `Total PUE: ${hPt.pue.toFixed(2)} • Cooling pPUE: ${hPt.pPUE.toFixed(2)} • DCiE: ${hPt.dciePct.toFixed(1)}%`;
+            const t3 = `Cooling: ${hPt.pCoolingTotalKw.toFixed(1)} kW • Elec Loss: ${hPt.pElecOverheadKw.toFixed(1)} kW (Click to set)`;
+
+            ctx.font = '600 10.5px Inter, sans-serif';
+            const bw = Math.max(ctx.measureText(t2).width, ctx.measureText(t3).width) + 18;
+            const bh = 54;
+            let bx = hx + 12;
+            if (bx + bw > margins.left + w) bx = hx - bw - 12;
+            const by = Math.max(margins.top + 6, Math.min(margins.top + h - bh - 6, hy - 28));
+
+            ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.97)';
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.roundRect(bx, by, bw, bh, 6);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+            ctx.fillText(t1, bx + 9, by + 6);
+            ctx.fillStyle = '#8b5cf6';
+            ctx.fillText(t2, bx + 9, by + 22);
+            ctx.fillStyle = isDark ? '#94a3b8' : '#475569';
+            ctx.fillText(t3, bx + 9, by + 37);
+        }
+    }
+
+    ctx.restore();
+}
+
+

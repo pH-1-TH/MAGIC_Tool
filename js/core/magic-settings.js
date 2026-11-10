@@ -210,7 +210,7 @@
         propagateSettings() {
             const allModules = [
                 'analyzerPage', 'loadAnalyzerPage', 'multiStagePage', 'ductSizerPage',
-                'pipeSizerPage', 'ctPage', 'roiPage', 'fuelTankPage', 'eqListPage',
+                'pipeSizerPage', 'ctPage', 'roiPage', 'fuelTankPage', 'puePage', 'eqListPage',
                 'wiringPage', 'transformerPage', 'motorSizerPage', 'shortCircuitPage',
                 'starterSimulatorPage', 'waterDemandPage', 'stormPage', 'pondPage',
                 'sprinklerPage', 'warehouseSprinklerPage', 'fireWaterPage'

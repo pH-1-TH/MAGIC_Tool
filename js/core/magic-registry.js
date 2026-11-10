@@ -102,6 +102,18 @@
             calcFn: () => typeof updateFuel === 'function' && updateFuel(),
             getBadge: (s) => `Storage: ${(s.fuelTotalLiters || 0).toLocaleString()} L`
         },
+        {
+            id: 'puePage',
+            title: 'Data Center PUE Estimator',
+            discipline: 'mechanical',
+            disciplineLabel: 'Mechanical & HVAC',
+            standard: 'ISO/IEC 30134-2 / ASHRAE TC 9.9',
+            desc: 'Estimate Data Center PUE, DCiE, cooling pPUE, and annual energy from Chiller COP and IT load factor.',
+            color: 'violet',
+            canvasId: 'pueChart',
+            calcFn: () => typeof updatePUE === 'function' && updatePUE(),
+            getBadge: (s) => `PUE: ${(s.pueValue || 1.33).toFixed(2)} • IT: ${(s.pueItLoadKw || 750).toFixed(0)} kW`
+        },
 
         // Electrical Engineering (6)
         {

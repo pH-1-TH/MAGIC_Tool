@@ -52,6 +52,7 @@ window.addEventListener('load', () => {
         if (typeof calcFireWater === 'function') calcFireWater();
         if (typeof calcESFR === 'function') calcESFR();
         if (typeof updateFuel === 'function') updateFuel();
+        if (typeof updatePUE === 'function') updatePUE();
         if (typeof calcStarter === 'function') calcStarter();
 
         if (typeof window.updateLandingBadges === 'function') {

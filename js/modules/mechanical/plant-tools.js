@@ -1,5 +1,5 @@
 // ============================================================================
-// Mechanical & HVAC Modules 6–8: Cooling Tower Make-up, Chiller ROI & Fuel Tank
+// Mechanical & HVAC Modules 6–9: Cooling Tower Make-up, Chiller ROI, Fuel Tank & Data Center PUE Estimator
 // File: js/modules/mechanical/plant-tools.js
 // ============================================================================
 
@@ -327,3 +327,342 @@ updateFuel = function() {
         window.MagicStore.publish({ fuelTotalLiters: vol }, 'fuelTankPage');
     }
 };
+
+// ============================================================================
+// MODULE 9: DATA CENTER PUE ESTIMATOR (ASHRAE TC 9.9 / ISO/IEC 30134-2)
+// ============================================================================
+
+const PUE_COOLING_PRESETS = {
+    AIR_STD: {
+        name: 'Air-Cooled Chiller + CRAC / CRAH',
+        cop: 3.20,
+        pumpFanPct: 10.0,
+        econPct: 0.0,
+        upsLossPct: 5.5,
+        pduLossPct: 2.5,
+        auxPct: 1.5
+    },
+    WATER_CENT: {
+        name: 'Water-Cooled Centrifugal Chiller + CRAH (VFD)',
+        cop: 5.80,
+        pumpFanPct: 8.5,
+        econPct: 10.0,
+        upsLossPct: 4.5,
+        pduLossPct: 2.0,
+        auxPct: 1.0
+    },
+    MAG_ECON: {
+        name: 'Magnetic Bearing Chiller + Waterside Economizer',
+        cop: 6.80,
+        pumpFanPct: 6.5,
+        econPct: 30.0,
+        upsLossPct: 3.5,
+        pduLossPct: 1.8,
+        auxPct: 0.8
+    },
+    DLC_HYBRID: {
+        name: 'Direct-to-Chip Liquid Cooling (DLC) + Rear Door Hx',
+        cop: 9.50,
+        pumpFanPct: 3.5,
+        econPct: 55.0,
+        upsLossPct: 3.0,
+        pduLossPct: 1.5,
+        auxPct: 0.6
+    },
+    CUSTOM: {
+        name: 'Custom Cooling & Electrical Parameters'
+    }
+};
+
+function applyPuePreset(presetKey) {
+    const preset = PUE_COOLING_PRESETS[presetKey];
+    const archSelect = document.getElementById('pue_arch_preset');
+    if (archSelect && archSelect.value !== presetKey) {
+        archSelect.value = presetKey;
+    }
+    if (!preset || presetKey === 'CUSTOM') {
+        updatePUE();
+        return;
+    }
+
+    const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && val !== undefined) el.value = val;
+    };
+
+    setVal('pue_cop', preset.cop);
+    const kwTrEl = document.getElementById('pue_kw_tr');
+    if (kwTrEl && preset.cop > 0) kwTrEl.value = (3.51685 / preset.cop).toFixed(3);
+    setVal('pue_pump_fan_pct', preset.pumpFanPct);
+    setVal('pue_econ_pct', preset.econPct);
+    setVal('pue_ups_loss_pct', preset.upsLossPct);
+    setVal('pue_pdu_loss_pct', preset.pduLossPct);
+    setVal('pue_aux_pct', preset.auxPct);
+
+    updatePUE();
+}
+
+function syncPueCopAndKwTr(source) {
+    const copEl = document.getElementById('pue_cop');
+    const kwTrEl = document.getElementById('pue_kw_tr');
+    const archEl = document.getElementById('pue_arch_preset');
+    if (!copEl || !kwTrEl) return;
+
+    if (archEl) archEl.value = 'CUSTOM';
+
+    if (source === 'cop') {
+        const cop = parseFloat(copEl.value) || 0;
+        if (cop > 0) {
+            kwTrEl.value = (3.51685 / cop).toFixed(3);
+        }
+    } else if (source === 'kwtr') {
+        const kwTr = parseFloat(kwTrEl.value) || 0;
+        if (kwTr > 0) {
+            copEl.value = (3.51685 / kwTr).toFixed(2);
+        }
+    }
+    updatePUE();
+}
+
+function setPueLoadFactor(lfPct) {
+    const lfEl = document.getElementById('pue_load_factor');
+    const lfSlider = document.getElementById('pue_load_slider');
+    if (lfEl) lfEl.value = lfPct;
+    if (lfSlider) lfSlider.value = lfPct;
+    updatePUE();
+}
+
+function syncPueLoadInput(source) {
+    const lfEl = document.getElementById('pue_load_factor');
+    const lfSlider = document.getElementById('pue_load_slider');
+    if (source === 'slider' && lfSlider && lfEl) {
+        lfEl.value = lfSlider.value;
+    } else if (source === 'number' && lfEl && lfSlider) {
+        lfSlider.value = Math.max(10, Math.min(100, parseFloat(lfEl.value) || 50));
+    }
+    updatePUE();
+}
+
+function calcPueAtLoadFactor(lfFrac, params) {
+    const safeLf = Math.max(0.05, Math.min(1.0, lfFrac));
+    const pItActualKw = params.itRatedKw * safeLf;
+
+    // 1. Electrical Losses (Fixed No-Load Core Loss ~30% + Variable Load Loss ~70%)
+    const upsPct = params.upsLossPct / 100;
+    const pduPct = params.pduLossPct / 100;
+    const pUpsLossKw = params.itRatedKw * upsPct * (0.30 + 0.70 * Math.pow(safeLf, 1.15));
+    const pPduLossKw = params.itRatedKw * pduPct * (0.25 + 0.75 * Math.pow(safeLf, 1.25));
+    const pLightingAuxKw = params.itRatedKw * (params.auxPct / 100);
+    const pElecOverheadKw = pUpsLossKw + pPduLossKw + pLightingAuxKw;
+
+    // 2. Total Indoor Heat Rejection (IT + UPS/PDU/Lighting heat dissipation inside building)
+    const qCoolingLoadKw = pItActualKw + (pUpsLossKw * 0.85) + (pPduLossKw * 0.85) + pLightingAuxKw;
+
+    // 3. Chiller Part-Load Performance & Economizer Free-Cooling Relief
+    // VFD/Centrifugal chillers often have higher COP at 50-75% load, while very low load (<25%) has auxiliary overhead
+    const partLoadCopMultiplier = safeLf < 0.30
+        ? (0.82 + 0.60 * safeLf)
+        : (1.0 + 0.10 * Math.sin(((safeLf - 0.30) / 0.70) * Math.PI));
+    const effectiveChillerCop = Math.max(0.8, params.cop * partLoadCopMultiplier);
+    const econFrac = Math.max(0, Math.min(0.90, params.econPct / 100));
+
+    // Mechanical chiller handles (1 - econFrac) of cooling hours; economizer mode uses ~15% of compressor power
+    const pChillerCompKw = (qCoolingLoadKw / effectiveChillerCop) * ((1 - econFrac) + econFrac * 0.15);
+
+    // 4. Pumps, Cooling Tower Fans & CRAH/CRAC Fans (Fixed minimum flow/air + VFD affinity law component)
+    const pumpFanPct = params.pumpFanPct / 100;
+    const pPumpFanKw = params.itRatedKw * pumpFanPct * (0.35 + 0.65 * Math.pow(safeLf, 1.6));
+
+    const pCoolingTotalKw = pChillerCompKw + pPumpFanKw;
+    const pTotalFacilityKw = pItActualKw + pCoolingTotalKw + pElecOverheadKw;
+
+    const pPUE = pItActualKw > 0 ? (pItActualKw + pCoolingTotalKw) / pItActualKw : 1.0;
+    const mlc = pItActualKw > 0 ? pCoolingTotalKw / pItActualKw : 0;
+    const elc = pItActualKw > 0 ? pElecOverheadKw / pItActualKw : 0;
+    const pue = pItActualKw > 0 ? pTotalFacilityKw / pItActualKw : 1.0;
+    const dciePct = pue > 0 ? (100 / pue) : 0;
+    const plantSystemCop = pCoolingTotalKw > 0 ? (qCoolingLoadKw / pCoolingTotalKw) : params.cop;
+
+    return {
+        lfPct: safeLf * 100,
+        pItActualKw,
+        pUpsLossKw,
+        pPduLossKw,
+        pLightingAuxKw,
+        pElecOverheadKw,
+        qCoolingLoadKw,
+        effectiveChillerCop,
+        plantSystemCop,
+        pChillerCompKw,
+        pPumpFanKw,
+        pCoolingTotalKw,
+        pTotalFacilityKw,
+        pPUE,
+        mlc,
+        elc,
+        pue,
+        dciePct
+    };
+}
+
+function getPueGradeBadge(pue) {
+    if (pue <= 1.20) {
+        return {
+            grade: 'World-Class / Hyperscale',
+            tierColor: 'text-emerald-600 dark:text-emerald-400',
+            badgeHtml: `<span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">🏆 World-Class (≤ 1.20)</span>`
+        };
+    } else if (pue <= 1.40) {
+        return {
+            grade: 'High-Efficiency Modern DC',
+            tierColor: 'text-teal-600 dark:text-teal-400',
+            badgeHtml: `<span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-teal-500/15 text-teal-600 dark:text-teal-300 border border-teal-500/30">✦ High-Efficiency (1.21–1.40)</span>`
+        };
+    } else if (pue <= 1.65) {
+        return {
+            grade: 'Standard Enterprise DC',
+            tierColor: 'text-amber-600 dark:text-amber-400',
+            badgeHtml: `<span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30">⚡ Standard Enterprise (1.41–1.65)</span>`
+        };
+    }
+    return {
+        grade: 'Legacy / Retrofit Candidate',
+        tierColor: 'text-rose-600 dark:text-rose-400',
+        badgeHtml: `<span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-rose-500/15 text-rose-600 dark:text-rose-300 border border-rose-500/30">⚠️ Legacy Facility (&gt; 1.65)</span>`
+    };
+}
+
+function updatePUE() {
+    const itCapVal = parseFloat(document.getElementById('pue_it_cap')?.value) || 1000;
+    const itCapUnit = document.getElementById('pue_it_unit')?.value || 'kW';
+    const itRatedKw = itCapUnit === 'MW' ? itCapVal * 1000 : itCapVal;
+
+    const loadFactorPct = Math.max(10, Math.min(100, parseFloat(document.getElementById('pue_load_factor')?.value) || 75));
+    const cop = Math.max(0.8, parseFloat(document.getElementById('pue_cop')?.value) || 5.8);
+    const pumpFanPct = Math.max(0, parseFloat(document.getElementById('pue_pump_fan_pct')?.value) || 8.5);
+    const econPct = Math.max(0, Math.min(95, parseFloat(document.getElementById('pue_econ_pct')?.value) || 10));
+    const upsLossPct = Math.max(0, parseFloat(document.getElementById('pue_ups_loss_pct')?.value) || 4.5);
+    const pduLossPct = Math.max(0, parseFloat(document.getElementById('pue_pdu_loss_pct')?.value) || 2.0);
+    const auxPct = Math.max(0, parseFloat(document.getElementById('pue_aux_pct')?.value) || 1.0);
+    const rate = Math.max(0, parseFloat(document.getElementById('pue_elec_rate')?.value) || 4.0);
+    const currency = document.getElementById('pue_currency')?.value || '฿';
+
+    const params = {
+        itRatedKw,
+        cop,
+        pumpFanPct,
+        econPct,
+        upsLossPct,
+        pduLossPct,
+        auxPct
+    };
+
+    const cur = calcPueAtLoadFactor(loadFactorPct / 100, params);
+    const gradeInfo = getPueGradeBadge(cur.pue);
+
+    // Update KPI Cards
+    const setTxt = (id, txt) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = txt;
+    };
+    const setHtml = (id, html) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = html;
+    };
+
+    setHtml('pue_res_total', `<span class="${gradeInfo.tierColor}">${cur.pue.toFixed(2)}</span>`);
+    setHtml('pue_res_grade_badge', gradeInfo.badgeHtml);
+    setTxt('pue_res_dcie', `DCiE: ${cur.dciePct.toFixed(1)}% (IT Share of Total Power)`);
+
+    setTxt('pue_res_ppue', cur.pPUE.toFixed(2));
+    setTxt('pue_res_mlc_sub', `MLC: ${cur.mlc.toFixed(3)} kW_cool/kW_IT • Sys COP: ${cur.plantSystemCop.toFixed(2)}`);
+
+    setTxt('pue_res_elc', cur.elc.toFixed(3));
+    setTxt('pue_res_elc_sub', `UPS: ${cur.pUpsLossKw.toFixed(1)} kW + PDU/Xfmr: ${cur.pPduLossKw.toFixed(1)} kW`);
+
+    setTxt('pue_res_facility_kw', `${cur.pTotalFacilityKw.toFixed(1)} kW`);
+    setTxt('pue_res_facility_sub', `IT: ${cur.pItActualKw.toFixed(1)} kW + Overhead: ${(cur.pCoolingTotalKw + cur.pElecOverheadKw).toFixed(1)} kW`);
+
+    // Power Breakdown Bar & Table
+    const tot = Math.max(0.1, cur.pTotalFacilityKw);
+    const pctIt = (cur.pItActualKw / tot) * 100;
+    const pctChiller = (cur.pChillerCompKw / tot) * 100;
+    const pctPumpFan = (cur.pPumpFanKw / tot) * 100;
+    const pctElec = (cur.pElecOverheadKw / tot) * 100;
+
+    const setBarWidth = (id, pct) => {
+        const el = document.getElementById(id);
+        if (el) el.style.width = `${Math.max(1, pct).toFixed(1)}%`;
+    };
+    setBarWidth('pue_bar_it', pctIt);
+    setBarWidth('pue_bar_chiller', pctChiller);
+    setBarWidth('pue_bar_pump', pctPumpFan);
+    setBarWidth('pue_bar_elec', pctElec);
+
+    setTxt('pue_bk_it_kw', `${cur.pItActualKw.toFixed(1)} kW (${pctIt.toFixed(1)}%)`);
+    setTxt('pue_bk_chiller_kw', `${cur.pChillerCompKw.toFixed(1)} kW (${pctChiller.toFixed(1)}%)`);
+    setTxt('pue_bk_pump_kw', `${cur.pPumpFanKw.toFixed(1)} kW (${pctPumpFan.toFixed(1)}%)`);
+    setTxt('pue_bk_elec_kw', `${cur.pElecOverheadKw.toFixed(1)} kW (${pctElec.toFixed(1)}%)`);
+    setTxt('pue_bk_heat_rej', `${cur.qCoolingLoadKw.toFixed(1)} kW (${(cur.qCoolingLoadKw / 3.51685).toFixed(1)} RT)`);
+
+    // Annual Energy, Cost & Carbon Summary (8,760 hrs/yr)
+    const annualItMwh = (cur.pItActualKw * 8760) / 1000;
+    const annualOverheadMwh = ((cur.pCoolingTotalKw + cur.pElecOverheadKw) * 8760) / 1000;
+    const annualTotalMwh = (cur.pTotalFacilityKw * 8760) / 1000;
+    const annualCost = annualTotalMwh * 1000 * rate;
+    const annualOverheadCost = annualOverheadMwh * 1000 * rate;
+    const annualCo2Tons = annualTotalMwh * 0.42; // 0.42 tCO2/MWh Thailand grid factor
+
+    setTxt('pue_ann_total_mwh', `${annualTotalMwh.toLocaleString('en-US', { maximumFractionDigits: 0 })} MWh/yr`);
+    setTxt('pue_ann_it_vs_ovh', `IT: ${annualItMwh.toLocaleString('en-US', { maximumFractionDigits: 0 })} MWh • Non-IT Overhead: ${annualOverheadMwh.toLocaleString('en-US', { maximumFractionDigits: 0 })} MWh`);
+    setTxt('pue_ann_cost', `${currency}${annualCost.toLocaleString('en-US', { maximumFractionDigits: 0 })}/yr`);
+    setTxt('pue_ann_ovh_cost', `Overhead Energy Cost: ${currency}${annualOverheadCost.toLocaleString('en-US', { maximumFractionDigits: 0 })}/yr`);
+    setTxt('pue_ann_co2', `${annualCo2Tons.toLocaleString('en-US', { maximumFractionDigits: 0 })} tCO₂/yr`);
+
+    // Part-Load Sensitivity Table (25%, 50%, 75%, 100%)
+    const lfSteps = [25, 50, 75, 100];
+    const tbody = document.getElementById('pue_load_table_body');
+    if (tbody) {
+        tbody.innerHTML = lfSteps.map(stepPct => {
+            const pt = calcPueAtLoadFactor(stepPct / 100, params);
+            const isSelected = Math.abs(stepPct - loadFactorPct) < 3;
+            const rowClass = isSelected
+                ? 'bg-violet-50/90 dark:bg-violet-900/40 font-bold text-violet-700 dark:text-violet-300 ring-1 ring-inset ring-violet-500/40'
+                : 'hover:bg-slate-50 dark:hover:bg-slate-700/40';
+            return `
+                <tr onclick="setPueLoadFactor(${stepPct})" class="cursor-pointer transition-colors ${rowClass}">
+                    <td class="px-3 py-2 text-xs font-mono">
+                        <span class="font-bold">${stepPct}% Load</span>
+                        ${isSelected ? `<span class="ml-1.5 px-1.5 py-0.5 rounded bg-violet-600 text-white text-[9px] font-extrabold uppercase">Active</span>` : ''}
+                    </td>
+                    <td class="px-3 py-2 text-xs text-right font-mono">${pt.pItActualKw.toFixed(0)} kW</td>
+                    <td class="px-3 py-2 text-xs text-right font-mono">${pt.pCoolingTotalKw.toFixed(1)} kW</td>
+                    <td class="px-3 py-2 text-xs text-right font-mono">${pt.pElecOverheadKw.toFixed(1)} kW</td>
+                    <td class="px-3 py-2 text-xs text-right font-mono">${pt.pTotalFacilityKw.toFixed(1)} kW</td>
+                    <td class="px-3 py-2 text-xs text-right font-mono font-bold text-cyan-600 dark:text-cyan-400">${pt.pPUE.toFixed(2)}</td>
+                    <td class="px-3 py-2 text-xs text-right font-mono font-extrabold">${pt.pue.toFixed(2)}</td>
+                    <td class="px-3 py-2 text-xs text-right font-mono text-emerald-600 dark:text-emerald-400">${pt.dciePct.toFixed(1)}%</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // Generate dense curve for canvas chart (10% to 100% IT load factor)
+    const curvePoints = [];
+    for (let lf = 10; lf <= 100; lf += 2) {
+        curvePoints.push(calcPueAtLoadFactor(lf / 100, params));
+    }
+
+    if (typeof drawPueChart === 'function') {
+        drawPueChart('pueChart', curvePoints, cur);
+    }
+
+    if (window.MagicStore) {
+        window.MagicStore.publish({
+            pueValue: +cur.pue.toFixed(2),
+            pueItLoadKw: +cur.pItActualKw.toFixed(1),
+            pueTotalFacilityKw: +cur.pTotalFacilityKw.toFixed(1)
+        }, 'puePage');
+    }
+}
+

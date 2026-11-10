@@ -21,6 +21,9 @@
         ctMakeupM3Day: 118.8,
         roiPaybackYears: 3.3,
         fuelTotalLiters: 1380,
+        pueValue: 1.33,
+        pueItLoadKw: 750.0,
+        pueTotalFacilityKw: 997.5,
 
         // Electrical shared outputs
         elecConnectedKw: 0.0,
@@ -206,6 +209,21 @@
                             unit.value = 'kW';
                             cap.value = (state.hvacCoolingLoadKw || 100).toFixed(1);
                             if (typeof toggleCtCalc === 'function') toggleCtCalc();
+                        }
+                    }
+                }
+            ],
+            puePage: [
+                {
+                    label: "Pull Cooling Load from System Analyzer",
+                    getDesc: () => `${(state.hvacCoolingLoadKw || 0).toFixed(1)} kW`,
+                    apply: () => {
+                        const itCap = document.getElementById('pue_it_cap');
+                        const itUnit = document.getElementById('pue_it_unit');
+                        if (itCap && itUnit && (state.hvacCoolingLoadKw || 0) > 0) {
+                            itUnit.value = 'kW';
+                            itCap.value = (state.hvacCoolingLoadKw).toFixed(0);
+                            if (typeof updatePUE === 'function') updatePUE();
                         }
                     }
                 }

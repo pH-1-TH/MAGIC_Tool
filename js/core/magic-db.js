@@ -422,6 +422,16 @@ const magicKnowledgeBase = {
         formulas: [
             "V_fuel = Rate_L/h × t_hours × (1 + Margin)"
         ]
+    },
+    puePage: {
+        title: "Data Center PUE & Cooling Efficiency Estimator",
+        standard: "ISO/IEC 30134-2 / The Green Grid / ASHRAE TC 9.9",
+        summary: "Estimates Data Center Power Usage Effectiveness (PUE), Data Center Infrastructure Efficiency (DCiE), Mechanical Load Component (MLC / pPUE), and Electrical Loss Component (ELC) from Chiller COP (kW/TR), IT Load Factor (%), Pump/Fan auxiliaries, Free-Cooling Economizer hours, and UPS/PDU conversion losses.",
+        formulas: [
+            "PUE = P_Total_Facility / P_IT = 1 + MLC + ELC, DCiE = (1 / PUE) × 100%",
+            "P_Cooling = (Q_Cooling / COP_eff)·(1 - f_econ + 0.15·f_econ) + P_Pumps_Fans(LF)",
+            "pPUE (Cooling) = (P_IT + P_Cooling) / P_IT"
+        ]
     }
 };
 

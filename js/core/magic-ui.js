@@ -63,7 +63,7 @@ function switchView(viewId) {
     toggleHamburgerMenu(false);
     const views = [
         'mainMenuPage', 'globalSettingsPage', 'equipmentSchedulePage', 'analyzerPage', 'loadAnalyzerPage', 'multiStagePage',
-        'ductSizerPage', 'pipeSizerPage', 'ctPage', 'roiPage', 'eqListPage',
+        'ductSizerPage', 'pipeSizerPage', 'ctPage', 'roiPage', 'puePage', 'eqListPage',
         'wiringPage', 'transformerPage', 'motorSizerPage', 'shortCircuitPage',
         'waterDemandPage', 'stormPage', 'pondPage', 'sprinklerPage',
         'warehouseSprinklerPage', 'fireWaterPage', 'fuelTankPage', 'starterSimulatorPage'
@@ -118,7 +118,7 @@ function copyToClipboard(text, btnElement) {
 function refreshActiveCharts() {
     const activeView = [
         'mainMenuPage', 'analyzerPage', 'loadAnalyzerPage', 'multiStagePage',
-        'ductSizerPage', 'pipeSizerPage', 'ctPage', 'roiPage', 'eqListPage',
+        'ductSizerPage', 'pipeSizerPage', 'ctPage', 'roiPage', 'puePage', 'eqListPage',
         'wiringPage', 'transformerPage', 'unbalancedLoadPage', 'waterDemandPage', 'sprinklerPage', 'fireWaterPage'
     ].find(id => {
         const el = document.getElementById(id);
@@ -138,6 +138,9 @@ function refreshActiveCharts() {
     }
     else if (activeView === 'ctPage') updateCoolingTower();
     else if (activeView === 'roiPage') updateROI();
+    else if (activeView === 'puePage') {
+        if (typeof updatePUE === 'function') updatePUE();
+    }
     else if (activeView === 'wiringPage') calcWiring();
     else if (activeView === 'transformerPage') calcTransformer();
     else if (activeView === 'unbalancedLoadPage') calcUnbalanced();
